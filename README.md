@@ -10,8 +10,8 @@ An example project that shows how a small scheduled job is specified and built w
 
 - [Components](#components)
 - [Design](#design)
+  - [Diagram](#diagram)
 - [Technology](#technology)
-- [Plan](#plan)
 - [Links](#links)
 
 ## Components
@@ -22,34 +22,9 @@ An example project that shows how a small scheduled job is specified and built w
 
 ## Design
 
-Not built yet.
+The root owns no code. It holds the shared rules ([requirements](requirements.md#requirements), [contract](contract.md#contract)) and the `test` and `coverage` checks in `craft.json` that run over the one child. The child, [Website Availability Check](website-availability-check/README.md#design), is the job script: it reads its configuration from the environment, checks the website once, and hands one alert to a notifier port when the site is down. Only a dry-run notifier is delivered; the real email system is outside this project.
 
-## Technology
-
-- Node 26 with TypeScript run natively (type stripping), ES modules, no runtime or dev dependencies, tests with `node:test` and hand-written mocks. Detail is in [requirements.md](requirements.md#requirements).
-
-## Plan
-
-### Planned Navigation
-
-**Website Availability Example**
-
-- [Planned Components](#planned-components)
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Planned Links](#planned-links)
-
-### Planned Components
-
-| Component | Purpose |
-| --- | --- |
-| [Website Availability Check](website-availability-check/README.md#planned-purpose) | A job script that checks one configured website URL, stays silent when it is up and requests one email alert through a notifier when it is down. |
-
-### Planned Design
-
-The root owns no code. It holds the shared rules (`requirements.md`, `contract.md`) and the `configuration.checks` in `craft.json` that every component of this one-stack project runs. The single child, [Website Availability Check](website-availability-check/README.md#planned-design), is planned in its own record.
-
-#### Planned Diagram
+### Diagram
 
 ```mermaid
 ---
@@ -58,14 +33,12 @@ config:
 ---
 %%{init: {"securityLevel": "loose"}}%%
 flowchart TB
-  root{{"Website Availability Example"}} -->|delegates-to| check["<a href='website-availability-check/README.md#planned-diagram'>Website Availability Check</a>"]:::planned
-  classDef planned stroke-dasharray: 5 5
+  root{{"Website Availability Example"}} -->|delegates-to| check["<a href='website-availability-check/README.md#diagram'>Website Availability Check</a>"]
 ```
 
-### Planned Links
+## Technology
 
-- [requirements.md](requirements.md#requirements) — shared technology, test and no-real-effects rules.
-- [contract.md](contract.md#contract) — shared environment variables and exit codes.
+- Node 26 with TypeScript run natively (type stripping), ES modules, no runtime or dev dependencies, tests with `node:test` and hand-written mocks. Detail is in [requirements.md](requirements.md#requirements).
 
 ## Links
 

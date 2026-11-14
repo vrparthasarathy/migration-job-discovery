@@ -1,0 +1,7 @@
+{
+  "name": "website-availability-check",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=26" },
+  "scripts": { "test": "node --test" }
+}

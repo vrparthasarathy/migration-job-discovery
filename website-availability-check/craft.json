@@ -1,16 +1,1 @@
-{
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-14T11:01:07Z",
-    "constraints": {
-      "cost": { "currency": "USD", "allocated": 1, "spent": 0, "reserve": 0.1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
-      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
-      "execution": { "wall-clock": { "allocated-seconds": 1800, "spent-seconds": 0, "reserve-seconds": 300, "source": "unavailable" } },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "Tests tagged B01 to B06 pass in website-availability-check using a mocked HTTP check and a mocked notifier, with no real network call and no real email (B01, B02, B03, B04, B05, B06)."
-    ]
-  }
-}
+{}
