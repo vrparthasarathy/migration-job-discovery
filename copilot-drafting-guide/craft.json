@@ -2,7 +2,7 @@
   "task": {
     "status": "ready",
     "worker": "builder",
-    "updated": "2026-11-14T12:30:06Z",
+    "updated": "2026-11-15T09:00:00Z",
     "constraints": {
       "cost": {
         "currency": "USD",
@@ -28,7 +28,7 @@
     },
     "acceptance": [
       "Every item of `review-checklist.md` tagged B01 to B10 is marked pass in a dry-run review, which for the skill is Copilot run on the website job source and compared with the reference specification (B01, B02, B03, B04, B05, B06, B07, B08, B09, B10).",
-      "The skill folder, the usage guidance and the fallback prompt contain no Craft term, and the model advice lists only models the team reported as available, marked team-reported with a valid-as-of date (B07, B08)."
+      "The skill folder, the usage guidance and the fallback prompt contain no Craft term, and the model advice lists only models the team reported as available, marked team-reported with a valid-as-of date (B08, B09)."
     ]
   }
 }

@@ -2,7 +2,7 @@
 
 ## Requirement
 
-Create a GitHub Copilot agent skill that creates, drafts and versions a job behavior document from job source using the template, plus practical usage and model-selection guidance and a fallback prompt, with no Craft dependency. Behaviors B01 to B10 were revised and confirmed by the user in chat on 2026-11-14.
+Create a GitHub Copilot agent skill that creates, drafts, updates and versions a job behavior document from job source (and optional vendor documents) using the template, plus usage and model-selection guidance and a fallback prompt, with no Craft dependency. Revised after the user's review on 2026-11-15; behaviors B01 to B10 confirmed by the user in chat.
 
 ## Plan
 

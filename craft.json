@@ -11,7 +11,7 @@
   "task": {
     "status": "ready",
     "worker": "builder",
-    "updated": "2026-11-14T12:30:06Z",
+    "updated": "2026-11-15T09:00:00Z",
     "constraints": {
       "cost": {
         "currency": "USD",
@@ -36,7 +36,7 @@
       "external-effects": "require-current-turn-user-approval"
     },
     "acceptance": [
-      "The three document components are built and a dry-run review of `review-checklist.md` at the root marks B01 to B03 pass: the template, the reference specification and the template copy in the skill folder share headings and IDs, the pack files contain no Craft term, and the skill run on the website job source reconciles with the reference specification and leaves the acknowledgement blank (B01, B02, B03)."
+      "The three document components are built and a dry-run review of `review-checklist.md` at the root marks B01 to B03 pass: the template, the reference specification and the template copy in the skill folder share headings and IDs, the pack files contain no Craft term and the specification's links and diagram work on GitHub, and the skill run on the website job source reconciles with the reference specification and leaves the acknowledgement log blank (B01, B02, B03)."
     ]
   }
 }
