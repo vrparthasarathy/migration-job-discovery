@@ -15,7 +15,7 @@ The builder arranges these into sections and records the section list here after
 | Contracts | Tables for inputs, outputs, parameters (name and this job's value) and external dependencies (role, direction of each call). |
 | Diagram | One black box for the job, external systems, outgoing calls and incoming responses only, with a plain-text description beside it. |
 | Acceptance scenarios | Their own part: given/when/then, each with a "covers: CUR-n" line; every current behavior covered. |
-| Acknowledgement | Company name, date acknowledged, version reviewed, script link and revision, production-script tick box, one overall confirmation of the current behaviors, reference to the client's tracker entry or reply, and the plain statement of what acknowledgement does and does not claim. No person name or role. Blank until our team records it. |
+| Acknowledgement | Company name, date acknowledged, version reviewed, script link and revision, production-script tick box, one overall confirmation of the current behaviors, reference to the vendor's tracker entry or reply, and the plain statement of what acknowledgement does and does not claim. No person name or role. Blank until our team records it. |
 | Operational context | Schedule and frequency, logging, monitoring and alerts, owner, failure handling; each `unknown` by default. |
 | Scope statement | The document says nothing about how the job will be built or grouped on the migration platform. |
 

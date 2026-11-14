@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A set of client-facing job behavior documents: a blank template for recording a job's current behavior from its source code, a completed reference specification, and a GitHub Copilot skill with usage guidance, so a client can review and acknowledge a versioned record of each job's current behavior before the jobs are migrated onto our platform as workflows.
+A set of vendor-facing job behavior documents: a blank template for recording a job's current behavior from its source code, a completed reference specification, and a GitHub Copilot skill with usage guidance, so a vendor can review and acknowledge a versioned record of each job's current behavior before the jobs are migrated onto our platform as workflows.
 
 ## Navigation
 
@@ -21,7 +21,7 @@ A set of client-facing job behavior documents: a blank template for recording a 
 | Component | Purpose |
 | --- | --- |
 | [Website Availability Check](website-availability-check/README.md#purpose) | A job script that checks one configured website URL, stays silent when it is up and requests one email alert through a notifier when it is down; kept unchanged as read-only source evidence. |
-| [Job Behavior Template](job-behavior-template/README.md#purpose) | The blank, reusable form a developer fills in to document one client job from its source code. |
+| [Job Behavior Template](job-behavior-template/README.md#purpose) | The blank, reusable form a developer fills in to document one vendor job from its source code. |
 | [Website Check Job Behavior](website-check-job-behavior/README.md#purpose) | The completed reference specification of the website-check job in plain business language. |
 | [Copilot Drafting Guide](copilot-drafting-guide/README.md#purpose) | A GitHub Copilot agent skill that creates, drafts and versions a job behavior document from source, with usage and model guidance. |
 
@@ -43,12 +43,12 @@ flowchart TB
 
 ## Technology
 
-- Client documents in Markdown with a Mermaid diagram and a plain-text description; the client-facing instructions are a GitHub Copilot agent skill. No runtime code is added. Only the retained source-evidence component uses Node 26 with native TypeScript, no dependencies, and `node:test` with injected mocks (see its README). Detail is in [requirements.md](requirements.md#requirements).
+- Vendor documents in Markdown with a Mermaid diagram and a plain-text description; our team's instructions are a GitHub Copilot agent skill. No runtime code is added. Only the retained source-evidence component uses Node 26 with native TypeScript, no dependencies, and `node:test` with injected mocks (see its README). Detail is in [requirements.md](requirements.md#requirements).
 
 ## Behavior
 
 - **B01** When the template, the reference specification and the template copy inside the skill folder are compared, then they share the same section headings and the same ID scheme, and the copy is identical to the template. (untested: benchmark pending)
-- **B02** When the client-pack files (`job-behavior-template.md`, `website-check-job-behavior-v1.md`, the `document-job-behavior/` skill folder, `usage-and-model-guidance.md` and `drafting-prompt.md`) are inspected, then none contains a Craft file name, command or term, and they can be used with plain Markdown and GitHub Copilot in VS Code agent mode alone. (untested: benchmark pending)
+- **B02** When the pack files (`job-behavior-template.md`, `website-check-job-behavior-v1.md`, the `document-job-behavior/` skill folder, `usage-and-model-guidance.md` and `drafting-prompt.md`) are inspected, then none contains a Craft file name, command or term, and they can be used with plain Markdown and GitHub Copilot in VS Code agent mode alone. (untested: benchmark pending)
 - **B03** When the skill is run in Copilot on the website job source, then the draft reconciles with the reference specification, its self-check report is returned and its acknowledgement block is blank. (untested: benchmark pending)
 
 ## Plan
@@ -70,7 +70,7 @@ flowchart TB
 | Component | Purpose |
 | --- | --- |
 | [Website Availability Check](website-availability-check/README.md#purpose) | A job script that checks one configured website URL, stays silent when it is up and requests one email alert through a notifier when it is down; kept unchanged as read-only source evidence. |
-| [Job Behavior Template](job-behavior-template/README.md#planned-purpose) | The blank, reusable form a developer fills in to document one client job from its source code. |
+| [Job Behavior Template](job-behavior-template/README.md#planned-purpose) | The blank, reusable form a developer fills in to document one vendor job from its source code. |
 | [Website Check Job Behavior](website-check-job-behavior/README.md#planned-purpose) | The completed reference specification of the website-check job in plain business language. |
 | [Copilot Drafting Guide](copilot-drafting-guide/README.md#planned-purpose) | A GitHub Copilot agent skill that creates, drafts and versions a job behavior document from source, with usage and model guidance. |
 
@@ -109,7 +109,7 @@ flowchart TB
 | Acceptance condition | Behaviors | Step | Validation check |
 | --- | --- | --- | --- |
 | Template, reference specification and the skill's template copy share headings and IDs, and the copy is identical | B01 | 3 | `review-checklist.md` item [B01], comparing the documents |
-| No Craft term in the client-pack files | B02 | 3 | `review-checklist.md` item [B02], a scan of the files |
+| No Craft term in the pack files | B02 | 3 | `review-checklist.md` item [B02], a scan of the files |
 | The skill run on the website job source reconciles with the reference specification, returns its self-check report and leaves the acknowledgement blank | B03 | 3 | `review-checklist.md` item [B03], a Copilot dry run (needs Copilot access) |
 
 Checks: the root declares no automated check. The record validators run at the end of the plan and each build.
@@ -122,19 +122,19 @@ Assumptions (override any of them in chat before `/craft:build`). This plan repl
 2. The illustrative job `website-availability-check` stays in place, unchanged and read-only, as source evidence. It is not renamed, moved or deleted. Its `craft.json` declares the `test` and `coverage` checks the root had, and one lineage link in its README names the new project. Override: ask for it to be moved under the reference specification.
 3. The root has a task and a build because it lists integration behaviors B01 to B03. Its limits cover three children.
 4. Documents are not run by any tool. Every behavior is marked "untested: benchmark pending" and each component's `review-checklist.md` plus a manual dry-run review is the stand-in; this does not satisfy the test-tag rule. Override: build the benchmark verification first (backlog item `prompt-skill-benchmark`).
-5. The client acknowledges through a tracker, not by editing the documents. The tracker is a later backlog item (`job-migration-tracker`), and until it exists the acknowledgement is recorded by our team from the client's email reply. Grouping jobs into workflows is our own later internal decision (backlog item `workflow-grouping-document`), not client-signed. No similarity field is added to any job document.
-6. The Copilot Drafting Guide is built as an agent skill, because the client uses VS Code agent mode where skills work; the fallback prompt exists only for surfaces without skills. Override: ask for a prompt only.
+5. The vendor acknowledges through a tracker, not by editing the documents. The tracker is a later backlog item (`job-migration-tracker`), and until it exists the acknowledgement is recorded by our team from the vendor's email reply. Grouping jobs into workflows is our own later internal decision (backlog item `workflow-grouping-document`), not vendor-signed. No similarity field is added to any job document.
+6. The Copilot Drafting Guide is built as an agent skill, because our team's developers use VS Code agent mode where skills work; the fallback prompt exists only for surfaces without skills. Override: ask for a prompt only.
 7. Build order is the template, then the reference specification and the guide, then the root.
-8. Open items for the user: the exact Terra and Luna version names in the client's Copilot picker; whether skill support is enabled by the client's plan and administrator policy (the docs read do not say); and whether "client" and "vendor" (for example TCS) are the same party. Behavior questions: none open.
+8. Open items for the user: whether skill support is enabled by the developers' Copilot plan and administrator policy and which VS Code harness they use (the docs read do not say); the model guidance for the GPT-6 models, which the GitHub pages read do not cover; and who at the vendor answers the unknowns. Behavior questions: none open.
 
 ### Planned Links
 
 - [requirements.md](requirements.md#requirements) — shared rules of the project.
-- [contract.md](contract.md#contract) — the client pack and shared wording rules.
+- [contract.md](contract.md#contract) — the document pack and shared wording rules.
 - [backlog.md](backlog.md) — later items: the tracker, the grouping document, the skill benchmark and the notification-system decision.
 
 ## Links
 
 - [requirements.md](requirements.md#requirements) — shared rules of the project.
-- [contract.md](contract.md#contract) — the client pack and shared wording rules.
+- [contract.md](contract.md#contract) — the document pack and shared wording rules.
 - [backlog.md](backlog.md) — later items: the tracker, the grouping document, the skill benchmark and the notification-system decision.

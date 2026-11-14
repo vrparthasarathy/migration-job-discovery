@@ -15,6 +15,6 @@
 | Part | Content |
 | --- | --- |
 | Usage | How to run the skill in VS Code agent mode, how to split large source, how to review the draft against the source, one file per version and repository protections as outside this deliverable. |
-| Model advice | Task categories and the client-reported models, marked client-reported and environment-dependent, with a valid-as-of date, a re-check step and a reminder to use the model picker. |
+| Model advice | Task categories and the team-reported models, marked team-reported and environment-dependent, with a valid-as-of date, a re-check step and a reminder to use the model picker. |
 | Review reminder | Copilot output is a draft for human checking. |
 | Fallback prompt | The same instructions as the skill, to paste into Copilot Chat on a surface without skills. |

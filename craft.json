@@ -36,7 +36,7 @@
       "external-effects": "require-current-turn-user-approval"
     },
     "acceptance": [
-      "The three document components are built and a dry-run review of `review-checklist.md` at the root marks B01 to B03 pass: the template, the reference specification and the template copy in the skill folder share headings and IDs, the client-pack files contain no Craft term, and the skill run on the website job source reconciles with the reference specification and leaves the acknowledgement blank (B01, B02, B03)."
+      "The three document components are built and a dry-run review of `review-checklist.md` at the root marks B01 to B03 pass: the template, the reference specification and the template copy in the skill folder share headings and IDs, the pack files contain no Craft term, and the skill run on the website job source reconciles with the reference specification and leaves the acknowledgement blank (B01, B02, B03)."
     ]
   }
 }
