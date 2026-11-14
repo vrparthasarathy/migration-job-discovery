@@ -1,0 +1,16 @@
+{
+  "configuration": {
+    "records": {
+      "filenames": {
+        "backlog": "backlog.md",
+        "changelog": "changelog.md",
+        "task": "tasks.md"
+      }
+    },
+    "checks": {
+      "coverage": "node --test --experimental-test-coverage \"{path}/test/*.test.ts\"",
+      "test": "node --test \"{path}/test/*.test.ts\"",
+      "testGlob": "**/test/**/*.test.ts"
+    }
+  }
+}
