@@ -22,13 +22,26 @@ The builder arranges these into parts and records the part list here after the b
 
 ### Part list
 
-To be recorded by the build.
+Derived from B01 to B10 for the user to review. Parts appear in this order in `job-behavior-template.md`:
+
+1. Header (B07): use case name, version, date, status, source revision and script link; no job ID
+2. About this document (B01, B10), with a contents list of links (B07)
+3. Change log (B07)
+4. Current behaviors, `B1`.. (B02, B03)
+5. Questions, `Q1`.. (B02, B10)
+6. Inputs, outputs, parameters and external dependencies (B04)
+7. Diagram with plain-text description (B05)
+8. Acceptance scenarios, `AC1`.. (B06)
+9. Operational context (B09)
+10. Acknowledgement log (B08)
+
+ID scheme: current behaviors `B1`, `B2`, ...; questions `Q1`, `Q2`, ...; acceptance scenarios `AC1`, `AC2`, .... Anchors are lowercase (`b1`, `q1`, `ac1`) placed with `<a id="b1"></a>`. There is no job ID. The filling guide (`filling-guide.md`) is separate and not part of the document.
 
 ### Wording rules
 
 - Plain business language. A file name appears only in an evidence pointer.
 - Never state an inferred behavior as a current behavior; never state a reason the evidence does not show.
-- Never fill in the acknowledgement log from the template; our team records it from the vendor's tracker entry or reply.
+- Never fill in the acknowledgement log from the template; our team records it from the tracker entry or the vendor's reply.
 - Say "version", not "baseline".
 - IDs: `B`, `Q`, `AC`.
 

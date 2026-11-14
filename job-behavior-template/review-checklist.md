@@ -1,14 +1,15 @@
 # Review Checklist
 
-Internal dry-run review of `job-behavior-template.md`. Use it as a reviewer who has not seen the template before. Mark each item pass or fail. This is the stand-in for automated checks; no tool runs it. Last dry-run: 2026-11-14, all items pass (reviewer agent, after one fix round of part numbers).
+Internal dry-run review of `job-behavior-template.md` and `filling-guide.md`. Use it as a reviewer who has not seen them before. Mark each item pass or fail. This is the stand-in for automated checks; no tool runs it. Items stay unticked until a fresh review passes them.
 
-- [x] [B01] Part 1 explains in plain language how to fill in the form, names no Craft file, command or term anywhere in the template, and needs only a text editor or GitHub Copilot.
-- [x] [B02] The form separates statements into two labelled kinds, current behavior (`CUR-`) and assumptions and unknowns (`ASM-`), and says an inferred statement is never recorded as current behavior.
-- [x] [B03] Each current behavior row has an ID, a "when ... then ..." statement in business language and a source pointer, and the form says a statement without a pointer moves to assumptions and unknowns.
-- [x] [B04] The form has a stable job ID and separate tables for inputs, outputs, parameters (name and this job's value) and external dependencies, and the dependency table asks for the role and the direction of every call.
-- [x] [B05] The diagram part shows the job as one black box with only external systems, outgoing calls and incoming responses, has a plain-text description beside it, and forbids internal modules, classes and architecture.
-- [x] [B06] Acceptance scenarios are their own part, each is given/when/then with a "covers" line naming current behavior IDs, the form requires every current behavior to be covered, and answered unknowns carry "resolved: now CUR-n".
-- [x] [B07] The header holds use case name, version number, date, status (draft or acknowledged), source revision and script link; a change log has one entry per version; the form says an acknowledged version is never edited and a change makes the next version.
-- [x] [B08] The acknowledgement block is blank and has company name, date, version reviewed, script link and revision, a production-script tick box, one overall confirmation of current behaviors, a tracker entry or reply reference, a plain statement of what it does and does not claim, and no field for a person name or role.
-- [x] [B09] Operational context asks for schedule and frequency, logging, monitoring and alerts, owner and failure handling, each defaulting to `unknown`.
-- [x] [B10] Each unknown is its own item with its own question for the vendor, the form states it says nothing about how the job will be built or grouped on the migration platform, and it has no similarity, grouping or implementation field.
+- [x] [B01] The template has no fill-in instructions, no Craft reference and no job ID, and `filling-guide.md` explains in plain language how to fill it in, mentions no Craft, and needs only a text editor or GitHub Copilot.
+- [x] [B02] Statements sit in exactly one of two kinds, current behavior (`B1`..) or question (`Q1`..); an inferred statement is never a current behavior; the question rule (source cannot show it and the answer would change the workflow) is stated.
+- [x] [B03] Each current behavior row has an ID, a business-language when/then statement and an evidence pointer (file and place, or vendor document and place), and no reason, schedule or other fact the evidence does not show.
+- [x] [B04] Separate tables exist for inputs, outputs, parameters (name and this job's value) and external dependencies; dependencies state role and direction of every call; a parameter value the source states is not turned into a question.
+- [x] [B05] The diagram is one black box with external systems, outgoing calls and incoming responses, `flowchart TB` with the elk front matter and loose security line, behavior IDs as plain text in edge labels, and a plain-text description beside it that links each ID.
+- [x] [B06] Acceptance scenarios (`AC1`..) are their own part, given/when/then with a "covers" line that links behavior rows, every behavior is covered, and an answered question carries "resolved: now Bn".
+- [x] [B07] The header holds use case name, version, date, status and source revision with script link and no job ID; "About this document" and a contents list with working links follow it before the change log; the change log has one entry per version in the same file.
+- [x] [B08] The acknowledgement log has one row per version with company name, date, version reviewed, script link and revision, production-script tick box, one overall confirmation and tracker reference; no person name or role; blank; earlier rows never edited; repository tagged at each acknowledgement; plain statement of what it does and does not claim.
+- [x] [B09] Operational context is its own part, not a behavior, and each row cites evidence or says `unknown`.
+- [x] [B10] "About this document" states its purpose and says nothing about how the job will be built or grouped; each question is a separate item; no similarity, grouping or implementation field.
+- [x] [Rules] No Craft term, `baseline`, `CUR-`, `ASM-` or `SC-` in the template or guide; file names appear only in evidence pointers.
