@@ -6,6 +6,7 @@
 
 | Part | Content |
 | --- | --- |
+| Skill name | The `name` in the `SKILL.md` front matter is `document-job-behavior`, identical to the folder name. |
 | Input | The job's source code (or the part that fits), the template copy in the skill folder, and optionally the job's use case name or a previous version to copy. |
 | Output | One filled-in document that uses only the template's sections; every statement labelled `CUR-` or `ASM-`; each `CUR-` item with a file-and-place pointer; open questions where the source is silent; a self-check report; the acknowledgement block left blank. |
 | Next version | A new copy of the document with the version number, date and change log updated; an acknowledged version is never changed. |

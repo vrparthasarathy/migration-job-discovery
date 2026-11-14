@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A set of vendor-facing job behavior documents: a blank template for recording a job's current behavior from its source code, a completed reference specification, and a GitHub Copilot skill with usage guidance, so a vendor can review and acknowledge a versioned record of each job's current behavior before the jobs are migrated onto our platform as workflows.
+A set of job behavior documents: a blank template and a GitHub Copilot skill with usage guidance for our team, and a completed reference specification that the vendor receives, so the vendor can review and acknowledge a versioned record of each job's current behavior before the jobs are migrated onto our client's platform as workflows.
 
 ## Navigation
 
@@ -122,10 +122,10 @@ Assumptions (override any of them in chat before `/craft:build`). This plan repl
 2. The illustrative job `website-availability-check` stays in place, unchanged and read-only, as source evidence. It is not renamed, moved or deleted. Its `craft.json` declares the `test` and `coverage` checks the root had, and one lineage link in its README names the new project. Override: ask for it to be moved under the reference specification.
 3. The root has a task and a build because it lists integration behaviors B01 to B03. Its limits cover three children.
 4. Documents are not run by any tool. Every behavior is marked "untested: benchmark pending" and each component's `review-checklist.md` plus a manual dry-run review is the stand-in; this does not satisfy the test-tag rule. Override: build the benchmark verification first (backlog item `prompt-skill-benchmark`).
-5. The vendor acknowledges through a tracker, not by editing the documents. The tracker is a later backlog item (`job-migration-tracker`), and until it exists the acknowledgement is recorded by our team from the vendor's email reply. Grouping jobs into workflows is our own later internal decision (backlog item `workflow-grouping-document`), not vendor-signed. No similarity field is added to any job document.
+5. The vendor acknowledges through a tracker, not by editing the documents. The tracker is a later backlog item (`job-migration-tracker`), and until it exists the acknowledgement is recorded by our team from the vendor's tracker entry or reply. Grouping jobs into workflows is our own later internal decision (backlog item `workflow-grouping-document`), not vendor-signed. No similarity field is added to any job document.
 6. The Copilot Drafting Guide is built as an agent skill, because our team's developers use VS Code agent mode where skills work; the fallback prompt exists only for surfaces without skills. Override: ask for a prompt only.
 7. Build order is the template, then the reference specification and the guide, then the root.
-8. Open items for the user: whether skill support is enabled by the developers' Copilot plan and administrator policy and which VS Code harness they use (the docs read do not say); the model guidance for the GPT-6 models, which the GitHub pages read do not cover; and who at the vendor answers the unknowns. Behavior questions: none open.
+8. Open items for the user: whether skill support is enabled by the developers' Copilot plan and administrator policy and which VS Code harness they use (the docs read do not say), and the model guidance for the GPT-6 models, which the GitHub pages read do not cover (task guidance for them was not read from the docs). Behavior questions: none open.
 
 ### Planned Links
 
