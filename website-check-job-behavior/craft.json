@@ -2,7 +2,7 @@
   "task": {
     "status": "ready",
     "worker": "builder",
-    "updated": "2026-11-14T11:52:08Z",
+    "updated": "2026-11-14T12:30:06Z",
     "constraints": {
       "cost": {
         "currency": "USD",
@@ -28,7 +28,7 @@
     },
     "acceptance": [
       "Every item of `review-checklist.md` tagged B01 to B09 is marked pass in a dry-run review by a reviewer who has not seen the finished document (B01, B02, B03, B04, B05, B06, B07, B08, B09).",
-      "A reviewer comparing the specification with the source evidence finds every behavior in B02 as source-evidenced with a pointer, and every point in B03 listed as unknown, not as fact (B02, B03)."
+      "A reviewer comparing the specification with the source evidence finds every behavior in B02 as current behavior with a pointer, and every point in B03 listed as an unknown, not as fact (B02, B03)."
     ]
   }
 }
