@@ -2,19 +2,19 @@
 
 ## Contract
 
-### Environment variables
+### Client pack
 
-| Variable | Required | Meaning |
+| File | Component | Purpose |
 | --- | --- | --- |
-| `CHECK_URL` | yes | The website URL to check; must be `http:` or `https:`. |
-| `CHECK_TIMEOUT_MS` | no | Request timeout in milliseconds; default 5000. |
-| `ALERT_RECIPIENTS` | no | Comma-separated email addresses for the alert; may be empty. |
+| `job-behavior-template.md` | Job Behavior Template | The blank form for documenting one job. |
+| `website-check-job-behavior.md` | Website Check Job Behavior | The completed reference specification. |
+| `drafting-prompt.md` | Copilot Drafting Guide | The Copilot prompt. |
+| `usage-and-model-guidance.md` | Copilot Drafting Guide | Usage and model advice. |
 
-### Exit codes
+Only these four files go to the client. The three documents share the same section headings and the same ID scheme (`CUR-`, `ASM-`, `CHG-`, `MIG-`, behavior and scenario IDs). The section list is set by the template build and recorded in the [template contract](job-behavior-template/contract.md#contract).
 
-| Code | When |
-| --- | --- |
-| 0 | The site is up, or it is down and the alert was handed to the notifier. |
-| 1 | Configuration error, or the notifier failed and the alert is undelivered. |
+### Shared wording rules
 
-See the component's [contract](website-availability-check/contract.md#contract) for the notifier port and the alert shape.
+- Plain business language; a file name appears only in a source pointer.
+- No Craft term in any client-pack file.
+- Acknowledgement records the client's review of the stated behavior at one baseline; it does not claim the behavior is error-free, that inferred behavior is approved, or that future issues are prevented.

@@ -6,11 +6,37 @@
         "changelog": "changelog.md",
         "task": "tasks.md"
       }
-    },
-    "checks": {
-      "coverage": "node --test --experimental-test-coverage \"{path}/test/*.test.ts\"",
-      "test": "node --test \"{path}/test/*.test.ts\"",
-      "testGlob": "**/test/**/*.test.ts"
     }
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-14T11:52:08Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 4,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 1,
+        "maximum-children": 3
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 7200,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The three document components are built and a dry-run review of `review-checklist.md` at the root marks B01 to B03 pass: the template, the reference specification and the prompt's expected output share headings and IDs, the four client-pack files contain no Craft term, and the prompt run on the website job source reconciles with the reference specification without approved or acknowledged content (B01, B02, B03)."
+    ]
   }
 }

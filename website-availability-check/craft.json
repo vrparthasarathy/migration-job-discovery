@@ -1,1 +1,9 @@
-{}
+{
+  "configuration": {
+    "checks": {
+      "coverage": "node --test --experimental-test-coverage \"{path}/test/*.test.ts\"",
+      "test": "node --test \"{path}/test/*.test.ts\"",
+      "testGlob": "**/test/**/*.test.ts"
+    }
+  }
+}

@@ -6,7 +6,7 @@ A scheduled job script that checks one configured website URL: when the site is 
 
 ## Navigation
 
-[Website Availability Example](../README.md#navigation) / **Website Availability Check**
+[Job Behavior Specifications](../README.md#navigation) / **Website Availability Check**
 
 - [Design](#design)
   - [Diagram](#diagram)
