@@ -19,6 +19,26 @@ The builder arranges these into sections and records the section list here after
 | Operational context | Schedule and frequency, logging, monitoring and alerts, owner, failure handling; each `unknown` by default. |
 | Scope statement | The document says nothing about how the job will be built or grouped on the migration platform. |
 
+### Section list (for the user to review)
+
+Derived from B01 to B10 by the build. The same headings and numbers are used by the sibling documents.
+
+| Part | Heading | Behavior |
+| --- | --- | --- |
+| 1 | How to fill in this form | B01, B02, B03 |
+| 2 | Header (use case name, job ID, version, date, status, source revision, script link) | B04, B07 |
+| 3 | Change log | B07 |
+| 4 | What this document says and does not say | B10 |
+| 5 | Current behavior (`CUR-n`: when/then, source pointer) | B02, B03 |
+| 6 | Assumptions and unknowns (`ASM-n`: one question each, status) | B02, B06, B10 |
+| 7 | Inputs, outputs, parameters and external dependencies | B04 |
+| 8 | Diagram (one black box, plain-text description) | B05 |
+| 9 | Acceptance scenarios (`SC-n`, covers line) | B06 |
+| 10 | Operational context | B09 |
+| 11 | Acknowledgement (blank) | B08 |
+
+ID scheme: `CUR-<n>`, `ASM-<n>`, `SC-<n>` (scenario), job ID such as `JOB-001`, whole-number versions.
+
 ### Wording rules
 
 - Plain business language. A file name appears only in a source pointer.

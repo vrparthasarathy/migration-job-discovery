@@ -9,14 +9,45 @@ The blank, reusable form a developer fills in to document one vendor job from it
 [Job Behavior Specifications](../README.md#navigation) / **Job Behavior Template**
 
 - [Design](#design)
+  - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-Not built yet.
+The component is one Markdown form, [job-behavior-template](job-behavior-template.md), and one internal review checklist, [review-checklist](review-checklist.md). The form is the only file delivered; it carries its own fill-in guidance and mentions no Craft.
+
+Sections of the form, derived from B01 to B10 (also in [contract.md](contract.md#section-list-for-the-user-to-review), for review):
+
+1. How to fill in this form (B01, B02, B03)
+2. Header with job ID (B04, B07)
+3. Change log (B07)
+4. What this document says and does not say (B10)
+5. Current behavior, `CUR-n` (B02, B03)
+6. Assumptions and unknowns, `ASM-n` (B02, B06, B10)
+7. Inputs, outputs, parameters, external dependencies (B04)
+8. Diagram with plain-text description (B05)
+9. Acceptance scenarios with covers lines (B06)
+10. Operational context (B09)
+11. Acknowledgement, blank (B08)
+
+Assumptions: versions are whole numbers; the vendor never edits the document; the acknowledgement is recorded by our team and left blank by the template; Markdown with a Mermaid diagram; no requested-changes part and no traceability table. The "vendor", "our client" and "our team" terms are defined in the form.
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  tmpl["job-behavior-template"]:::file -->|"is validated by"| chk["review-checklist"]:::file
+  click tmpl "job-behavior-template.md"
+  click chk "review-checklist.md"
+  classDef file stroke:#333
+```
 
 ## Behavior
 
@@ -31,82 +62,6 @@ Not built yet.
 - **B09** When operational context is recorded, then schedule and frequency, logging, monitoring and alerts, owner and failure handling each default to unknown until someone confirms them. (untested: benchmark pending)
 - **B10** When the document is read, then each unknown is a separate item the vendor answers one by one, the document states it says nothing about how the job will be built or grouped on the migration platform, and it has no similarity, grouping or implementation field. (untested: benchmark pending)
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Job Behavior Template**
-
-- [Planned Purpose](#planned-purpose)
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Purpose
-
-The blank, reusable form a developer fills in to document one vendor job from its source code, written in plain language for a business reviewer and usable with a text editor or GitHub Copilot alone.
-
-### Planned Design
-
-The component is one Markdown form and one internal review checklist. The form is the only file this component delivers: it carries its own fill-in guidance, the two kinds of statement, the contracts, the black-box diagram, the acceptance scenarios, the header with change log, the acknowledgement block and the operational context.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  tmpl["template"]:::planned -->|validates| chk["review-checklist"]:::planned
-  classDef planned stroke-dasharray: 5 5
-```
-
-### Steps
-
-1. Create `job-behavior-template.md`, the blank form. Its sections are derived from B01 to B10 by the builder, not fixed in this plan; the builder records the resulting section list and the ID scheme in `contract.md` and its Design so the user can review it.
-2. Create `review-checklist.md` with one item per behavior, tagged `[B01]` to `[B10]`, written so a reviewer who has not seen the document can answer pass or fail.
-3. Keep `job-behavior-template.md` free of Craft names, commands and paths; it is the only file this component delivers.
-
-### Acceptance Mapping
-
-| Acceptance condition | Behaviors | Step | Validation check |
-| --- | --- | --- | --- |
-| The template asks for every element in B02 to B10 and mentions no Craft | B01–B10 | 1, 2, 3 | review-checklist.md items [B01]–[B10], dry-run review |
-| Every checklist item passes in a dry-run review | B01–B10 | 2 | dry-run review by a reviewer who has not seen the document |
-
-Checks: the root declares no automated check for documents. The validation is the component's `review-checklist.md` dry-run review (see the verification gap in `requirements.md`) plus the record validators.
-
-### Assumptions And Open Questions
-
-Assumptions (override any of them in chat before `/craft:build`). This plan replaces the earlier plan of commit `8c80eed`, as the user revised the content on 2026-11-14 (two statement kinds, "version", one overall confirmation, a skill):
-
-1. Folder `job-behavior-template`, name "Job Behavior Template". Override: ask for another name.
-2. The sections of the form are derived from the behaviors by the builder and reviewed by the user after the build, because the user asked that no section list be preselected. Override: give the section list in chat before `/craft:build`.
-3. Statement IDs use the prefixes `CUR-` and `ASM-` with a number, and behavior IDs of this component keep the `B01` form so the traceability check matches them. Override: name another scheme.
-4. Versions are whole numbers (Version 1, 2, 3), the header has five fields plus a stable job ID, and an acknowledged version is never edited in place. Override: ask for another scheme.
-5. The vendor does not edit the document. It stays in our repository, only our team edits it, and our team records the acknowledgement from the vendor's tracker entry or reply. The unknowns are answered one by one by the vendor in the tracker, which is a later backlog item, and our team puts the answers into the next version. Override: let the vendor edit a copy.
-6. No vendor-requested changes and no approved-migration items: this is an as-is migration, and the acknowledgement block is the only record of what was agreed. Override: ask for a requested-changes part.
-7. Acceptance scenarios have no separate traceability table; each scenario's "covers" line is the mapping. Override: ask for a table.
-8. Format is Markdown with a Mermaid diagram plus a plain-text description. Override: ask for Word.
-9. The acknowledgement block is left blank by the template and by any tool. A worked sample, if shown, is marked as a sample.
-10. The documents say "vendor" for the party that currently runs and maintains the jobs on its own platform and acknowledges each document, "our client" for the owner of the platform we are building, and "our team" for the developers who write the documents with the skill. Override: ask for other terms.
-
-### Planned Relationships
-
-- None outside its lineage. It is used by [Website Check Job Behavior](../website-check-job-behavior/README.md#purpose) and [Copilot Drafting Guide](../copilot-drafting-guide/README.md#purpose), which are siblings.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
-- [contract.md](contract.md#contract) — the content the document must carry and the wording rules.
-- [review-checklist.md](review-checklist.md) — the dry-run review items, tagged by behavior (created by the build).
-
 ## Relationships
 
 - None outside its lineage. It is used by [Website Check Job Behavior](../website-check-job-behavior/README.md#purpose) and [Copilot Drafting Guide](../copilot-drafting-guide/README.md#purpose), which are siblings.
@@ -114,4 +69,6 @@ Assumptions (override any of them in chat before `/craft:build`). This plan repl
 ## Links
 
 - [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
-- [contract.md](contract.md#contract) — the content the document must carry and the wording rules.
+- [contract.md](contract.md#contract) — the content the document must carry, the section list and the wording rules.
+- [job-behavior-template.md](job-behavior-template.md) — the blank form delivered by this component.
+- [review-checklist.md](review-checklist.md) — the dry-run review items, tagged by behavior.
