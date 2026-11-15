@@ -1,0 +1,17 @@
+# Review Checklist
+
+Internal review of the skill folder, `usage-and-model-guidance.md` and `drafting-prompt.md`. Not sent to anyone. Use it as a reviewer who has not seen them before. Mark each item pass or fail. This is the stand-in for automated checks; no tool runs it. Items stay unticked until a fresh review passes them. Items B01 to B06 need a real Copilot run and are not passed by reading the files.
+
+Dry run (for B01 to B06): run the skill with Copilot on the website availability check source (`website-availability-check/src/`), without showing it the reference, naming the model and date. Compare the result with `website-check-job-behavior/website-availability-check.md`. Then give answers to some questions and run the update, then give acknowledgement facts and run the acknowledgement. Record the model, the date and the differences.
+
+- [ ] [B01] Dry run: Copilot drafts from the website job source (and a vendor document when one is given) using only the template's parts, and the draft covers the same behaviors as the reference.
+- [ ] [B02] Dry run: every statement is a current behavior with an evidence pointer or a question; nothing inferred is a current behavior; no question asks what the source states or the reason behind a shown behavior; the questions are ones the source cannot show.
+- [ ] [B03] Dry run: asked to draft or update, Copilot ticks and confirms nothing and leaves the acknowledgement log as it was; given company, date, version and reference, it writes exactly those.
+- [ ] [B04] Dry run: the diagram is one vertical black box in the template's form, behavior IDs as plain text in edge labels and linked in the description, with no internal names in the business text.
+- [ ] [B05] Dry run: the reply ends with a self-check report with the four lists and the best-effort statement.
+- [ ] [B06] Dry run: given answers, Copilot updates the same file, turns each answered question into a current behavior marked "resolved: now Bn", adds a change-log entry, bumps the version, leaves earlier acknowledgement rows alone and reminds the developer to tag the repository.
+- [x] [B07] `SKILL.md`, `drafting-prompt.md` and the guidance say vendor documents take precedence over team documents, which are used only where no vendor document covers the point, and that a disagreement with the code becomes a question.
+- [x] [B08] No reference to Craft in the skill folder, the guidance or the fallback; `SKILL.md` front matter has `name: document-job-behavior` equal to the folder name, a description and `user-invocable: true`; nothing needs installing in VS Code agent mode; `drafting-prompt.md` is stated as a fallback for surfaces without skills; the template copy is byte-identical to the template.
+- [x] [B09] The model advice is marked team-reported and environment-dependent, carries the valid-as-of date, tells the reader to check the model picker, plan and administrator policy, calls no model guaranteed, lists only the six team-reported models, and says GPT-6 task guidance was not read.
+- [x] [B10] The guidance says the output is a draft a person reviews against the source, that a skill cannot block manual edits, that acknowledged versions are tagged and protected by repository settings outside this deliverable, and that skill support must be confirmed in the developers' Copilot setup.
+- [x] [Rules] No Craft term, `baseline`, `CUR-`, `ASM-`, `SC-` or job ID in the skill folder, the guidance or the fallback prompt; behavior IDs are `B`, questions `Q`, scenarios `AC`.
