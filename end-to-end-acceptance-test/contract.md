@@ -11,11 +11,12 @@ end-to-end-acceptance-test/
   acceptance-run-sheet.md
   fixtures/
     harborline/refund-retry/        refund_retry.py, external_tools.md, logic.md
+    proposals/tracker-updates/uc-harborline-refund-retry/tracker-updates.csv   (the S03 input)
     empty-export/                   manifest.csv only
     reference-proposals/            tracker-updates/uc-harborline-refund-retry/tracker-updates.csv  (version 1)
     reference-proposals-v2/         the same path (version 2: current_version 2, no duplicate Q1)
     vendor-answer/answer.csv        answer, answer_status, answered_on, answered_by for Q1
-    expected/                       reference outputs per step; export-after-answer/ and summary.md
+    expected/                       reference outputs per step: review-*.csv, export-after-answer/, summary.md
   test/
     sheet.test.ts  tools.test.ts  safety.test.ts  fixtures.test.ts
 ```
