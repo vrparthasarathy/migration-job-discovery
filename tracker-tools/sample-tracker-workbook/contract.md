@@ -1,0 +1,29 @@
+# Contract
+
+## Contract
+
+### Command
+
+`node src/main.ts generate --out <file.xlsx> --as-of <YYYY-MM-DD>`. Exit 0 and the file on success. Exit 1 with every finding on standard error and no file on invalid data. Exit 2 on bad usage. The file is written to a temporary name and renamed.
+
+### Data files (`data/`)
+
+- `use-cases.csv`, `questions.csv`, `identity-access.csv`, `mappings.csv`: every column of the matching tab in `tracker-schema.csv`, validated with the Tracker Tables library.
+- `proposed-changes.csv`: `change_ref` (`PC-###`), `tab`, `record_ref`, `field`, `operation`, `current_value`, `proposed_value`, `reason`, `review_status`, `reviewer`, then the technical `proposal_id`, `update_id`, `base_value`, `source`, `mr_link`, `author`, `created_on`.
+- `trace.csv`: `tab`, `record_ref`, `kind` (proposal, specification, evidence, source, merge-request), `reference`.
+- `headings.csv`: `tab`, `column`, `heading`, `band`, `visibility` (`V` or `I`) for the main sheets, including the added `Pending change`, `Review state`, `Days past original due` and `Age awaiting review`.
+
+### Sheets, in order
+
+Read Me, Use Cases, Questions, Identity & Access, Workflow Mappings, Proposed Changes, Trace, Lists. Main sheets: row 1 column-group band, row 2 Excel table header, blue header for a vendor-visible column and grey for an internal one, tab colour red for Workflow Mappings, Proposed Changes and Trace. Docs refer to a column as `` `Sheet > Heading` ``.
+
+### Differences from the tracker contract
+
+1. Adds Read Me, Proposed Changes and Trace; renames Mappings to Workflow Mappings; omits Question Groups, Question Links, Batches and Holidays (`batch_ref` and `released_on` stay on Questions).
+2. Row 1 holds a group band and headings are friendly; schema names appear only in the Read Me column dictionary (the layout guide says headings are exactly the schema names).
+3. `due_on`, review state, days past original due and age awaiting review are values at the as-of date, not `WORKDAY` and `TODAY` formulas; the guide's helpers `overdue`, `follow_up`, `awaiting_review` and `age_days` become these columns.
+4. A `Pending change` column on Use Cases, Questions and Identity & Access is not a schema column.
+5. `proposal_refs`, `source_links`, `evidence_refs` and `mr_link` move to Trace and `last_updated` is dropped from main sheets.
+6. Proposed Changes reshapes the one-row-per-field proposal file into one readable row per change, keeping `update_id`, `proposal_id`, `base_value` and `source`.
+7. Blue and grey headers and red tabs are added.
+8. One workbook mixes vendor and internal columns, where the contract has a master and separate vendor workbooks; it is not vendor-safe.

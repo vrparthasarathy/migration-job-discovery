@@ -21,6 +21,7 @@ The lead-facing Node tools for the use case tracker: a shared CSV table library,
 | [Tracker Tables](tracker-tables/README.md#purpose) | A Node library that reads and writes the tracker's CSV tables, validates them against the shared schema, builds vendor views and does working-day arithmetic, so the reconciler and the summary share one correct implementation. |
 | [Tracker Reconciler](tracker-reconciler/README.md#purpose) | A Node command line tool that compares reviewed tracker proposals with the latest tracker export and writes additions, field updates, conflicts and suggestions for a lead to review and apply by hand, never overwriting human edits. |
 | [Tracker Summary](tracker-summary/README.md#purpose) | A Node command line tool that writes the internal daily summary across all vendor tracks from a tracker export: use cases by stage, overdue questions, blocked items, access actions, mappings pending a decision and next batch suggestions. |
+| [Sample Tracker Workbook](sample-tracker-workbook/README.md#purpose) | A small, realistic sample of the final Excel tracker, generated from fictional data, so the team can review the format of the sheets before the real tracker is built. |
 
 ## Design
 
@@ -53,3 +54,53 @@ flowchart TB
 
 - [requirements.md](requirements.md#requirements) — what the group and its members must do and what they need not.
 - [contract.md](contract.md#contract) — the shared check declarations and the command line of the members.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#navigation) / **Tracker Tools**
+
+- [Planned Components](#planned-components)
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Planned Relationships](#planned-relationships)
+
+### Planned Components
+
+| Component | Purpose |
+| --- | --- |
+| [Tracker Tables](tracker-tables/README.md#purpose) | A Node library that reads and writes the tracker's CSV tables, validates them against the shared schema, builds vendor views and does working-day arithmetic. |
+| [Tracker Reconciler](tracker-reconciler/README.md#purpose) | A Node command line tool that compares reviewed tracker proposals with the latest tracker export and writes reviewable changes. |
+| [Tracker Summary](tracker-summary/README.md#purpose) | A Node command line tool that writes the internal daily summary across all vendor tracks from a tracker export. |
+| [Sample Tracker Workbook](sample-tracker-workbook/README.md#planned-purpose) | A small, realistic sample of the final Excel tracker, generated from fictional data, so the team can review the format of the sheets. |
+
+### Planned Design
+
+The group gains a fourth member, the [Sample Tracker Workbook](sample-tracker-workbook/README.md#planned-design), which imports the Tracker Tables library by relative path and reads the shared schema like its siblings. It is a sample for team review, not a lead tool that runs on an export. It inherits the group's checks and declares its own `install`. It departs from two group rules, recorded in its `requirements.md` and left for this group's owner to reconcile when it is built: it adds one pinned `exceljs` dependency (the group says "no dependencies") and writes `.xlsx` (the group says Excel file formats need not be matched). Until then neither the Technology section nor the requirements of this group change.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  grp[["Tracker Tools"]]
+  tracker_tables["<a href='tracker-tables/README.md#diagram'>Tracker Tables</a>"]
+  tracker_reconciler["<a href='tracker-reconciler/README.md#diagram'>Tracker Reconciler</a>"]
+  tracker_summary["<a href='tracker-summary/README.md#diagram'>Tracker Summary</a>"]
+  sample["<a href='sample-tracker-workbook/README.md#planned-diagram'>Sample Tracker Workbook</a>"]:::planned
+  schema(["tracker-schema.csv (Tracker Data Contract)"])
+  tracker_reconciler -->|"reads, validates and projects with"| tracker_tables
+  tracker_summary -->|"reads, validates and counts working days with"| tracker_tables
+  sample -->|"validates and counts working days with"| tracker_tables
+  tracker_tables -->|"loads columns and owner classes from"| schema
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Planned Relationships
+
+None.
