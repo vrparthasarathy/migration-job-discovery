@@ -14,16 +14,23 @@ Read `tracker-data-contract.md` and `tracker-schema.csv` in this folder before y
 
 ## Inputs
 
-- The use case specifications to compare: every specification of the use cases in scope. Read each one fully. Its structure is a header table (use case name, version, date, status, source revision), a change log, current behaviors `B<n>`, questions `Q<n>`, parameters and dependencies, scenarios `AC<n>` and an acknowledgement log.
-- The use case inventory or the Use Cases export, when supplied, so you can see use cases that have no specification.
+- `use-case-index.csv` at the repository root (the repository root is given by the caller or asked once). It is written only by the discovery orchestrator (`run-discovery`); you read it and never write or repair it. Its columns are exactly `use_case_name,slug,vendor,folder,spec`; `folder` and `spec` are paths relative to the repository root. If the index is absent, stop and tell the developer to run `run-discovery` first.
+- The use case specifications to compare: by default every row of the index, each specification read from the row's `spec` path. Read each one fully. Its structure is a header table (use case name, version, date, status, source revision), a change log, current behaviors `B<n>`, questions `Q<n>`, parameters and dependencies, scenarios `AC<n>` and an acknowledgement log.
+- The Use Cases export, when supplied, so you can see use cases that have no specification. A use case in the index is never left out.
 - `use-case-to-workflow-decisions.md`, the leads' decisions file. Format: `use-case-to-workflow-decisions-template.md` in this folder. If it does not exist yet, say so and treat every candidate as undecided.
 - Optional: `validation-examples.md`, known same and different pairs (format: `validation-examples-template.md`).
 - Optional: a folder of earlier workflow analyses that a lead tagged, about four or five files. Never assume where it is and never invent a path, a file or a count: use only the path you are given.
 - Optional: an export of the Use Cases tab, read only, for the columns `current_version`, `last_change_class`, `grouping_impact` and `grouping_impact_lead`. You never write to it.
-- The proposal ID: the merge request number or the branch name made safe as a slug. If it is not given, ask once. Never invent one.
+- The proposal ID is the fixed value `recommendations`. Never ask for it.
 - Today's date. If you do not have it, ask once.
 
+Before you compare, show the full list of use cases from the index once (name, vendor, `spec` path) with this warning: the Mappings rows are regenerated each run, so a partial list drops the other use cases' Mappings rows from the proposal file. Skip this when your caller has already confirmed the list in this session.
+
 A specification you are asked to compare and cannot read is a finding, not a reason to stop: list it and carry on with the rest.
+
+### Use case ID
+
+A use case is identified by its use case ID `uc-<vendor-slug>-<use-case-slug>`, defined in `tracker-data-contract.md`. Derive it from the index row's `vendor` and `use_case_name` with the contract's slug rule (lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed). Never store it and do not use the index `slug` column alone. If a row's vendor is blank, ask the lead once for it and never invent one; until it is known, write no Mappings row for that use case. It is still compared and listed in the report.
 
 ## Compare by behavior
 
@@ -46,7 +53,7 @@ Earlier analyses are starting hints only. They are not verified or approved grou
 
 Every use case in scope that is missing, unread, unversioned or still a draft goes in the `not compared` list with its state, in the recommendations file and in your reply. Nothing is silently dropped.
 
-- `missing`: a use case named in the inventory, the export, the decisions file or an earlier analysis has no specification. List it. If an earlier analysis names it, the analysis may still be a member's only support, marked `earlier analysis`; that member gets no Mappings row because the proposal format needs a specification source.
+- `missing`: a use case whose index row has a blank `spec` or a `spec` path that is not a file, or that is named in the export, the decisions file or an earlier analysis but has no specification. List it. If an earlier analysis names it, the analysis may still be a member's only support, marked `earlier analysis`; that member gets no Mappings row because the proposal format needs a specification source.
 - `unread`: you were given the file and could not read it. Say why.
 - `unversioned`: the specification has no version number, so no version can be cited. Not compared; ask for the version.
 - `draft`: the header status is `draft`. Compare it and let it produce recommendations before any vendor acknowledgement. Label it `draft` wherever it appears and list it so a lead sees that the recommendation rests on an unacknowledged specification.
@@ -74,7 +81,7 @@ Then:
 
 ## Blocking unknowns
 
-An unknown blocks a mapping only when its answer could change the grouping: whether the shared steps are really the same, which parameters differ, which dependency a step uses. List only those as blocking, with the existing specification question linked by its local reference (`<use-case-slug>/Q<n>@v<version>`, and the tracker reference when you were given it). Other open questions are listed as non-blocking.
+An unknown blocks a mapping only when its answer could change the grouping: whether the shared steps are really the same, which parameters differ, which dependency a step uses. List only those as blocking, with the existing specification question linked by its local reference (`<use-case-id>/Q<n>@v<version>`, and the tracker reference when you were given it). Other open questions are listed as non-blocking.
 
 If an unknown that could change a mapping has no question in the specification, report it as a specification gap: say which use case, which behavior and what is unknown, and that the specification needs a question. Never write the question and never write a question row; that is the specification drafting skill's and the tracker proposer's work. A candidate with a blocking unknown is suggested as `pending-clarification`.
 
@@ -102,7 +109,7 @@ A value the evidence does not show is left blank or `unknown`. No secret value a
 
 ### Mappings rows
 
-Write the Mappings rows for each member that has a specification, in `tracker-updates/<proposal-id>/tracker-updates.csv`. Create the folder if it is missing. Rewrite only the Mappings rows of that file and leave all other rows as they are. Format: UTF-8 without a byte order mark, comma-separated, RFC 4180 quoting, LF line ends, one header row, exactly:
+Write the Mappings rows for each member that has a specification and a known vendor, in `tracker-updates/recommendations/tracker-updates.csv`. Create the folder if it is missing. Rewrite only the Mappings rows of that file and leave all other rows as they are. Format: UTF-8 without a byte order mark, comma-separated, RFC 4180 quoting, LF line ends, one header row, exactly:
 
 `update_id,proposal_id,tab,operation,record_key,field,value,base_value,source,reason,created_on,author`
 
@@ -110,8 +117,8 @@ For every row:
 
 - `update_id` is `<proposal_id>:<tab>:<record_key>:<field>`, composed and never hashed. The same content always gives the same `update_id`.
 - `tab` is `Mappings`. `operation` is `add`, `set` or `suggest`; never `link`.
-- `record_key` is `<use-case-name>->><candidate-slug>`: the use case name exactly as its specification writes it, then the candidate name in lower case with hyphens. Never a central reference (`MP-###`, `UC-###`, `QN-####`, `WD-###`).
-- `source` is `<specification path>@v<version>#<anchor>` of that use case's specification, for example `<use-case-folder>/<use-case-name>.md@v2#b3`. A row without a source is not written.
+- `record_key` is `<use-case-id>->><candidate-slug>`: the use case ID built from the index row's vendor and use case name, then the candidate name in lower case with hyphens. With no vendor known there is no ID and no row for that use case. A use case name or a slug alone is not a valid key. Never a central reference (`MP-###`, `UC-###`, `QN-####`, `WD-###`).
+- `source` is `<spec path>@v<version>#<anchor>` of that use case's specification, using the `spec` path from its index row, for example `<use-case-folder>/<use-case-name>.md@v2#b3`. A row without a source is not written.
 - `reason` is a short plain sentence. `created_on` is the date the row was first proposed; keep it when a rerun has the same content. `author` is `recommend-workflows`.
 - Order by record, then by the field order in `tracker-schema.csv`.
 
@@ -124,7 +131,7 @@ Fields, looked up in `tracker-schema.csv` column `owner`:
 
 Illustration with invented names (not real data), a use case that joins a suggested candidate with one blocking question:
 
-`<proposal-id>:Mappings:Example Use Case->>example-candidate:mapping_status,<proposal-id>,Mappings,add,Example Use Case->>example-candidate,mapping_status,pending-clarification,,example-use-case/example-use-case.md@v1#q2,Shared steps match; Q2 could change the grouping.,<date>,recommend-workflows`
+`recommendations:Mappings:uc-example-vendor-example-use-case->>example-candidate:mapping_status,recommendations,Mappings,add,uc-example-vendor-example-use-case->>example-candidate,mapping_status,pending-clarification,,example-use-case/example-use-case.md@v1#q2,Shared steps match; Q2 could change the grouping.,<date>,recommend-workflows`
 
 ## The reply
 

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { run as reconciler } from "../tracker-tools/tracker-reconciler/src/cli.ts";
+import { run as exporter } from "../tracker-tools/review-csv-exporter/src/cli.ts";
 import { run as summarizer } from "../tracker-tools/tracker-summary/src/cli.ts";
 import { formatCsv, parseCsv, type Row } from "../tracker-tools/tracker-tables/src/csv.ts";
 import { getTab, loadSchema, tabFileName, type Schema } from "../tracker-tools/tracker-tables/src/schema.ts";
@@ -74,6 +75,11 @@ export type Outcome = { status: number; stdout: string; stderr: string };
 
 export async function reconcile(w: Workspace, ...more: string[]): Promise<Outcome> {
   return capture((io) => reconciler(["reconcile", "--export", w.exportDir, "--proposals", w.proposals, "--out", w.out, ...more], io));
+}
+
+/** Runs the review CSV exporter on the workspace's export and proposals, writing into `out`. */
+export async function exportReview(w: Workspace, out: string): Promise<Outcome> {
+  return capture((io) => exporter(["export-review", "--export", w.exportDir, "--proposals", w.proposals, "--out", out], io));
 }
 
 export async function validate(path: string): Promise<Outcome> {

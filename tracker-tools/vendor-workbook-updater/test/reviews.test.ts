@@ -4,9 +4,9 @@ import { test } from "node:test";
 import { formatCsv, parseCsv } from "../../tracker-tables/src/csv.ts";
 import { label } from "../../review-csv-exporter/src/headings.ts";
 import { loadReviews } from "../src/reviews.ts";
-import { setup, world, type RV } from "./support.ts";
+import { setup, world, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
-const row: RV = { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] } };
+const row: RV = { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] } };
 
 /** Loads the review files of a folder after changing the cells of the first Use Cases row. */
 async function load(cells: Record<string, string>, rvs: RV[] = [row]): Promise<{ problems: string[]; rows: Awaited<ReturnType<typeof loadReviews>> }> {

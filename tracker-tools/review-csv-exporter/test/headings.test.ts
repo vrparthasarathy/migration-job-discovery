@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
-import { exportReview, ok, put, review, set, setup, snapshot, text, type Fixture } from "./support.ts";
+import { ids, exportReview, ok, put, review, set, setup, snapshot, text, type Fixture } from "./support.ts";
 import { fileURLToPath } from "node:url";
 
 const DEFAULT = fileURLToPath(new URL("../data/review-headings.csv", import.meta.url));
-const change = set("Use Cases", "Nightly Sync", "vendor", "Beta Inc", "Beta");
+const change = set("Use Cases", ids.nightly, "vendor", "Beta Inc", "Beta");
 
 async function withHeadings(f: Fixture, edit: (text: string) => string): Promise<string> {
   const path = join(f.root, "headings.csv");
@@ -23,7 +23,7 @@ async function rejects(edit: (text: string) => string, pattern: RegExp): Promise
 }
 
 test("[B01] a changed headings file changes the shown fields and headings with no code change", async () => {
-  const f = await setup({ "mr-1": [change, set("Use Cases", "Nightly Sync", "current_version", "2", "1")] });
+  const f = await setup({ "mr-1": [change, set("Use Cases", ids.nightly, "current_version", "2", "1")] });
   const path = await withHeadings(f, (t) => t.replace("Use Cases,vendor,vendor,,", "Use Cases,vendor,Vendor name,,").replace("Use Cases,current_version,current_version,,\n", "").replace("suffix_state,state", "suffix_state,review state").replace("Review,kind,kind", "Review,kind,Type").replace("Review,reason,reason,,\n", ""));
   await ok(f, "--headings", path);
   const [row] = await review(f, "review-use-cases.csv");
@@ -56,4 +56,17 @@ test("[B08] a missing headings file stops the run, and a non-proposable tab in i
   const path = await withHeadings(f, (t) => t + "Batches,status,status,,\n");
   await ok(f, "--headings", path);
   assert.equal((await review(f, "review-use-cases.csv")).length, 1);
+});
+
+test("[B03] the headings file's Use Cases use_case_name row gives a new use case's review row its proposed name cell", async () => {
+  const add = { tab: "Use Cases", op: "add", key: "uc-delta-fresh-case", field: "use_case_name", value: "Fresh Case" };
+  const f = await setup({ "mr-1": [{ ...add, field: "vendor", value: "Delta" }, add] });
+  await ok(f);
+  const [row] = await review(f, "review-use-cases.csv");
+  assert.deepEqual([row!.use_case, row!["use_case_name (current)"], row!["use_case_name (proposed)"], row!["use_case_name (state)"]], ["uc-delta-fresh-case", "", "Fresh Case", "add"]);
+  const g = await setup({ "mr-1": [{ ...add, field: "vendor", value: "Delta" }, add] });
+  await ok(g, "--headings", await withHeadings(g, (t) => t.replace("Use Cases,use_case_name,use_case_name,,\n", "")));
+  const [bare] = await review(g, "review-use-cases.csv");
+  assert.equal(bare!["use_case_name (proposed)"], undefined, "without the row the name is not a shown column");
+  assert.match(bare!.other_changes!, /use_case_name: {2}-> Fresh Case \[add\]/);
 });

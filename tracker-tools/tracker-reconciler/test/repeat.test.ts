@@ -8,14 +8,14 @@ import { baseExport } from "./fixtures.ts";
 import { cli, examplePath, fixture, MANIFEST, put, reconcile, rows, schema, snapshot, writeExport, writeProposal, type PRow } from "./support.ts";
 
 const busy: PRow[] = [
-  { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" },
-  { tab: "Use Cases", op: "set", key: "Daily Report", field: "grouping_impact", value: "unknown", base: "" },
-  { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "our_owner", value: "Zed" },
-  { tab: "Use Cases", op: "set", key: "Nightly Sync", field: "current_version", value: "2", base: "0" },
-  { tab: "Questions", op: "add", key: "Nightly Sync/Q2", field: "use_case_name", value: "Nightly Sync" },
-  { tab: "Questions", op: "add", key: "Daily Report/Q3", field: "question_text", value: "Which time zone is used by the daily report?" },
-  { tab: "Questions", op: "add", key: "Daily Report/Q4", field: "use_case_name", value: "Daily Report" },
-  { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "released_on", value: "2026-12-01", base: "2026-11-12" },
+  { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" },
+  { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "grouping_impact", value: "unknown", base: "" },
+  { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "our_owner", value: "Zed" },
+  { tab: "Use Cases", op: "set", key: "uc-beta-nightly-sync", field: "current_version", value: "2", base: "0" },
+  { tab: "Questions", op: "add", key: "uc-beta-nightly-sync/Q2", field: "use_case_name", value: "Nightly Sync" },
+  { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q3", field: "question_text", value: "Which time zone is used by the daily report?" },
+  { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q4", field: "use_case_name", value: "Daily Report" },
+  { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "released_on", value: "2026-12-01", base: "2026-11-12" },
 ];
 
 test("[B03] the same inputs give byte-identical outputs, including into a directory from an earlier run", async () => {
@@ -38,18 +38,18 @@ test("[B03] a proposal already reflected in the export, by an equal value or by 
     ...data["Use Cases"]![0]!,
     current_version: "2",
     spec_link: "https://lead.example/own-link",
-    proposal_refs: "mr-12:Use Cases:Daily Report:our_owner;mr-12:Use Cases:Daily Report:spec_link",
+    proposal_refs: "mr-12:Use Cases:uc-acme-daily-report:our_owner;mr-12:Use Cases:uc-acme-daily-report:spec_link",
     our_owner: "Ann",
   };
-  data.Questions![0] = { ...data.Questions![0]!, proposal_refs: "mr-12:Questions:Daily Report/Q1:status" };
+  data.Questions![0] = { ...data.Questions![0]!, proposal_refs: "mr-12:Questions:uc-acme-daily-report/Q1:status" };
   const f = await fixture();
   await writeExport(f.exportDir, data);
   await writeProposal(f.proposals, "mr-12", [
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "our_owner", value: "Zed" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "spec_link", value: "https://specs.example/new", base: "https://specs.example/daily" },
-    { tab: "Questions", op: "add", key: "Daily Report/Q1", field: "use_case_name", value: "Daily Report" },
-    { tab: "Questions", op: "add", key: "Daily Report/Q1", field: "status", value: "captured" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "our_owner", value: "Zed" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "spec_link", value: "https://specs.example/new", base: "https://specs.example/daily" },
+    { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q1", field: "use_case_name", value: "Daily Report" },
+    { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q1", field: "status", value: "captured" },
   ]);
   assert.equal((await reconcile(f)).status, 0);
   const files = await snapshot(f.out);
@@ -66,9 +66,9 @@ test("[B03] a list link already present in the export yields nothing and a new i
   const f = await fixture();
   await writeExport(f.exportDir, data);
   await writeProposal(f.proposals, "mr-12", [
-    { tab: "Questions", op: "link", key: "Daily Report/Q1", field: "source_links", value: "doc-a" },
-    { tab: "Questions", op: "link", key: "Daily Report/Q1", field: "source_links", value: "doc-c;doc-a", id: "mr-13" },
-    { tab: "Questions", op: "link", key: "Daily Report/Q1", field: "text_review", value: "none", id: "mr-14" },
+    { tab: "Questions", op: "link", key: "uc-acme-daily-report/Q1", field: "source_links", value: "doc-a" },
+    { tab: "Questions", op: "link", key: "uc-acme-daily-report/Q1", field: "source_links", value: "doc-c;doc-a", id: "mr-13" },
+    { tab: "Questions", op: "link", key: "uc-acme-daily-report/Q1", field: "text_review", value: "none", id: "mr-14" },
   ]);
   assert.equal((await reconcile(f)).status, 0);
   const updates = await rows(join(f.out, "field-updates.csv"));
@@ -106,10 +106,12 @@ test("[B03] the whole example proposal against an empty export gives additions, 
   await put(join(f.proposals, "propose-tracker-updates", "tracker-updates.csv"), await readFile(examplePath, "utf8"));
   const first = await reconcile(f);
   assert.equal(first.status, 0, first.stderr);
+  const proposed = parseCsv(await readFile(examplePath, "utf8"), examplePath).rows;
+  const id = proposed.find((r) => r.tab === "Use Cases")!.record_key!;
   const uc = await rows(join(f.out, "additions", "use-cases.csv"));
   const qn = await rows(join(f.out, "additions", "questions.csv"));
-  assert.deepEqual(uc.map((r) => [r.suggested_ref, r.local_key]), [["UC-001", "Website Availability Check"]]);
-  assert.deepEqual(qn.map((r) => [r.suggested_ref, r.local_key]), ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"].map((q, i) => [`QN-000${i + 1}`, `website-availability-check/${q}`]));
+  assert.deepEqual(uc.map((r) => [r.suggested_ref, r.local_key]), [["UC-001", id]]);
+  assert.deepEqual(qn.map((r) => [r.suggested_ref, r.local_key]), ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6"].map((q, i) => [`QN-000${i + 1}`, `${id}/${q}`]));
   assert.ok(qn.every((r) => r.trace_source!.includes("@v1#q") && r.trace_spec_version === "v1"));
   const links = (await rows(join(f.out, "suggestions.csv"))).filter((r) => r.kind === "link");
   assert.deepEqual(links.map((l) => [l.record, l.related_record, l.review]), [["QN-0004", "QN-0003", "uncertain-review"]], "the two retry questions are similar and nothing else is");

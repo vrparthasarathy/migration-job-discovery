@@ -1,40 +1,5 @@
 {
   "configuration": {
     "checks": {}
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-16T17:28:05Z",
-    "constraints": {
-      "cost": {
-        "currency": "USD",
-        "allocated": 1,
-        "spent": 0,
-        "reserve": 0.1,
-        "source": "unavailable",
-        "fallback-metric": "wall-clock seconds"
-      },
-      "delegation": {
-        "maximum-depth": 0,
-        "maximum-children": 0
-      },
-      "execution": {
-        "wall-clock": {
-          "allocated-seconds": 1800,
-          "spent-seconds": 0,
-          "reserve-seconds": 300,
-          "source": "unavailable"
-        }
-      },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "SKILL.md keys an Identity & Access record `<use-case-id>/<endpoint>/<environment>` in its record_key, row order, shared_with list and repeat-run match, builds the ID from vendor and use case name as the contract says, and no use case name key form is left in the skill folder, README, contract or checklist. (B04)",
-      "With no vendor known the skill asks the lead once, invents none and writes no keyed row for that use case. (B04)",
-      "The 14-row example tracker-updates.csv is regenerated for the website use case under a fictional vendor, with the key and every composed update_id in the use case ID form. (B04)",
-      "The skill folder's tracker-data-contract.md equals the Tracker Data Contract component's file as built, tracker-schema.csv is unchanged, and no Craft term appears in the folder. (B10)",
-      "The README, contract, requirements and review checklist agree, with B04 reworded as planned. (B04)"
-    ]
   }
 }

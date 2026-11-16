@@ -71,7 +71,7 @@ async function update(options: Record<string, string>, io: Io): Promise<void> {
   await checkPaths(out, report, inputs, exportDir, problems);
   if (problems.length > 0 || !headings || !columns || !data || !workbook) throw new InputError(problems);
 
-  const decision = decide({ schema, columns, vendor, release, holidays, workbook, data, reviews }, problems);
+  const decision = decide({ schema, columns, vendor, release, holidays, workbookFile: workbookPath, workbook, data, reviews }, problems);
   if (problems.length > 0) throw new InputError(problems);
 
   const marked = markApplied(reviews, new Set(decision.applied.map((a) => a.review)), headings, runDate);

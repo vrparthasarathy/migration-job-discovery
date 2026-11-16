@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
-import { download, listFiles, ok, reviews, rowsOf, RUN_DATE, setup, textOf, vendorRows, type Env, type RVP } from "./support.ts";
+import { download, listFiles, ok, reviews, rowsOf, RUN_DATE, setup, textOf, vendorRows, type Env, type RVP, DAILY, NIGHTLY } from "./support.ts";
 
 const RVS: RVP[] = [
-  { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", proposals: "TP-1", fields: { stage: ["sent", "review", "update"] } },
-  { tab: "Use Cases", record: "UC-002", useCase: "Nightly Sync", status: "rejected", fields: { stage: ["sent", "review", "update"] } },
-  { tab: "Questions", ref: "QN-0005", key: "Daily Report/Q9", useCase: "Daily Report", proposals: "TP-2", fields: { question_text: ["", "Which currency?", "add"] } },
+  { tab: "Use Cases", record: "UC-001", useCase: DAILY, proposals: "TP-1", fields: { stage: ["sent", "review", "update"] } },
+  { tab: "Use Cases", record: "UC-002", useCase: NIGHTLY, status: "rejected", fields: { stage: ["sent", "review", "update"] } },
+  { tab: "Questions", ref: "QN-0005", key: `${DAILY}/Q9`, useCase: DAILY, proposals: "TP-2", fields: { question_text: ["", "Which currency?", "add"] } },
 ];
 
 const FLAGS = (env: Env, acme: string): string[] => ["--reviews", env.reviews, "--vendor", `Acme=${acme}`, "--new-vendor", "Beta", "--vendor-out", env.vendorOut];
@@ -57,9 +57,9 @@ test("[B9] running again on its own output with the same reviews and vendor file
 test("[B9] a row marked applied whose values are not in the master is listed", async () => {
   const env = await setup();
   await reviews(env, [
-    { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", appliedOn: "2026-11-18", fields: { stage: ["sent", "review", "update"] } },
-    { tab: "Questions", ref: "QN-0005", key: "x", useCase: "Daily Report", appliedOn: "2026-11-18", fields: { question_text: ["", "Which currency?", "add"] } },
-    { tab: "Use Cases", record: "UC-002", useCase: "Nightly Sync", appliedOn: "2026-11-18", fields: { stage: ["sent", "sent", "update"] } },
+    { tab: "Use Cases", record: "UC-001", useCase: DAILY, appliedOn: "2026-11-18", fields: { stage: ["sent", "review", "update"] } },
+    { tab: "Questions", ref: "QN-0005", key: "x", useCase: DAILY, appliedOn: "2026-11-18", fields: { question_text: ["", "Which currency?", "add"] } },
+    { tab: "Use Cases", record: "UC-002", useCase: NIGHTLY, appliedOn: "2026-11-18", fields: { stage: ["sent", "sent", "update"] } },
   ]);
   await ok(env, "--reviews", env.reviews);
   assert.equal((await rowsOf(env.out, "Use Cases"))[0]!.stage, "sent");

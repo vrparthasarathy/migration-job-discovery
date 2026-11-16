@@ -33,7 +33,7 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 ## Follow-on work (recorded, not built)
 
 - Writing the next export CSVs and `manifest.csv` from the master (backlog `master-csv-export`).
-- Sharing the sheet-writing code between the sample, the Updater, the Vendor Sample Workbook and this tool (backlog `workbook-sheet-code-sharing`).
+- Sharing the sheet-writing code between the sample, the Updater and this tool (backlog `workbook-sheet-code-sharing`).
 
 ## Acceptance
 

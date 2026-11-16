@@ -1,10 +1,10 @@
 import { join } from "node:path";
 import { formatCsv, parseCsv, type Row } from "../../tracker-tables/src/csv.ts";
 import { baseExport } from "../../tracker-reconciler/test/fixtures.ts";
-import { fixture, put, rows, snapshot, text, writeExport, writeProposal, type Fixture, type PRow } from "../../tracker-reconciler/test/support.ts";
+import { fixture, ids, put, rows, snapshot, text, writeExport, writeProposal, type Fixture, type PRow } from "../../tracker-reconciler/test/support.ts";
 import { run } from "../src/cli.ts";
 
-export { baseExport, fixture, put, rows, snapshot, text, writeExport, writeProposal };
+export { baseExport, fixture, ids, put, rows, snapshot, text, writeExport, writeProposal };
 export type { Fixture, PRow };
 
 export type Outcome = { status: number; stdout: string; stderr: string };

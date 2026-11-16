@@ -20,17 +20,17 @@
 
 `review-headings.csv`, header `tab,column,heading,band,visibility` (the sample workbook's `headings.csv` shape; only `tab`, `column` and `heading` are read).
 
-- A row with a proposable tab (`Use Cases`, `Questions`, `Identity & Access`, `Mappings`) and a schema column name lists a shown field; fields are shown in file order.
+- A row with a proposable tab (`Use Cases`, `Questions`, `Identity & Access`, `Mappings`) and a schema column name lists a shown field; fields are shown in file order. The default file shows `Use Cases,use_case_name` after `vendor`, so a new use case's review row has `use_case_name (current)`, `(proposed)` and `(state)` cells; the workbook updaters take the readable name from the proposed cell.
 - A row with tab `Review` maps a fixed key to its heading: `order`, `use_case`, `record`, `suggested_ref`, `record_key`, `kind`, `conflict`, `suggestions`, `other_changes`, `reason`, `evidence`, `proposals`, `content_digest`, `changed_since_review`, `review_status`, `reviewer`, `review_note`, `reviewed_on`, `applied_on`, and the suffix keys `suffix_current`, `suffix_proposed`, `suffix_state`. A required key must be present; a missing non-required key falls back to the key itself.
 - A tab or column that is not in `tracker-schema.csv`, or a missing required key, stops the run.
 
 ### Wide row layout, in this order
 
 1. `order`: global rank 1 to N across the four files.
-2. `use_case`.
+2. `use_case`: the use case ID (`uc-<vendor-slug>-<use-case-slug>`, derived from the `vendor` and `use_case_name` columns and never stored), not the use case name. The readable name is in the `use_case_name` column of the Use Cases and Questions tabs.
 3. `record`: the central reference; blank for a new record.
 4. `suggested_ref`: informational only, never identity.
-5. `record_key`: the local reference.
+5. `record_key`: the local reference built from the use case ID (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>->>candidate-slug` or `<use-case-id>/<endpoint>/<environment>`).
 6. `kind`: `add`, `update`, `suggestion` or `conflict`.
 7. `conflict`: `<kind>: <detail>` entries, including held changes.
 8. `suggestions`: link (with score and review), text-review and re-review entries.
@@ -46,7 +46,7 @@
 ### Identity, merge and ordering
 
 - Identity is the central reference when the record exists in the export, else `new:<local_key>`. The same record in several proposals or folders is one row. The same field proposed twice with the same value is one field entry with both proposal IDs.
-- Tier 1: a record with a conflict or a held change. Tier 2: a record with suggestions for the lead's fields (human-field suggestions, link, text-review or re-review). Tier 3: plain evidence-backed adds and plain specification updates. Within a tier: use case name, then tab order (Use Cases, Questions, Identity & Access, Mappings), then record.
+- Tier 1: a record with a conflict or a held change. Tier 2: a record with suggestions for the lead's fields (human-field suggestions, link, text-review or re-review). Tier 3: plain evidence-backed adds and plain specification updates. Within a tier: use case ID, so grouped by vendor and then by use case name, then tab order (Use Cases, Questions, Identity & Access, Mappings), then record. Use cases of two vendors with the same name are two records with two IDs and are never merged.
 - A record that matches the export yields no row.
 
 ### Preserving review
@@ -57,14 +57,4 @@
 
 ### Input validation and secrets
 
-The reconciler's findings for a bad header, tab, field, operation, `update_id`, unknown use case name or CSV shape are reported as `file: line N: message`, plus a bad headings file, a bad review file, a secret-looking value anywhere and a bad `--out`.
-
-### Planned: use case ID in the review CSVs
-
-These replace the matching text above when built; the columns, headings and files do not change.
-
-- **Wide row layout, item 2.** `use_case`: the use case ID (`uc-<vendor-slug>-<use-case-slug>`, derived from the `vendor` and `use_case_name` columns and never stored), not the use case name. The readable name is in the `use_case_name` column of the Use Cases and Questions tabs.
-- **Wide row layout, item 5.** `record_key`: the local reference built from the use case ID (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>->>candidate-slug` or `<use-case-id>/<endpoint>/<environment>`).
-- **Identity, merge and ordering.** Within a tier the order is the use case ID, so grouped by vendor and then by use case name, then tab order (Use Cases, Questions, Identity & Access, Mappings), then record. Use cases of two vendors with the same name are two records with two IDs and are never merged.
-- **Input validation.** The reconciler's findings include a key whose leading use case ID is unknown (or is written as a name or a slug) and two export Use Cases rows that derive the same ID.
-- The headings file gains the row `Use Cases,use_case_name,use_case_name,,` after the `Use Cases,vendor` row, so a new use case's review row has `use_case_name_current`, `use_case_name_proposed` and `use_case_name_state` cells; the workbook updaters take the readable name from the proposed cell.
+The reconciler's findings for a bad header, tab, field, operation, `update_id`, unknown use case ID (or one written as a name or a slug), two export Use Cases rows that derive the same ID, or CSV shape are reported as `file: line N: message`, plus a bad headings file, a bad review file, a secret-looking value anywhere and a bad `--out`.

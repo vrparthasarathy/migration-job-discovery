@@ -1,6 +1,7 @@
 import type { Row } from "../../tracker-tables/src/csv.ts";
 import { getTab, isReference, type Column, type Schema } from "../../tracker-tables/src/schema.ts";
 import { dueOn, isIsoDate } from "../../tracker-tables/src/working_days.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import type { ExportData } from "../../tracker-reconciler/src/inputs.ts";
 import { keyOf, VENDOR_TABS, type Columns } from "./columns.ts";
 import type { ReviewFile, ReviewRow } from "./reviews.ts";
@@ -13,6 +14,8 @@ export type Inputs = {
   vendor: string;
   release: Release | undefined;
   holidays: string[];
+  /** The downloaded workbook's path, named in a duplicate use case ID finding. */
+  workbookFile: string;
   workbook: WorkbookData;
   data: ExportData;
   reviews: ReviewFile[];
@@ -80,8 +83,26 @@ export function decide(input: Inputs, problems: string[]): Decision {
     return "applicable";
   };
 
-  /** A use case of the workbook, or one added earlier in this run. */
-  const useCaseRow = (name: string): Row | undefined => [...index["Use Cases"]!.values()].find((u) => u.use_case_name === name);
+  /** The use cases of the workbook by use case ID, and those added earlier in this run. */
+  const workbookIds = new Map<string, Row>();
+  workbook["Use Cases"]!.forEach((w) => {
+    const id = useCaseId(w.row.vendor!, w.row.use_case_name!);
+    if (id === undefined) return;
+    if (workbookIds.has(id)) problems.push(`${input.workbookFile}: line ${w.line}: sheet "Use Cases": use case ID ${id} is already on an earlier row`);
+    else workbookIds.set(id, rows["Use Cases"]![workbook["Use Cases"]!.indexOf(w)]!);
+  });
+  /** The use cases of the export, of every vendor, by use case ID. */
+  const exportVendors = new Map<string, string>();
+  for (const u of data.tables["Use Cases"]!.rows) {
+    const id = useCaseId(u.vendor!, u.use_case_name!);
+    if (id !== undefined) exportVendors.set(id, u.vendor!);
+  }
+  /** The new use case rows of the review files, whatever their status, by use case ID. */
+  const reviewVendors = new Map<string, string>();
+  for (const r of input.reviews.filter((f) => f.tab === "Use Cases").flatMap((f) => f.rows).filter((r) => r.record === "")) {
+    const id = useCaseId(proposedOf(r, "vendor"), proposedOf(r, "use_case_name"));
+    if (id !== undefined) reviewVendors.set(id, proposedOf(r, "vendor"));
+  }
 
   const scopeOf = (r: ReviewRow): Scope => {
     const tab = r.tab;
@@ -94,12 +115,14 @@ export function decide(input: Inputs, problems: string[]): Decision {
     if (tab === "Use Cases") {
       const proposed = proposedOf(r, "vendor");
       if (proposed === "") return { kind: "skip", reason: "the new use case names no vendor" };
-      return proposed === vendor ? { kind: "this" } : { kind: "other" };
+      if (proposed !== vendor) return { kind: "other" };
+      return proposedOf(r, "use_case_name") === "" ? { kind: "skip", reason: "the new use case names no use case name" } : { kind: "this" };
     }
-    if (useCaseRow(r.useCase) !== undefined) return { kind: "this" };
-    const exported = data.tables["Use Cases"]!.rows.find((u) => u.use_case_name === r.useCase);
-    if (exported !== undefined) return exported.vendor === vendor ? { kind: "skip", reason: `use case "${r.useCase}" is not in the workbook` } : { kind: "other" };
-    return { kind: "skip", reason: `use case "${r.useCase}" is in neither the workbook, the export nor this run` };
+    if (workbookIds.has(r.useCase)) return { kind: "this" };
+    const owner = exportVendors.get(r.useCase) ?? reviewVendors.get(r.useCase);
+    if (owner !== undefined) return owner === vendor ? { kind: "skip", reason: `use case ${r.useCase} is not in the workbook` } : { kind: "other" };
+    problems.push(`${r.file}: line ${r.line}: use case ID "${r.useCase}" is not in the workbook, the export or the review files`);
+    return { kind: "skip", reason: `use case ${r.useCase} is unknown` };
   };
 
 
@@ -184,15 +207,27 @@ export function decide(input: Inputs, problems: string[]): Decision {
       problems.push(`${r.file}: line ${r.line}: reference ${reference} already exists in the workbook, the export or this run`);
       return;
     }
+    const newId = tab === "Use Cases" ? useCaseId(vendor, proposedOf(r, "use_case_name")) : undefined;
+    if (tab === "Use Cases") {
+      if (newId !== r.useCase) {
+        problems.push(`${r.file}: line ${r.line}: use_case "${r.useCase}" is not the use case ID of its vendor and use case name, ${newId ?? "which has none"}`);
+        return;
+      }
+      if (workbookIds.has(newId)) {
+        problems.push(`${r.file}: line ${r.line}: use case ID ${newId} already exists in the workbook or earlier in this run`);
+        return;
+      }
+    }
     refs[tab]!.add(reference);
     const row: Row = Object.fromEntries(columns[tab]!.map((c) => [c.column, ""]));
     for (const f of applicable) row[f.column] = checked(f);
     row[keyOf(tab)] = reference;
     if (tab === "Use Cases") {
-      row.use_case_name = r.useCase;
+      row.use_case_name = proposedOf(r, "use_case_name");
+      workbookIds.set(newId!, row);
     } else {
-      const useCase = useCaseRow(r.useCase)!;
-      Object.assign(row, { use_case_ref: useCase.use_case_ref, use_case_name: r.useCase, vendor: useCase.vendor });
+      const useCase = workbookIds.get(r.useCase)!;
+      Object.assign(row, { use_case_ref: useCase.use_case_ref, use_case_name: useCase.use_case_name, vendor: useCase.vendor });
     }
     if (tab === "Questions") {
       Object.assign(row, { batch_ref: release!.batch, released_on: release!.date, due_on: dueOn(release!.date, input.holidays), answer_status: "not-answered" });

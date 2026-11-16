@@ -14,5 +14,6 @@ The group's `craft.json` declares `test`, `coverage`, `testGlob` and `adapterGlo
 | `validate <file-or-dir>` | tracker-reconciler | a `tracker-updates.csv` or an export directory | nothing; exit status and messages only |
 | `summary --export <dir> [--date <YYYY-MM-DD>] [--holidays <file>] --out <file>` | tracker-summary | tracker export directory | one internal summary file |
 | `update-vendor-workbook --workbook <downloaded.xlsx> --reviews <dir> --export <dir> --vendor <vendor> --out <file> --report <file> [--release-batch <ref> --release-date <date>]` | vendor-workbook-updater | the vendor workbook downloaded from SharePoint, the review CSVs, a tracker export | a new vendor workbook, a report and `applied_on` in the review CSVs; see its contract |
+| `update-master-workbook ( --master <downloaded-master.xlsx> \| --from-export <dir> ) --out <file> --report <file> [--reviews <dir>] [--vendor <vendor>=<downloaded-vendor.xlsx>]...` | master-workbook-updater | the master workbook downloaded from SharePoint (or a tracker export), the accepted review CSVs, the vendors' downloaded workbooks | a new master workbook, a report and the rebuilt vendor workbooks named by `--vendor`; the full command line is in the member's contract |
 
 Exit status is 0 on success and 1 on a usage or input error; nothing is written on an error.

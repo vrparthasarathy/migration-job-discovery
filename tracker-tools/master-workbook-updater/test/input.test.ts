@@ -5,7 +5,7 @@ import { test } from "node:test";
 import type ExcelJS from "exceljs";
 import type { Row } from "../../tracker-tables/src/csv.ts";
 import { writeExport } from "../../tracker-reconciler/test/support.ts";
-import { baseExport, cli, download, editMaster, listFiles, ok, readBack, reviews, setCell, setup, textOf, update, vendorRows, type Env } from "./support.ts";
+import { baseExport, cli, download, editMaster, listFiles, ok, readBack, reviews, setCell, setup, textOf, update, vendorRows, type Env, DAILY } from "./support.ts";
 
 const exists = (path: string): Promise<boolean> => access(path).then(() => true, () => false);
 
@@ -64,7 +64,7 @@ test("[B8] a tracker export with a duplicate key or a secret-looking value stops
 
 test("[B8] a review file or a vendor workbook with a problem stops the run naming the file and line", async () => {
   const env = await setup();
-  await reviews(env, [{ tab: "Use Cases", record: "UC-001", useCase: "Daily Report", status: "maybe", fields: { stage: ["sent", "review", "update"] } }]);
+  await reviews(env, [{ tab: "Use Cases", record: "UC-001", useCase: DAILY, status: "maybe", fields: { stage: ["sent", "review", "update"] } }]);
   await stops(env, /review-use-cases\.csv: line 2: review_status "maybe" must be blank or one of/, "--reviews", env.reviews);
 
   await writeFile(join(env.reviews, "review-questions.csv"), "wrong,header\n");

@@ -1,19 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdir } from "node:fs/promises";
-import { add, exportReview, FILES, ok, review, set, setup, snapshot, text } from "./support.ts";
+import { ids, add, exportReview, FILES, ok, review, set, setup, snapshot, text } from "./support.ts";
 import { join } from "node:path";
 
-const QUESTION = "Daily Report/Q9";
+const QUESTION = "uc-acme-daily-report/Q9";
 const SAME_TEXT = "Which time zone does the daily report use?";
 
 test("[B01] it writes one wide review CSV per tab, with adds, updates and suggestions in one column format", async () => {
   const f = await setup({
     "mr-1": [
-      set("Use Cases", "Daily Report", "current_version", "2", "1"),
+      set("Use Cases", ids.daily, "current_version", "2", "1"),
       add("Questions", QUESTION, "question_text", SAME_TEXT),
-      add("Questions", QUESTION, "spec_refs", "Daily Report/Q9@v2"),
-      add("Mappings", "Daily Report->>new-flow", "workflow_candidate", "New Flow"),
+      add("Questions", QUESTION, "spec_refs", "uc-acme-daily-report/Q9@v2"),
+      add("Mappings", "uc-acme-daily-report->>new-flow", "workflow_candidate", "New Flow"),
     ],
   });
   const outcome = await ok(f);
@@ -23,6 +23,7 @@ test("[B01] it writes one wide review CSV per tab, with adds, updates and sugges
   const [uc] = await review(f, "review-use-cases.csv");
   assert.equal(uc!.kind, "update");
   assert.equal(uc!.record, "UC-001");
+  assert.equal(uc!.use_case, ids.daily, "the use_case cell holds the use case ID");
   assert.equal(uc!["current_version (current)"], "1");
   assert.equal(uc!["current_version (proposed)"], "2");
   assert.equal(uc!["current_version (state)"], "update");
@@ -43,11 +44,11 @@ test("[B01] it writes one wide review CSV per tab, with adds, updates and sugges
 test("[B02] several field proposals for one record join into one row with current, proposed and state per field", async () => {
   const f = await setup({
     "mr-1": [
-      set("Use Cases", "Nightly Sync", "vendor", "Beta Inc", "Beta"),
-      set("Use Cases", "Nightly Sync", "current_version", "2", "1"),
-      add("Use Cases", "Nightly Sync", "grouping_impact", "not-expected"),
-      set("Use Cases", "Nightly Sync", "spec_revision", "r2", ""),
-      set("Use Cases", "Nightly Sync", "vendor_contact", "Zed", "", { reason: "second reason", source: "specs/other.md" }),
+      set("Use Cases", ids.nightly, "vendor", "Beta Inc", "Beta"),
+      set("Use Cases", ids.nightly, "current_version", "2", "1"),
+      add("Use Cases", ids.nightly, "grouping_impact", "not-expected"),
+      set("Use Cases", ids.nightly, "spec_revision", "r2", ""),
+      set("Use Cases", ids.nightly, "vendor_contact", "Zed", "", { reason: "second reason", source: "specs/other.md" }),
     ],
   });
   await ok(f);
@@ -65,14 +66,14 @@ test("[B02] several field proposals for one record join into one row with curren
 });
 
 test("[B04] a record that already matches the export gets no row", async () => {
-  const f = await setup({ "mr-1": [set("Use Cases", "Nightly Sync", "vendor", "Beta", "Beta"), set("Use Cases", "Nightly Sync", "current_version", "1", "1")] });
+  const f = await setup({ "mr-1": [set("Use Cases", ids.nightly, "vendor", "Beta", "Beta"), set("Use Cases", ids.nightly, "current_version", "1", "1")] });
   const outcome = await ok(f);
   assert.match(outcome.stdout, /exported 0 review row\(s\)/);
   for (const file of FILES) assert.equal((await review(f, file)).length, 0);
 });
 
 test("[B09] it changes no input and writes only the four review files", async () => {
-  const f = await setup({ "mr-1": [set("Use Cases", "Nightly Sync", "vendor", "Beta Inc", "Beta")] });
+  const f = await setup({ "mr-1": [set("Use Cases", ids.nightly, "vendor", "Beta Inc", "Beta")] });
   const before = { exported: await snapshot(f.exportDir), proposals: await snapshot(f.proposals) };
   await ok(f);
   assert.deepEqual(await snapshot(f.exportDir), before.exported);
@@ -81,4 +82,23 @@ test("[B09] it changes no input and writes only the four review files", async ()
   const refused = await exportReview(f, "--scope", "nowhere");
   assert.equal(refused.status, 1);
   assert.deepEqual(await snapshot(f.exportDir), before.exported);
+});
+
+test("[B03] use cases of two vendors with the same name are two rows under two IDs and are never merged", async () => {
+  const other = "uc-beta-daily-report";
+  const f = await setup({
+    "mr-1": [
+      set("Use Cases", ids.daily, "current_version", "2", "1"),
+      add("Use Cases", other, "vendor", "Beta"),
+      add("Use Cases", other, "use_case_name", "Daily Report"),
+      add("Questions", `${other}/Q1`, "question_text", "Which time zone does the Beta daily report use?"),
+    ],
+  });
+  await ok(f);
+  const rows = await review(f, "review-use-cases.csv");
+  assert.deepEqual(rows.map((r) => [r.use_case, r.record, r.record_key, r.kind]), [[ids.daily, "UC-001", ids.daily, "update"], [other, "", other, "add"]]);
+  assert.equal(rows[1]!["use_case_name (proposed)"], "Daily Report", "a new use case carries its readable name as a proposed cell");
+  assert.equal(rows[1]!["use_case_name (state)"], "add");
+  const [question] = await review(f, "review-questions.csv");
+  assert.equal(question!.use_case, other);
 });

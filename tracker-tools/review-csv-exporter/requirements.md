@@ -9,7 +9,7 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 - Reuse, do not copy: matching, conflict and held-change logic come from the Tracker Reconciler (`inputs`, `reconcile`, `secrets`, imported by relative path), and CSV reading, writing and schema validation come from Tracker Tables. The reconciler and the library are not changed by this component.
 - No column list is repeated in code. The shown fields and their headings come from a headings data file (`data/review-headings.csv`), in the shape of the sample workbook's `headings.csv`, so a format change after the team reviews the sample is a data change, not a code change. The first version of the file is provisional (headings equal the keys).
 - Review state is one set of review columns per row (record level): `review_status` (blank, `accepted`, `rejected` or `clarify`), `reviewer`, `review_note`, `reviewed_on`, and `applied_on` (set by the lead after hand-applying). All are blank on the first write and preserved on refresh. Per-field state in the row is machine state only (`add`, `update`, `suggest`, `conflict`, `held`).
-- Rows are ordered by what they need from the lead: conflicts and held changes first, then suggestions for the lead's own fields, then plain evidence-backed adds and plain specification updates grouped by use case.
+- Rows are ordered by what they need from the lead: conflicts and held changes first, then suggestions for the lead's own fields, then plain evidence-backed adds and plain specification updates grouped by use case ID (so by vendor, then name).
 
 ## Must match the source
 

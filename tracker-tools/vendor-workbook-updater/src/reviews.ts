@@ -8,6 +8,9 @@ import { digestOf } from "../../review-csv-exporter/src/rows.ts";
 import { reviewFile, STATUSES } from "../../review-csv-exporter/src/review.ts";
 import { VENDOR_TABS } from "./columns.ts";
 
+/** The form of a use case ID as `useCaseId` derives it: `uc-` then lower-case slugs joined by hyphens. */
+const USE_CASE_ID = /^uc-[a-z0-9]+(-[a-z0-9]+)+$/;
+
 export const STATES = ["", "add", "update", "suggest", "held", "conflict"];
 
 /** One shown field of a review row: the three cells the exporter writes for it. */
@@ -74,6 +77,7 @@ export async function loadReviews(dir: string, h: Headings, problems: string[]):
         if (cell(key) !== "" && !isIsoDate(cell(key))) bad(`${label(h, key)} "${cell(key)}" is not a date in YYYY-MM-DD format`);
       }
       if (!/^\d+$/.test(cell("order"))) bad(`${label(h, "order")} "${cell("order")}" is not a whole number`);
+      if (cell("use_case") !== "" && !USE_CASE_ID.test(cell("use_case"))) bad(`${label(h, "use_case")} "${cell("use_case")}" is not a use case ID such as uc-example-vendor-daily-report (uc-<vendor-slug>-<use-case-slug>)`);
       if (cell("record") === "" && cell("record_key") === "") bad(`${label(h, "record")} and ${label(h, "record_key")} are both blank`);
       const identity = cell("record") !== "" ? cell("record") : `new:${cell("record_key")}`;
       if (seen.has(identity)) bad(`duplicate record "${identity}"`);

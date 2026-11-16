@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { access, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
-import { baseExport, download, editMaster, lib, ok, reviews, rowOf, setCell, setup, sheetsOf, textOf, vendorRows } from "./support.ts";
+import { baseExport, download, editMaster, lib, ok, reviews, rowOf, setCell, setup, sheetsOf, textOf, vendorRows, DAILY } from "./support.ts";
 import { readVendorWorkbook } from "../../vendor-workbook-updater/src/workbook_read.ts";
 
 const exists = (path: string): Promise<boolean> => access(path).then(() => true, () => false);
@@ -18,7 +18,7 @@ async function readAcme(path: string, vendor = "Acme") {
 test("[B7] a named vendor's workbook holds only its rows, vendor-visible columns and released questions, with the master's new values", async () => {
   const env = await setup();
   const acme = await download(env, "acme.xlsx", "Acme", vendorRows("Acme"));
-  await reviews(env, [{ tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] }, other: "spec_revision:  -> r4 [update]" }]);
+  await reviews(env, [{ tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] }, other: "spec_revision:  -> r4 [update]" }]);
   await ok(env, "--reviews", env.reviews, "--vendor", `Acme=${acme}`, "--vendor-out", env.vendorOut);
 
   const file = join(env.vendorOut, "Acme.xlsx");

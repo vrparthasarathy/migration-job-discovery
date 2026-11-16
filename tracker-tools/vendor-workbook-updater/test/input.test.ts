@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
-import { baseExport, listFiles, setup, textOf, update, type Run, type RV } from "./support.ts";
+import { baseExport, listFiles, setup, textOf, update, type Run, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
-const version: RV = { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] } };
+const version: RV = { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] } };
 
 /** Runs with the given breakage and requires exit 1, the message on standard error and nothing written. */
 async function stops(f: Run, message: RegExp, ...more: string[]): Promise<void> {
@@ -19,7 +19,7 @@ async function stops(f: Run, message: RegExp, ...more: string[]): Promise<void> 
 }
 
 test("[B10] a secret-looking value in a review file stops the run naming the file and line, without echoing the value", async () => {
-  const f = await setup([version, { tab: "Identity & Access", record: "AX-001", useCase: "Daily Report", fields: { service: ["Reports", "api_key=abcdefgh12345678", "update"] } }]);
+  const f = await setup([version, { tab: "Identity & Access", record: "AX-001", useCase: DAILY, fields: { service: ["Reports", "api_key=abcdefgh12345678", "update"] } }]);
   await stops(f, /review-identity-access\.csv: line 2: secret-looking value in "service \(proposed\)"; remove it from the file/);
   assert.doesNotMatch((await update(f)).stderr, /abcdefgh/);
 });
@@ -59,8 +59,8 @@ test("[B10] every finding is listed in one run, with the file and line of each",
 test("[B10] the report lists what was applied, what was skipped and why, and the values left for the internal tracker, without paths", async () => {
   const f = await setup([
     version,
-    { tab: "Questions", record: "QN-0001", useCase: "Daily Report", status: "rejected", fields: { question_text: ["Which time zone does the daily report use?", "Zone?", "update"] } },
-    { tab: "Identity & Access", record: "AX-001", useCase: "Daily Report", fields: { next_action: ["", "Raise ticket", "add"], service: ["Reports", "Reports v2", "update"] }, other: "affected_workflow: -> payroll [add]" },
+    { tab: "Questions", record: "QN-0001", useCase: DAILY, status: "rejected", fields: { question_text: ["Which time zone does the daily report use?", "Zone?", "update"] } },
+    { tab: "Identity & Access", record: "AX-001", useCase: DAILY, fields: { next_action: ["", "Raise ticket", "add"], service: ["Reports", "Reports v2", "update"] }, other: "affected_workflow: -> payroll [add]" },
   ]);
   assert.equal((await update(f)).status, 0);
   const report = await textOf(f.report);

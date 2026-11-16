@@ -40,7 +40,7 @@ One row per field. For every row:
 - `proposal_id` is the proposal ID.
 - `tab` is `Use Cases` or `Questions`, exactly as in `tracker-schema.csv`.
 - `operation` is `add`, `set` or `suggest`. Never `link`: you write no link rows.
-- `record_key` is the local reference, never a central reference such as `UC-###` or `QN-####`. For a use case it is the use case name, exactly as the specification or inventory writes it. For a question row it is `<use-case-slug>/Q<n>` where `<use-case-slug>` is the use case name in lower case with hyphens, the same slug the specification folder and `spec_refs` use, and `Q<n>` is the question's ID in the specification. Question IDs are never renumbered and never reused.
+- `record_key` is the local reference, never a central reference such as `UC-###` or `QN-####`. For a use case it is the use case ID, `uc-<vendor-slug>-<use-case-slug>`. For a question row it is `<use-case-id>/Q<n>`, where `Q<n>` is the question's ID in the specification. Question IDs are never renumbered and never reused. The use case ID is built from the use case's vendor and its use case name, each reduced to a slug: lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed, with the prefix `uc-`. It is derived and never written in a column of its own; the readable name stays in the `use_case_name` column. The name alone or a slug alone is never a key. Where a specification is stored comes from the use case index, never from the slug.
 - `field` is a column name from `tracker-schema.csv` for that tab.
 - `value` is the proposed value. `base_value` is the value you saw before the change, filled for every `set` and blank for an `add`.
 - `source` is where the value comes from (see "Sources").
@@ -69,11 +69,15 @@ Every row has a `source`, and a row you cannot give a source is not written.
 
 A value that its evidence does not show is left blank. Never guess a vendor, a link, a revision, an owner or a status.
 
+### A use case with no known vendor
+
+The use case ID needs the vendor. When the inventory row, the input and the specification do not show it, ask the lead once for the vendor. Never invent one. Write no keyed row for that use case until the vendor is known, and name the use case in the report.
+
 ## Source screening
 
 Run this over the entire inventory, not one use case, and before any specification exists. Look in the source locations the developer gives and in the inventory, and decide for each use case what the evidence shows about its source (the vendor's current script).
 
-For each use case whose source is missing, empty or of uncertain mapping, write `suggest` rows on the use case's record (record key is the use case name, tab `Use Cases`):
+For each use case whose source is missing, empty or of uncertain mapping, write `suggest` rows on the use case's record (record key is the use case ID built from the inventory's vendor and the use case name, tab `Use Cases`):
 
 - `source_status`: `not-located` when the source was searched for and not found; `empty` when something was found that has no usable script; `uncertain-mapping` when a script exists but it is unclear that it belongs to this use case. Never write `confirmed-unavailable`: only the vendor or the owner can confirm that, and a lead records it. Never write `located` for a source you only suspect.
 - `blocked_reason`: a short reason in plain words, taken from what you found.
@@ -81,11 +85,11 @@ For each use case whose source is missing, empty or of uncertain mapping, write 
 - `source_owner`: the owner the inventory names for this use case, otherwise the word `unassigned`. Never take an owner from a file name, a commit author, a document or a guess.
 - `supporting_documents`: a `;`-list of the documents the developer tagged for this use case, when there are any. In `source_note`, say these documents allow preliminary work only; they do not verify the source and never clear a source blocker.
 
-Source is `inventory:<row>` or `source-screen:<path>`. A use case whose source is found and clearly belongs to it gets no row; count these for the report. Do not read specifications in this mode and do not write question rows.
+A use case whose inventory row has no vendor follows "A use case with no known vendor". Source is `inventory:<row>` or `source-screen:<path>`. A use case whose source is found and clearly belongs to it gets no row; count these for the report. Do not read specifications in this mode and do not write question rows.
 
 Illustration with invented names (not real data), one use case whose script was not found and whose inventory row names no owner:
 
-`<proposal-id>:Use Cases:Example Use Case:source_status,<proposal-id>,Use Cases,suggest,Example Use Case,source_status,not-located,,inventory:12,No script found in the source locations searched.,<date>,propose-tracker-updates`
+`<proposal-id>:Use Cases:uc-example-vendor-example-use-case:source_status,<proposal-id>,Use Cases,suggest,uc-example-vendor-example-use-case,source_status,not-located,,inventory:12,No script found in the source locations searched.,<date>,propose-tracker-updates`
 
 with sibling rows for `blocked_reason`, `source_note` and `source_owner` (value `unassigned`).
 
@@ -97,10 +101,10 @@ Read the specification fully. Its structure is: a header table (use case name, v
 
 When the use case has no record yet (no earlier proposal file for it and no tracker export showing it), write:
 
-1. `add` rows for the use case: `use_case_name`, `vendor`, `spec_link`, `current_version`, `spec_revision`. Take the version and revision from the header table, the name from the heading. Take the vendor from the input the developer gave, or from the specification if it states it; otherwise leave `value` blank and say so in `reason` (the row stays so a lead sees the gap). Do the same for `spec_link` if no link to the specification was given. Never a central reference.
-2. For every open question in the specification, one Questions `add` per use case per question, with the record key `<use-case-slug>/Q<n>` and these fields:
+1. `add` rows for the use case: `use_case_name`, `vendor`, `spec_link`, `current_version`, `spec_revision`. Take the version and revision from the header table, the name from the heading. Take the vendor from the inventory row, the input the developer gave, or the specification if it states it; if none shows it, follow "A use case with no known vendor". The record key is the use case ID. If no link to the specification was given, leave the `spec_link` `value` blank and say so in `reason`. Never a central reference.
+2. For every open question in the specification, one Questions `add` per use case per question, with the record key `<use-case-id>/Q<n>` and these fields:
    - `use_case_name` and `vendor` (same as the use case).
-   - `spec_refs`: `<use-case-slug>/Q<n>@v<version>`.
+   - `spec_refs`: `<use-case-id>/Q<n>@v<version>`.
    - `current_spec_text`: the question's text exactly as the specification words it now, character for character.
    - Initial suggestions for human fields: `question_text` (the same exact text, which a lead copies by hand when the question is captured), `status` `captured` and `text_review` `none`. Leave every other human field out.
    - Source: the specification path with `@v<version>#q<n>`.
@@ -133,7 +137,7 @@ Findings, questions, corrections and answers the developer gives you that the sp
 
 End your reply with a report, in plain words, with these parts. Write `none` for an empty part; never leave one out.
 
-1. Content with no row: anything you saw that belongs in the tracker but got no row, and why (for example a question removed from the specification, an answer in the specification that is not copied, an unmatched question ID, a blank vendor or link).
+1. Content with no row: anything you saw that belongs in the tracker but got no row, and why (for example a question removed from the specification, an answer in the specification that is not copied, an unmatched question ID, a use case with no known vendor, or a blank link).
 2. Supplied items not yet in a specification, one per line.
 3. Rows without a source: rows you could not write because no anchor or evidence reference was available.
 4. Unread files: files you were given or looked for and could not read.
@@ -146,4 +150,4 @@ End your reply with a report, in plain words, with these parts. Write `none` for
 - No secret value (password, token, key or credential) in any row or in the report. If an input contains one, do not copy it and say that you skipped it.
 - Nothing is released or applied. Say that the file is a proposal.
 - Do not describe changes anyone might want or any design for the new platform: you only carry what the specification and the inventory show.
-- `tracker-updates.csv` in this folder is an example of a first specification run for the website availability check use case. Use it as a model of the format only; never copy its values into another use case's proposal.
+- `tracker-updates.csv` in this folder is an example of a first specification run for the website availability check use case, under the fictional vendor Example Vendor. Use it as a model of the format only; never copy its values into another use case's proposal.

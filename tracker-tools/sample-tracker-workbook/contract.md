@@ -27,13 +27,3 @@ Read Me, Use Cases, Questions, Identity & Access, Workflow Mappings, Proposed Ch
 6. Proposed Changes reshapes the one-row-per-field proposal file into one readable row per change, keeping `update_id`, `proposal_id`, `base_value` and `source`.
 7. Blue and grey headers and red tabs are added.
 8. One workbook mixes vendor and internal columns, where the contract has a master and separate vendor workbooks; it is not vendor-safe.
-
-### Planned: review sheets and composed IDs
-
-Planned, not built; merged into the sections above when built.
-
-- **Data files.** `data/proposed-changes.csv` is removed. Added: `data/proposals/<proposal-id>/tracker-updates.csv` (the contract's long proposal format, composed `update_id`, `proposal_id` of the form `uc-<vendor-slug>-<use-case-slug>`), `data/review-decisions.csv` (`record`, `review_status`, `reviewer`, `review_note`, `reviewed_on`) and `data/review-headings.csv` (the exporter's headings file shape with friendly headings). `trace.csv` keeps the proposal and update IDs.
-- **Sheets.** The order becomes Read Me, Use Cases, Questions, Identity & Access, Workflow Mappings, Review - Use Cases, Review - Questions, Review - Identity & Access, Trace, Lists. The Review sheets are internal (red tabs) and hold exactly the exporter's columns for the tab, loaded from its review CSV.
-- **Dropdown.** `review_status` takes the exporter's list: blank, accepted, rejected, clarify.
-- **Differences from the tracker contract** (replaces item 6): the Review sheets show one wide row per record in the exporter's format instead of a separate Proposed Changes sheet, and proposal metadata sits on Trace and the Review sheets.
-- **Use case ID forms (extended).** `proposal_id` and the proposal folder are the use case ID `uc-<vendor-slug>-<use-case-slug>`; `record_key` is `<use-case-id>/Q<n>` for a question, `<use-case-id>/<endpoint>/<environment>` for an access row and `<use-case-id>->>candidate-slug` for a mapping; each `spec_refs` entry of `data/questions.csv` is `<use-case-id>/Q<n>@v<version>` (replacing the bare `Q1`). The data check stops on a name-form or slug-alone reference, or an ID no sample use case derives.

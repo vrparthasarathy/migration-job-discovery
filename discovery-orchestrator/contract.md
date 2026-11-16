@@ -42,7 +42,7 @@ No Craft term. `use case` names the business unit; `job` or `script` only the ve
 - **File.** `use-case-index.csv` at the repository root. UTF-8 without a byte order mark, comma-separated, RFC 4180 quoting, LF line ends, one header row, exactly `use_case_name,slug,vendor,folder,spec`. Rows are sorted by `folder`.
 - **Columns.** `use_case_name`: the name exactly as the folder or specification writes it. `slug`: the use case slug. `vendor`: the vendor as read from the folder, not a slug. `folder`: the folder path relative to the repository root, `/` separators, no leading `./`, no trailing `/`. `spec`: the root-relative path of the specification file, blank until stage 3 has written it.
 - **Slug rule.** Lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed; the same rule as the reconciler's and the proposer's use case slug. An empty slug stops the run.
-- **Proposal ID.** `uc-<slug of the vendor>-<slug>`. The `uc-` prefix keeps it clear of the fixed recommendations ID, and it has no colon, so the composed `update_id` stays valid. The skill derives it; it never asks for it and never invents a suffix.
+- **Proposal ID.** `uc-<slug of the vendor>-<slug>`. The `uc-` prefix keeps it clear of the fixed recommendations ID, and it has no colon, so the composed `update_id` stays valid. The skill derives it; it never asks for it and never invents a suffix. The proposal ID is the use case ID defined in the Tracker Data Contract; the stages derive their keys from the index row's name and vendor.
 - **Duplicate rule.** The derived ID is compared with the derived ID of every other row. A match in a different `folder` stops the run before any stage and writes nothing; the message names both folders and says the lead must rename one.
 - **Create and update.** The key is `folder`. The same folder updates its row in place (a rerun); a new folder adds a row. A moved folder (the ID matches a row whose old `folder` no longer exists) updates `folder` and `spec` and the report says so; if the old folder still exists it is a duplicate.
 - **When written.** After the duplicate check at the start of a folder (stage 1 needs the ID); `spec` after stage 3. A folder skipped for `not-located` or `empty` keeps a blank `spec`.
@@ -50,11 +50,3 @@ No Craft term. `use case` names the business unit; `job` or `script` only the ve
 - **Repository root.** Asked once per session, never guessed; each folder must sit under it, otherwise the run stops.
 - **Fixed recommendations ID.** `recommendations`, so the recommender writes `tracker-updates/recommendations/tracker-updates.csv`. The skill never asks for it. Before stage 4 it shows the list (every index row) once with the warning that a partial list drops the other use cases' mappings, and runs only after the lead confirms.
 - **Export step.** Unchanged: the skill runs the exporter command above and stops on exit 1. It asks for the exporter path and needs Node 26.
-
-### Planned: proposal ID is the use case ID
-
-Planned, not built; merged into the `Proposal ID` bullet above when built (wording only). Add this sentence there, to the `Inputs` bullet, and to the matching text in the README and `run-discovery/SKILL.md`:
-
-"The proposal ID is the use case ID defined in the Tracker Data Contract; the stages derive their keys from the index row's name and vendor."
-
-The slug rule, the five index columns, the duplicate rule and every behavior stay as they are.

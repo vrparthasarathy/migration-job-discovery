@@ -110,6 +110,12 @@ export function reconcile(f: Fixture, ...more: string[]): Promise<Outcome> {
   return cli("reconcile", "--export", f.exportDir, "--proposals", f.proposals, "--out", f.out, ...more);
 }
 
+/** The use case IDs of the base export's use cases (uc-<vendor-slug>-<use-case-slug>). */
+export const ids = { daily: "uc-acme-daily-report", nightly: "uc-beta-nightly-sync", invoice: "uc-gamma-invoice-feed" };
+
+/** The use case name of a base export ID, for the `use_case_name` value of a question. */
+export const nameOf = (id: string): string => ({ [ids.daily]: "Daily Report", [ids.nightly]: "Nightly Sync", [ids.invoice]: "Invoice Feed", "uc-beta-daily-report": "Daily Report" })[id] ?? id;
+
 export async function put(path: string, content: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, content);

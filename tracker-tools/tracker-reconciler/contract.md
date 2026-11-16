@@ -35,13 +35,12 @@
 - The same inputs give byte-identical outputs. A proposal already reflected in the export (an equal value, or its `update_id` in the record's `proposal_refs`) yields nothing.
 - On any input error the exit status is 1, the message names the file and line, and no partial output is written. The output folder is created or replaced only after every input is valid, and only if it is new, empty or a previous run's output.
 
-### Planned: use case ID keys
+### Use case ID keys
 
-These replace the matching text above when built; the output files and their columns do not change.
+The output files and their columns carry the key strings below; nothing else about them depends on the use case.
 
 - **Inputs, key forms.** A proposal's `record_key` uses the use case ID from the Tracker Data Contract: `<use-case-id>` on Use Cases, `<use-case-id>/Q<n>` on Questions, `<use-case-id>->>candidate-slug` on Mappings and `<use-case-id>/<endpoint>/<environment>` on Identity & Access. The ID is `uc-<vendor-slug>-<use-case-slug>`, derived with the Tracker Tables `useCaseId` from the `vendor` and `use_case_name` columns of an export Use Cases row; a Use Cases `add` names the ID in its `record_key`. A key in the use case name form or the slug-alone form is not valid.
 - **Additions.** `local_key` holds the proposal's `record_key` (the local reference built from the use case ID).
 - **Rule, finding the record.** A record is matched by the `update_id` prefix in `proposal_refs`, else by natural key: the use case ID derived from the export row (a Use Cases row from its own columns, any other row through its `use_case_ref`), a `spec_refs` entry without its `@v` suffix for a question, the use case ID plus the `workflow_candidate` slug for a mapping, and the use case ID plus endpoint and environment for access.
-- **Rule, unknown or duplicate ID.** A key whose leading use case ID is not an ID of an export Use Cases row or of a Use Cases `add` stops the run with `<file>: line <n>: unknown use case ID in record_key "<key>"; expected uc-<vendor-slug>-<use-case-slug>`, naming the file and line. A Questions `use_case_name` value that is not the name of the key's use case stops the run the same way. Two export Use Cases rows that derive the same ID stop the run naming the export file and both lines. Nothing is written.
+- **Rule, unknown or duplicate ID.** A key whose leading use case ID is not an ID of an export Use Cases row or of a Use Cases `add` stops the run with `<file>: line <n>: unknown use case ID in record_key "<key>"; expected uc-<vendor-slug>-<use-case-slug> ...`, naming the file and line. A Questions `use_case_name` value that is not the name of the key's use case stops the run with `use_case_name "<value>" does not belong to use case ID <id>`. Two export Use Cases rows that derive the same ID stop the run naming the export file and both lines. Nothing is written.
 - **Rule, same name, two vendors.** Use cases with the same name and different vendors have different IDs and are never merged or matched to each other's rows.
-

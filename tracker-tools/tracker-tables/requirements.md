@@ -8,6 +8,7 @@ The shared rules are in the [group requirements](../requirements.md#requirements
 - Unknown columns are warned about and preserved; a missing required column is an error naming the file and column. Status, reference and date problems are reported with file, row and field.
 - The vendor view contains only that vendor's rows and vendor-visible columns, question rows only after release and with no group, link or other-row reference, and no Question Groups, Question Links or Mappings tab.
 - Working days are Monday to Friday minus an optional holidays file; two working days are added to the release day, `due_on` is never moved by a response, and overdue is true after `due_on` for an open question row whose lead-owned status is `clarification-requested` or whose vendor-owned answer status is not `answered`; a complete answer awaiting lead review is not vendor-overdue.
+- The library derives the use case ID (`uc-<vendor-slug>-<use-case-slug>`, or no ID when a slug is empty) once for every tool.
 
 ## Must match the source
 

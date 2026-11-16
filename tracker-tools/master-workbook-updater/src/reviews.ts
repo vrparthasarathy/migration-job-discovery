@@ -48,6 +48,7 @@ export async function loadReviews(dir: string, h: Headings, tabs: string[], prob
       for (const key of ["reviewed_on", "applied_on"]) {
         if (cell(key) !== "" && !isIsoDate(cell(key))) bad(`${label(h, key)} "${cell(key)}" is not a date in YYYY-MM-DD format`);
       }
+      if (cell("use_case") !== "" && !/^uc-[a-z0-9]+(-[a-z0-9]+)+$/.test(cell("use_case"))) bad(`${label(h, "use_case")} "${cell("use_case")}" is not a use case ID such as uc-example-vendor-daily-report`);
       if (!/^\d+$/.test(cell("order"))) bad(`${label(h, "order")} "${cell("order")}" is not a whole number`);
       if (cell("record") === "" && cell("record_key") === "") bad(`${label(h, "record")} and ${label(h, "record_key")} are both blank`);
       const identity = cell("record") !== "" ? cell("record") : `new:${cell("record_key")}`;

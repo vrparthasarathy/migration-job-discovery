@@ -4,7 +4,7 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 
 ## Requirements
 
-- The skill reads source, configuration, `external_tools.md`, `logic.md` and tagged documents and lists, per use case and endpoint, the external service and environment, the observed operations, the exact identity or variable references, the unknowns with who resolves them and the evidence, with runtime values `unknown`. It runs as an early lightweight sweep across all known use cases, in parallel with source screening and before specifications are drafted and with detailed behavior discovery, and needs no specification and does not wait for an acknowledgement. Supporting documents allow preliminary findings that are marked as resting on a document, never as source-verified. Repeat runs refresh the same rows.
+- The skill reads source, configuration, `external_tools.md`, `logic.md` and tagged documents and lists, per use case and endpoint, the external service and environment, the observed operations, the exact identity or variable references, the unknowns with who resolves them and the evidence, with runtime values `unknown`. It runs as an early lightweight sweep across all known use cases, in parallel with source screening and before specifications are drafted and with detailed behavior discovery, and needs no specification and does not wait for an acknowledgement. Supporting documents allow preliminary findings that are marked as resting on a document, never as source-verified. Repeat runs refresh the same rows. A record is keyed `<use-case-id>/<endpoint>/<environment>` with the use case ID `uc-<vendor-slug>-<use-case-slug>`, not the use case name; with no vendor known the skill asks once, invents none and writes no keyed row.
 - Requests match the observed authentication: a website sign-in asks for an approved identity or account, application permissions and a supported automated authentication or SSO where it applies; an API source asks for approved API identity or credential provisioning and the permissions or scopes the source supports, with no blanket SSO question. It never guesses a permission and stores no secret; only secure references or provisioning are named.
 - It never writes a secret, never invents a request, approval, ticket or availability fact, and never marks access verified; the developer or platform team verifies access.
 - Existing CI identity reuse is `unconfirmed`. Rows are kept per use case and endpoint; identical endpoints are only flagged as a possible shared request, and a lead may consolidate after confirming endpoint, environment, identity and permissions, keeping per-use-case traceability. A request with its endpoint, environment, authentication type, identity reference and permission known is `ready-to-raise` so a lead or coordinator can raise it promptly while other unknowns are resolved. Approval or provisioning is separate from verified working access and from behavior acknowledgement.
@@ -14,7 +14,7 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 
 ## Must match the source
 
-- The [Tracker Data Contract](../tracker-data-contract/README.md#purpose): columns, owner classes, references, statuses and proposal format. The skill folder's contract copies are byte-identical to the contract's files.
+- The [Tracker Data Contract](../tracker-data-contract/README.md#purpose): columns, owner classes, references, statuses and proposal format. The skill folder's contract copies are byte-identical to the contract's files, as built. Must not: invent a vendor, keep a name-form key, or migrate old references.
 
 ## Need not match
 
@@ -30,9 +30,3 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - **Output varies.** Copilot output differs between models and runs; the behaviors can be judged only on samples.
 - **Copies must stay in step.** The contract and schema copies in the skill folder must match the contract component's files; the root checks them.
 
-## Planned change: use case ID key
-
-Planned, not built; merged into the sections above when built.
-
-- A record is keyed `<use-case-id>/<endpoint>/<environment>` with the use case ID `uc-<vendor-slug>-<use-case-slug>`, not the use case name; with no vendor known the skill asks once, invents none and writes no keyed row.
-- Must match: the Tracker Data Contract as built (the skill's copy of its prose equals the built file; the schema copy is unchanged). Must not: invent a vendor, keep a name-form key, or migrate old references.

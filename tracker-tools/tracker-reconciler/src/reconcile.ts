@@ -1,4 +1,5 @@
 import { joinList, splitList, type Row } from "../../tracker-tables/src/csv.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import { getTab, validateTable, type Column, type Schema } from "../../tracker-tables/src/schema.ts";
 import { PROPOSABLE, slug, type Change, type ExportData } from "./inputs.ts";
 import { findSimilar, type Candidate } from "./matching.ts";
@@ -49,16 +50,16 @@ export function reconcile(schema: Schema, data: ExportData, changes: Change[], s
   const rowsOf = (tab: string): Row[] => data.tables[tab]!.rows;
   const columnOf = (tab: string, name: string): Column => getTab(schema, tab).columns.find((c) => c.column === name)!;
   const keyColumn = (tab: string): string => getTab(schema, tab).columns.find((c) => c.key && c.type === "ref")!.column;
-  const useCaseNames = new Map(rowsOf("Use Cases").map((r) => [field(r, "use_case_ref"), field(r, "use_case_name")]));
+  const useCaseIds = new Map(rowsOf("Use Cases").map((r) => [field(r, "use_case_ref"), useCaseId(field(r, "vendor"), field(r, "use_case_name")) ?? ""]));
   const exportedAt = data.manifest.rows.find((r) => r.scope === scope)!.exported_at!.slice(0, 10);
 
   const matchesNaturalKey = (tab: string, key: string, row: Row): boolean => {
-    const name = useCaseNames.get(field(row, "use_case_ref")) ?? "";
-    if (tab === "Use Cases") return field(row, "use_case_name") === key;
+    const id = useCaseIds.get(field(row, "use_case_ref")) ?? "";
+    if (tab === "Use Cases") return id !== "" && id === key;
     if (tab === "Questions") return splitList(field(row, "spec_refs")).some((ref) => ref.replace(/@.*$/, "") === key);
-    const labels = [name, slug(name)];
-    if (tab === "Mappings") return labels.some((label) => `${label}->>${slug(field(row, "workflow_candidate"))}` === key);
-    return labels.some((label) => `${label}/${field(row, "endpoint")}/${field(row, "environment")}` === key);
+    if (id === "") return false;
+    if (tab === "Mappings") return `${id}->>${slug(field(row, "workflow_candidate"))}` === key;
+    return `${id}/${field(row, "endpoint")}/${field(row, "environment")}` === key;
   };
   const locate = (c: Change): Row | undefined => {
     const prefix = `${c.proposal_id}:${c.tab}:${c.record_key}:`;

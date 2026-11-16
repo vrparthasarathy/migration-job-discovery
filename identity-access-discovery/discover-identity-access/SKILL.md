@@ -20,7 +20,7 @@ Lightweight means you look only for what a use case reaches outside itself for: 
 
 ## Inputs
 
-- The use case inventory (one row per use case: its name, vendor, and where its source and configuration are kept), or one use case named by the developer.
+- The use case inventory (one row per use case: its name, vendor (the vendor and the name build the use case ID), and where its source and configuration are kept), or one use case named by the developer.
 - For each use case: the source code and configuration (the part that fits), and the two files `external_tools.md` and `logic.md`, looked for in the use case's source folder or where the developer says they are. If one is missing, say so in the report. Never invent its content and never replace it with a guess.
 - Tagged supporting documents for the use case (for example a vendor hand-over note or a design). They allow preliminary findings only.
 - Dependency observations that a developer supplies (for example "it calls the vendor's reporting API with an API key from the vault"). They become rows, with the evidence reference naming who supplied them and where.
@@ -45,7 +45,7 @@ One row per field. For every row:
   - `set` for a spec field of an existing record, with `base_value`;
   - `suggest` for a human-owned field of an existing record;
   - `link` only to add a reference to `shared_with` of an existing record without replacing the list.
-- `record_key` is the local reference `<use-case-name>/<endpoint>/<environment>`, never a central reference such as `AX-###` or `UC-###`. The use case name is exactly as the inventory writes it. The endpoint and the environment are written as in the `endpoint` and `environment` fields of the record. The tab has no use case name column, so the use case is identified by this key.
+- `record_key` is the local reference `<use-case-id>/<endpoint>/<environment>`, never a central reference such as `AX-###` or `UC-###`. The use case ID is `uc-<vendor-slug>-<use-case-slug>`: the vendor and the use case name exactly as the inventory writes them, each reduced to a slug (lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed), as `tracker-data-contract.md` defines it. It is derived, never written as a column. The use case name alone is not part of the key, and a key that starts with the use case name is not valid. The endpoint and the environment are written as in the `endpoint` and `environment` fields of the record. The tab has no use case name column, so the use case is identified by this key. The ID needs the vendor: if it is not in the inventory or from the developer, ask the lead once, never invent one, write no keyed row for that use case until it is known, and name the use case in the report.
 - `field` is a column name from `tracker-schema.csv` for the Identity & Access tab.
 - `value` is the proposed value. `base_value` is the value you saw before the change, filled for every `set` and blank for an `add`.
 - `source` is where the value comes from (see "Sources").
@@ -53,7 +53,7 @@ One row per field. For every row:
 - `created_on` is the date (`YYYY-MM-DD`) on which the row was first proposed. When you rerun on a proposal file that already has the row with the same content, keep its `created_on` so the rerun gives identical rows.
 - `author` is `discover-identity-access`.
 
-Order the rows by record (use case name, then endpoint, then environment), then by the field order in `tracker-schema.csv`, so the same input always gives the same file.
+Order the rows by record (use case ID, then endpoint, then environment), then by the field order in `tracker-schema.csv`, so the same input always gives the same file.
 
 ### Fields you write
 
@@ -135,11 +135,11 @@ Never write `raised`, `in-progress`, `approved`, `provisioned`, `blocked`, `decl
 
 ### Possible shared requests
 
-Each use case keeps its own row. When two or more rows, in this run or in a proposal file or tracker export you were given, have the same endpoint and the same environment, set on each of them `shared_request_flag` to `possible-shared-request: same endpoint and environment` and `shared_with` to the `;`-list of the local references (`<use-case-name>/<endpoint>/<environment>`) of the other rows. On an existing row add the reference with a `link` row, never replacing the list. Do not merge rows, do not drop a row, and never write `consolidated_request_ref`: a lead may consolidate after confirming the endpoint, environment, identity and permissions, and sets it. Say in the report which rows you compared, so a lead knows what the flag could not see.
+Each use case keeps its own row. When two or more rows, in this run or in a proposal file or tracker export you were given, have the same endpoint and the same environment, set on each of them `shared_request_flag` to `possible-shared-request: same endpoint and environment` and `shared_with` to the `;`-list of the local references (`<use-case-id>/<endpoint>/<environment>`) of the other rows. On an existing row add the reference with a `link` row, never replacing the list. Do not merge rows, do not drop a row, and never write `consolidated_request_ref`: a lead may consolidate after confirming the endpoint, environment, identity and permissions, and sets it. Say in the report which rows you compared, so a lead knows what the flag could not see.
 
 ## Repeat runs
 
-Rerunning must give the same rows and no duplicate record. Before writing, read the existing proposal file (if any) and any tracker export you were given. Rows are matched by their local reference `<use-case-name>/<endpoint>/<environment>`.
+Rerunning must give the same rows and no duplicate record. Before writing, read the existing proposal file (if any) and any tracker export you were given. Rows are matched by their local reference `<use-case-id>/<endpoint>/<environment>`.
 
 - Same reference and same content: write nothing new, and keep `created_on`.
 - Same reference, a spec field changed (for example source now shows the endpoint, so the row rests on source, or a new variable name): `set` the field with the old value as `base_value`, and give the new `source`.
@@ -155,7 +155,7 @@ End your reply with a report, in plain words, with these parts. Write `none` for
 1. Unread files: files you were given or looked for and could not read, and the missing `external_tools.md` or `logic.md` of each use case (a missing one is reported, never invented).
 2. Use cases with no source to sweep: those whose source was not available, with what, if anything, they have instead (documents or supplied observations only).
 3. Endpoints with no evidence: endpoints named by an input or an earlier row for which nothing was found in source or documents.
-4. Rows with no pointer: rows you could not write because no evidence pointer or source was available.
+4. Rows with no pointer: rows you could not write because no evidence pointer or source was available, and the use cases that got no keyed row because their vendor is not known.
 5. Literal credentials found: location and `value withheld` for each; no value, no part of one.
 6. Rows that rest on a document or a supplied observation only, so a lead does not read them as confirmed in source.
 7. Possible shared requests: the flagged rows and the rows you compared.

@@ -13,11 +13,18 @@ import { reviewFile } from "../../review-csv-exporter/src/review.ts";
 import { loadColumns } from "../../vendor-workbook-updater/src/columns.ts";
 import { buildVendorWorkbook } from "../../vendor-workbook-updater/src/workbook_write.ts";
 import { reviewCells, type RV, type World } from "../../vendor-workbook-updater/test/support.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import { run } from "../src/cli.ts";
 import { loadMasterColumns, type MasterColumns } from "../src/master_columns.ts";
 import { readMaster, type Master } from "../src/master_read.ts";
 
 export { baseExport, type RV };
+
+/** Use case IDs of the fixtures, from the library's one helper. */
+export const DAILY = useCaseId("Acme", "Daily Report")!;
+export const NIGHTLY = useCaseId("Beta", "Nightly Sync")!;
+export const INVOICE = useCaseId("Gamma", "Invoice Feed")!;
+export const BILLING = useCaseId("Acme", "Billing Export")!;
 export type RVP = RV & { proposals?: string };
 
 export const schemaPath = fileURLToPath(new URL("../../../tracker-data-contract/tracker-schema.csv", import.meta.url));

@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { parseCsv, type Table } from "../../tracker-tables/src/csv.ts";
 import { getTab, tabFileName, validateTable, type Schema } from "../../tracker-tables/src/schema.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import { isIsoDate } from "../../tracker-tables/src/working_days.ts";
 import { looksSecret } from "./secrets.ts";
 
@@ -33,7 +34,7 @@ export type Change = {
   reason: string;
   created_on: string;
   author: string;
-  /** The use case this change concerns, empty for a tab that proposals do not address. */
+  /** The ID of the use case this change concerns (uc-<vendor-slug>-<use-case-slug>), empty for a tab that proposals do not address. */
   useCase: string;
 };
 
@@ -177,15 +178,15 @@ export function loadProposalFile(file: string, content: string, schema: Schema, 
   return changes;
 }
 
-/** A use case is named in a local reference by its name or by its specification folder name (the name in kebab case). */
+/** The kebab-case form of a text: a workflow candidate in a mapping key and a vendor folder name. */
 export const slug = (text: string): string => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-function useCaseOf(change: Change, names: string[]): string | undefined {
+/** The known use case ID that a key equals (Use Cases) or starts with; an ID holds no separator, so at most one matches. */
+function useCaseOf(change: Change, ids: string[]): string | undefined {
   const rule = PROPOSABLE[change.tab];
   if (!rule) return "";
-  if (rule.separator === "") return names.includes(change.record_key) ? change.record_key : undefined;
-  const labels = names.flatMap((name) => [{ label: name, name }, { label: slug(name), name }]);
-  return labels.filter(({ label }) => change.record_key.startsWith(label + rule.separator)).sort((a, b) => b.label.length - a.label.length)[0]?.name;
+  if (rule.separator === "") return ids.includes(change.record_key) ? change.record_key : undefined;
+  return ids.find((id) => change.record_key.startsWith(id + rule.separator));
 }
 
 async function proposalFiles(dir: string, problems: string[]): Promise<string[]> {
@@ -213,13 +214,35 @@ export async function loadProposals(dir: string, schema: Schema, known: ExportDa
     else seen.set(change.update_id, change);
   }
   if (known) {
-    const names = [...known.tables["Use Cases"]!.rows.map((r) => r.use_case_name!), ...changes.filter((c) => c.tab === "Use Cases" && c.operation === "add").map((c) => c.record_key)].filter((n) => n !== "");
-    for (const change of changes) {
-      const name = useCaseOf(change, names);
-      if (name === undefined) problems.push(`${change.file}: line ${change.line}: unknown use case name in record_key "${change.record_key}"`);
-      else if (change.tab === "Questions" && change.field === "use_case_name" && !names.includes(change.value) && change.value !== "") {
-        problems.push(`${change.file}: line ${change.line}: unknown use case name "${change.value}"`);
-      } else change.useCase = name;
+    const ids = new Map<string, string>();
+    const useCases = known.tables["Use Cases"]!;
+    const lines = new Map<string, number>();
+    let duplicate = false;
+    useCases.rows.forEach((row, index) => {
+      const id = useCaseId(row.vendor!, row.use_case_name!);
+      if (id === undefined) return;
+      const first = lines.get(id);
+      if (first === undefined) lines.set(id, index + 2);
+      else {
+        duplicate = true;
+        problems.push(`${useCases.file}: line ${index + 2}: use case ID ${id} is also derived by line ${first}; make the vendor or the name differ`);
+      }
+      ids.set(id, row.use_case_name!);
+    });
+    for (const change of changes.filter((c) => c.tab === "Use Cases" && c.operation === "add")) {
+      if (change.field === "use_case_name") ids.set(change.record_key, change.value);
+      else if (!ids.has(change.record_key)) ids.set(change.record_key, "");
+    }
+    for (const change of duplicate ? [] : changes) {
+      const id = useCaseOf(change, [...ids.keys()]);
+      if (id === undefined) {
+        problems.push(`${change.file}: line ${change.line}: unknown use case ID in record_key "${change.record_key}"; expected uc-<vendor-slug>-<use-case-slug> (an ID of a Use Cases row in the export or of a Use Cases add), as in <id>/Q<n>`);
+        continue;
+      }
+      const name = ids.get(id)!;
+      if (change.tab === "Questions" && change.field === "use_case_name" && change.value !== "" && name !== "" && change.value !== name) {
+        problems.push(`${change.file}: line ${change.line}: use_case_name "${change.value}" does not belong to use case ID ${id}`);
+      } else change.useCase = id;
     }
   }
   if (files.length === 0 && problems.length === 0) problems.push(`${dir}: no ${PROPOSAL_FILE} files found`);

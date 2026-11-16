@@ -33,7 +33,7 @@ The same answers serve every folder of the session. Ask again only for what is n
 
 - `use_case_name`: the name as the folder or specification writes it. `slug`: the use case slug. `vendor`: the vendor as read from the folder. `folder`: the path relative to the repository root, `/` separators, no leading `./`, no trailing `/`. `spec`: the root-relative path of the specification file, blank until behavior documentation has written it.
 - Slug rule: lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed. An empty slug stops the run.
-- The proposal ID of the folder is `uc-<slug of the vendor>-<slug>`, shared by stages 1 to 3.
+- The proposal ID of the folder is `uc-<slug of the vendor>-<slug>`, shared by stages 1 to 3. The proposal ID is the use case ID defined in the Tracker Data Contract; the stages derive their keys from the index row's name and vendor.
 - Duplicate check, before any stage: if another row has the same derived ID in a different `folder`, stop, write nothing, name both folders and say the lead must rename one. If the matching row's old `folder` no longer exists on disk, the folder has moved: update that row's `folder` and `spec` and say so in the report. If the old folder still exists it is a duplicate.
 - After the check, write or update this folder's row (key `folder`; a rerun updates in place). After behavior documentation set `spec`. A folder skipped for `not-located` or `empty` keeps a blank `spec`.
 

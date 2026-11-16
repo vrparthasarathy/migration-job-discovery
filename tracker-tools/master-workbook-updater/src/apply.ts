@@ -1,6 +1,7 @@
 import { joinList, splitList, type Row } from "../../tracker-tables/src/csv.ts";
 import { getTab, isReference, type Column, type Schema } from "../../tracker-tables/src/schema.ts";
 import { label, type Headings } from "../../review-csv-exporter/src/headings.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import { valueProblem } from "../../vendor-workbook-updater/src/apply.ts";
 import { keyOf } from "./master_columns.ts";
 import type { Master, MasterTable } from "./master_read.ts";
@@ -62,6 +63,9 @@ export function decide(schema: Schema, master: Master, reviews: ReviewFile[], h:
     if (joinList(ids) !== before) changes.push({ field: "proposal_refs", old: before, new: (row.proposal_refs = joinList(ids)) });
   };
 
+  /** IDs of the new use case rows of the review files, whatever their review status, whatever its review status. */
+  const knownIds = new Set(reviews.flatMap((f) => (f.tab === "Use Cases" ? f.rows.filter((x) => x.record === "").map((x) => x.useCase).filter((id) => id !== "") : [])));
+
   const process = (r: ReviewRow): void => {
     const tab = r.tab;
     const table = master.tables[tab]!;
@@ -83,19 +87,32 @@ export function decide(schema: Schema, master: Master, reviews: ReviewFile[], h:
     if (r.record !== "" && existing === undefined) return skip(`${r.record} is not in the master`);
 
     let useCases: Row[] = [];
-    if (r.record === "" && tab !== "Use Cases") {
-      useCases = master.tables["Use Cases"]!.rows.filter((u) => u.use_case_name === r.useCase);
-      if (useCases.length === 0) return skip(`use case "${r.useCase}" is not in the master`);
-    }
-    if (r.record === "" && tab === "Use Cases" && r.useCase === "") return conflict("the new use case has no name");
-
     const causes: string[] = [];
+    if (r.record === "" && tab !== "Use Cases") {
+      useCases = master.tables["Use Cases"]!.rows.filter((u) => useCaseId(u.vendor!, u.use_case_name!) === r.useCase);
+      if (useCases.length === 0) {
+        if (!knownIds.has(r.useCase)) {
+          if (r.useCase === "") problems.push(`${r.file}: line ${r.line}: the use_case cell is blank; a new row needs a use case ID such as uc-example-vendor-daily-report`);
+          else problems.push(`${r.file}: line ${r.line}: use case "${r.useCase}" is not a use case in the master or the review files; the use_case cell must hold a use case ID such as uc-example-vendor-daily-report`);
+          return;
+        }
+        return skip(`use case ${r.useCase} is not in the master`);
+      }
+    }
+    if (r.record === "" && tab === "Use Cases") {
+      const value = (column: string): string => norm(applicable.find((f) => f.column === column && SETTING.includes(f.state))?.proposed ?? "");
+      const id = useCaseId(value("vendor"), value("use_case_name"));
+      if (id === undefined) return conflict("the new use case has no name or no vendor, so it has no use case ID");
+      if (id !== r.useCase) causes.push(`the use case ID ${id} from the proposed vendor and name differs from the use_case cell ${r.useCase}`);
+      if (master.tables["Use Cases"]!.rows.some((u) => useCaseId(u.vendor!, u.use_case_name!) === id)) causes.push(`the use case ID ${id} already exists in the master`);
+    }
+
     if (r.changedSinceReview) causes.push("changed since review");
     causes.push(...held);
     if (r.conflict !== "") causes.push(`conflict: ${r.conflict}`);
     if (!r.digestMatches) causes.push("the content digest does not match the row; the file was edited after export");
     if (error !== undefined) causes.push(error);
-    if (useCases.length > 1) causes.push(`the use case name "${r.useCase}" matches ${useCases.length} master rows`);
+    if (useCases.length > 1) causes.push(`the use case ID ${r.useCase} matches ${useCases.length} master rows`);
     if (existing !== undefined) {
       for (const f of applicable.filter((x) => norm(existing[x.column]!) !== norm(x.current))) causes.push(`${f.column}: the master holds "${norm(existing[f.column]!)}", the review row expects "${norm(f.current)}"`);
     }
@@ -141,12 +158,11 @@ export function decide(schema: Schema, master: Master, reviews: ReviewFile[], h:
     const row = fresh(tab);
     for (const [column, value] of values) row[column] = value!;
     row[keyOf(tab)] = reference;
-    if (tab === "Use Cases") row.use_case_name = r.useCase;
-    else {
+    if (tab !== "Use Cases") {
       const useCase = useCases[0]!;
       row.use_case_ref = useCase.use_case_ref!;
       if (tab !== "Mappings") row.vendor = useCase.vendor!;
-      if (tab === "Questions") Object.assign(row, { use_case_name: r.useCase, captured_on: runDate, status: "captured" });
+      if (tab === "Questions") Object.assign(row, { use_case_name: useCase.use_case_name!, captured_on: runDate, status: "captured" });
     }
     const changes: Change[] = [];
     addProposals(row, r, changes);

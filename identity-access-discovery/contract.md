@@ -8,7 +8,7 @@
 | --- | --- |
 | Skill name | The `name` in the `SKILL.md` front matter is `discover-identity-access`, identical to the folder name. |
 | Input | Source code and configuration of a use case (the part that fits), `external_tools.md`, `logic.md` and any tagged documents, the vendor and the proposal ID. |
-| Output | `tracker-updates/<proposal-id>/tracker-updates.csv` rows for the Identity & Access tab (one per use case and endpoint), and a report of unread files, use cases with no source to sweep, endpoints with no evidence and rows with no pointer. |
+| Output | `tracker-updates/<proposal-id>/tracker-updates.csv` rows for the Identity & Access tab (one record per use case and endpoint and environment), and a report of unread files, use cases with no source to sweep, endpoints with no evidence and rows with no pointer. |
 | Folder | `SKILL.md`, byte-identical copies of `tracker-data-contract.md` and `tracker-schema.csv` from the [Tracker Data Contract](../tracker-data-contract/README.md#purpose) component, and the example files named in the Design. |
 
 ### Handling of identities
@@ -25,11 +25,6 @@
 - No secret value appears in any output.
 - A value the evidence does not show is left blank or `unknown`, never guessed.
 - Output is a proposal for a lead to review; it is never written into the authoritative tracker.
-
-### Planned: use case ID key
-
-Planned, not built; merged into the handling rules above when built. The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Data Contract](../tracker-data-contract/contract.md#planned-use-case-id-and-local-references).
-
-- An Identity & Access row is keyed `<use-case-id>/<endpoint>/<environment>`, in the `record_key`, the row order, `shared_with` and the repeat-run match. The use case name is not part of the key and a key in the old name form is not valid.
+- An Identity & Access row is keyed `<use-case-id>/<endpoint>/<environment>`, in the `record_key`, the row order, `shared_with` and the repeat-run match. The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Data Contract](../tracker-data-contract/contract.md); it is derived, never stored. The use case name is not part of the key and a key in the old name form is not valid.
 - The ID needs the vendor. When it is not known, the skill asks the lead once, never invents one, and writes no keyed row for that use case until it is known.
 - The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built.

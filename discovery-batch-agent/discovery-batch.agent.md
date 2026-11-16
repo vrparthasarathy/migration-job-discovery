@@ -28,7 +28,7 @@ Never ask for a proposal ID and never ask for the recommendations ID: the propos
 
 Follow the section "The use case index and the proposal ID" of the `run-discovery` skill exactly (slug rule, derived ID `uc-<vendor slug>-<slug>`, duplicate check before any stage, row key `folder`, `spec` blank until behavior documentation is done). Run the duplicate check for every listed folder before anything starts; if one fails, stop, name both folders and write nothing.
 
-Show the lead one table before anything runs: use case, vendor, folder, proposal ID, and `skip` where `<proposals root>/tracker-updates/<proposal-id>/tracker-updates.csv` already exists (an earlier run is not repeated unless the lead asks). Run only after the lead confirms the table. Then write or update the index row of each folder to run.
+Show the lead one table before anything runs: use case, vendor, folder, proposal ID, and `skip` where `<proposals root>/tracker-updates/<proposal-id>/tracker-updates.csv` already exists (an earlier run is not repeated unless the lead asks). Run only after the lead confirms the table. Then write or update the index row of each folder to run. For a use case shown as `skip` that has no index row, write its row with its folder and vendor and a blank `spec`, and list it in the final report as `spec unknown`.
 
 ## Loop: one subagent per use case
 
@@ -75,7 +75,7 @@ If a reply is not in this record, treat that folder as failed and say so; do not
 
 ## After the loop: workflow recommendation, once
 
-Take every row of the use case index that has a `spec`, so earlier use cases are included, not only this batch. Show the whole list to the lead once, with a warning that a partial list drops the other use cases' mappings, and run only after the lead confirms. Then start one subagent that runs `recommend-workflows` over that list with the fixed proposal ID `recommendations` and the lead's name and date, under the same rules as the Worker brief (no questions, no tracker writes), and replies with the files it wrote and its counts.
+Take every row of the use case index that has a `spec`, so earlier use cases are included, not only this batch. Show the whole list to the lead once, with a warning that a partial list drops the other use cases' mappings, and run only after the lead confirms. Then start one subagent that runs `recommend-workflows` over that list with the fixed proposal ID `recommendations` and the lead's name and date, under the same rules as the Worker brief (no questions, no tracker writes), and replies with the files it wrote and its counts. Say in its brief that the lead has already confirmed the list, so it does not ask for confirmation again.
 
 ## Export and report
 
@@ -85,7 +85,7 @@ Run, with the answers you were given:
 
 If it exits with 1 or 2, stop and show its error unchanged; do not edit a file to get past it. The output folder must be separate from the export and proposals folders.
 
-Then report one table with a row per use case (outcome per stage, skipped, blocked or failed, with the reason), then the recommendation counts, then the exporter's counts including rejected proposal rows with their reasons. A subagent could not ask the lead anything, so list every blocked stage with the fact that was missing; the lead can answer it and have that use case run again.
+Then report one table with a row per use case (outcome per stage, skipped, blocked or failed, with the reason, and `spec unknown` where it applies), then the recommendation counts, then the exporter's counts including rejected proposal rows with their reasons. A subagent could not ask the lead anything, so list every failed or blocked stage, including a malformed reply, with the fact that was missing or the reason; the lead can answer it and have that use case run again.
 
 ## Hand over the review
 

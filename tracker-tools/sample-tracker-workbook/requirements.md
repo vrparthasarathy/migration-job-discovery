@@ -38,17 +38,6 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 - A vendor-view workbook from the same data; formulas and a Holidays sheet; Question Groups, Question Links and Batches sheets; revising the layout guide from the team's feedback; the vendor storage confirmation.
 - Deferred and unchanged: infrastructure scope, and `same as` answers and lead prefill.
 
-## Planned change: review sheets and composed IDs
-
-Planned, not built; merged into the sections above when built.
-
-- Replace the Proposed Changes sheet with Review - Use Cases, Review - Questions and Review - Identity & Access in the Review CSV Exporter's wide-row format, produced by running the exporter on real-format proposal fixtures and a small decisions fixture, with friendly headings from `data/review-headings.csv`.
-- Cover an add, an update, a suggestion and a conflict, and a pending, accepted, rejected, clarify and changed-since-review row.
-- Update IDs are composed `<proposal_id>:<tab>:<record_key>:<field>`; proposal IDs are `uc-<vendor-slug>-<use-case-slug>`; the review status list is the exporter's (blank, accepted, rejected, clarify).
-- Must match: the exporter's header and statuses (read from the exporter, not repeated) and the Tracker Data Contract's proposal format.
-- Must not: write a vendor file (that is the Vendor Sample Workbook), change the exporter, or keep fictional counter-style IDs.
-- Use case ID forms (extended): every sample reference to a use case in the fixtures and in `spec_refs` uses the derived use case ID and the local references of the Tracker Data Contract; the data check stops on any other form.
-
 ## Acceptance
 
 See `task.acceptance` in [`craft.json`](craft.json).

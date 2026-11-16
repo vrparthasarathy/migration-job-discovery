@@ -8,21 +8,21 @@ import { fixture, MANIFEST, reconcile, rows, schema, snapshot, text, writeExport
 
 async function threeVendors(extraManifest: Record<string, string>[] = []): Promise<Fixture> {
   const data = baseExport();
-  data.Questions!.push({ question_ref: "QN-0005", use_case_ref: "UC-001", use_case_name: "Daily Report", vendor: "Acme", spec_refs: "Daily Report/Q3@v1", question_text: "Second released Acme question", batch_ref: "BT-001", released_on: "2026-11-12", due_on: "2026-11-16", answer_status: "not-answered", status: "released", notes_internal: "acme-internal-question-note" });
-  data.Questions!.push({ question_ref: "QN-0006", use_case_ref: "UC-003", use_case_name: "Invoice Feed", vendor: "Gamma", spec_refs: "Invoice Feed/Q2@v1", question_text: "Unreleased Gamma question", status: "captured" });
+  data.Questions!.push({ question_ref: "QN-0005", use_case_ref: "UC-001", use_case_name: "Daily Report", vendor: "Acme", spec_refs: "uc-acme-daily-report/Q3@v1", question_text: "Second released Acme question", batch_ref: "BT-001", released_on: "2026-11-12", due_on: "2026-11-16", answer_status: "not-answered", status: "released", notes_internal: "acme-internal-question-note" });
+  data.Questions!.push({ question_ref: "QN-0006", use_case_ref: "UC-003", use_case_name: "Invoice Feed", vendor: "Gamma", spec_refs: "uc-gamma-invoice-feed/Q2@v1", question_text: "Unreleased Gamma question", status: "captured" });
   data["Question Links"]!.push({ link_ref: "QL-0002", group_ref: "QG-001", question_ref: "QN-0005", link_status: "suggested" });
   const f = await fixture();
   await writeExport(f.exportDir, data, [...MANIFEST, ...extraManifest]);
   await writeProposal(f.proposals, "mr-12", [
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "spec_link", value: "https://specs.example/daily-v2", base: "https://specs.example/daily" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "grouping_impact", value: "could-affect", base: "" },
-    { tab: "Use Cases", op: "set", key: "Nightly Sync", field: "current_version", value: "2", base: "1" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "vendor", value: "Beta", base: "Acme" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "current_spec_text", value: "Which time zone does the daily report use for timestamps?", base: "Which time zone does the daily report use?" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q2", field: "spec_refs", value: "Daily Report/Q2@v2", base: "Daily Report/Q2@v1" },
-    { tab: "Identity & Access", op: "link", key: "Daily Report//api/report/prod", field: "evidence_refs", value: "QN-0002;notes/doc.md" },
-    { tab: "Questions", op: "add", key: "Daily Report/Q9", field: "use_case_name", value: "Daily Report" },
-    { tab: "Questions", op: "add", key: "Daily Report/Q9", field: "question_text", value: "How are retries scheduled for the nightly sync?" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "spec_link", value: "https://specs.example/daily-v2", base: "https://specs.example/daily" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "grouping_impact", value: "could-affect", base: "" },
+    { tab: "Use Cases", op: "set", key: "uc-beta-nightly-sync", field: "current_version", value: "2", base: "1" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "vendor", value: "Beta", base: "Acme" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "current_spec_text", value: "Which time zone does the daily report use for timestamps?", base: "Which time zone does the daily report use?" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q2", field: "spec_refs", value: "uc-acme-daily-report/Q2@v2", base: "uc-acme-daily-report/Q2@v1" },
+    { tab: "Identity & Access", op: "link", key: "uc-acme-daily-report//api/report/prod", field: "evidence_refs", value: "QN-0002;notes/doc.md" },
+    { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q9", field: "use_case_name", value: "Daily Report" },
+    { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q9", field: "question_text", value: "How are retries scheduled for the nightly sync?" },
   ]);
   return f;
 }
@@ -107,7 +107,7 @@ test("[B08] two vendor names that share a folder name stop the run with nothing 
   data["Use Cases"]![1] = { ...data["Use Cases"]![1]!, vendor: "ACME" };
   const f = await fixture();
   await writeExport(f.exportDir, data);
-  await writeProposal(f.proposals, "mr-12", [{ tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" }]);
+  await writeProposal(f.proposals, "mr-12", [{ tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" }]);
   const outcome = await reconcile(f);
   assert.equal(outcome.status, 1);
   assert.match(outcome.stderr, /"Acme".*"ACME"|"ACME".*"Acme"/);

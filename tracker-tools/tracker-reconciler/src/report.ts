@@ -2,6 +2,7 @@ import { chmod, mkdir, mkdtemp, readdir, rename, rm, writeFile } from "node:fs/p
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { formatCsv, joinList, splitList, type Row } from "../../tracker-tables/src/csv.ts";
 import { getTab, isReference, tabFileName, type Schema } from "../../tracker-tables/src/schema.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import { vendorView } from "../../tracker-tables/src/vendor_view.ts";
 import { InputError, PROPOSABLE, slug, type Change, type ExportData } from "./inputs.ts";
 import { CONFIDENT_THRESHOLD, SUGGEST_THRESHOLD } from "./matching.ts";
@@ -27,7 +28,7 @@ function additionRows(schema: Schema, data: ExportData, all: Change[], tab: stri
     const sources = [...new Set(a.changes.map((c) => c.source))];
     const version = /@([^#:;\s]+)/.exec(sources.join(" "))?.[1] ?? value("current_version");
     const useCase = a.changes[0]!.useCase;
-    const mr = value("mr_link") || all.find((c) => c.tab === "Use Cases" && c.record_key === useCase && c.field === "mr_link" && c.value !== "")?.value || (data.tables["Use Cases"]?.rows.find((r) => r.use_case_name === useCase)?.mr_link ?? "");
+    const mr = value("mr_link") || all.find((c) => c.tab === "Use Cases" && c.record_key === useCase && c.field === "mr_link" && c.value !== "")?.value || (data.tables["Use Cases"]?.rows.find((r) => useCaseId(r.vendor!, r.use_case_name!) === useCase)?.mr_link ?? "");
     const row: Row = { suggested_ref: a.ref, ref_status: "suggested", local_key: a.localKey, suggested_proposal_refs: joinList(a.changes.map((c) => c.update_id)), trace_source: joinList(sources), trace_spec_version: version, trace_mr_link: mr };
     for (const name of spec) row[name] = value(name);
     for (const name of human) row[`suggested_${name}`] = value(name);

@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
-import { baseExport, cli, ok, RELEASE, rowsOf, setup, sheetRows, textOf, update, type RV } from "./support.ts";
+import { baseExport, cli, ok, RELEASE, rowsOf, setup, sheetRows, textOf, update, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
-const question = (extra: Partial<RV> = {}): RV => ({ tab: "Questions", key: "Daily Report/Q9@v2", ref: "QN-0005", useCase: "Daily Report", fields: { question_text: ["", "Which retention applies?", "add"], spec_refs: ["", "Daily Report/Q9@v2", "add"] }, ...extra });
+const question = (extra: Partial<RV> = {}): RV => ({ tab: "Questions", key: `${DAILY}/Q9@v2`, ref: "QN-0005", useCase: DAILY, fields: { question_text: ["", "Which retention applies?", "add"], spec_refs: ["", `${DAILY}/Q9@v2`, "add"] }, ...extra });
 
 test("[B5] a new question on a named release is added with its release, batch and due date", async () => {
   const f = await setup([question()]);
@@ -27,19 +27,19 @@ test("[B5] the due date skips the holidays of the holidays file", async () => {
 });
 
 test("[B5] without a release a new question stays pending and is listed, while a new access row is still added", async () => {
-  const f = await setup([question(), { tab: "Identity & Access", key: "Daily Report/prod", ref: "AX-002", useCase: "Daily Report", fields: { service: ["", "Reports", "add"], environment: ["", "test", "add"], auth_type: ["", "api-credential", "add"] } }]);
+  const f = await setup([question(), { tab: "Identity & Access", key: `${DAILY}/reports/prod`, ref: "AX-002", useCase: DAILY, fields: { service: ["", "Reports", "add"], environment: ["", "test", "add"], auth_type: ["", "api-credential", "add"] } }]);
   await ok(f);
   assert.equal((await sheetRows(f.out, "Questions")).length, 1);
   const access = await sheetRows(f.out, "Identity & Access");
   assert.deepEqual({ ref: access[1]!["Access ref"], uc: access[1]!["Use case ref"], vendor: access[1]!.Vendor, auth: access[1]!["Auth type"] }, { ref: "AX-002", uc: "UC-001", vendor: "Acme", auth: "api-credential" });
-  assert.match(await textOf(f.report), /## Pending question releases\n\n- Questions, Daily Report\/Q9@v2 .*no release named/);
+  assert.match(await textOf(f.report), /## Pending question releases\n\n- Questions, uc-acme-daily-report\/Q9@v2 .*no release named/);
   assert.equal((await rowsOf(`${f.reviews}/review-questions.csv`))[0]!.applied_on, "");
 });
 
 test("[B5] a new question for a use case added in the same run is added with that use case's reference", async () => {
   const f = await setup([
-    { tab: "Use Cases", key: "Weekly Digest", ref: "UC-004", useCase: "Weekly Digest", fields: { vendor: ["", "Acme", "add"], current_version: ["", "1", "add"] } },
-    question({ ref: "QN-0006", useCase: "Weekly Digest", key: "Weekly Digest/Q1@v1" }),
+    { tab: "Use Cases", key: WEEKLY, ref: "UC-004", useCase: WEEKLY, fields: { vendor: ["", "Acme", "add"], use_case_name: ["", "Weekly Digest", "add"], current_version: ["", "1", "add"] } },
+    question({ ref: "QN-0006", useCase: WEEKLY, key: `${WEEKLY}/Q1@v1` }),
   ]);
   await ok(f, ...RELEASE);
   const [uc] = (await sheetRows(f.out, "Use Cases")).slice(1);

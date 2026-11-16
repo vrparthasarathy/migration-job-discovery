@@ -4,23 +4,23 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { add, edit, ok as exported, review, set, setup as exporterSetup } from "../../review-csv-exporter/test/support.ts";
 import { buildVendorWorkbook } from "../src/workbook_write.ts";
-import { acmeRows, cli, RELEASE, RUN_DATE, sheetRows, textOf, world } from "./support.ts";
+import { acmeRows, cli, DAILY, NIGHTLY, RELEASE, RUN_DATE, sheetRows, textOf, world } from "./support.ts";
 
 test("[B1] it applies real export-review output end to end, and a refreshed export keeps the applied rows skipped", async () => {
   const f = await exporterSetup({
     "mr-1": [
-      set("Use Cases", "Daily Report", "current_version", "2", "1"),
-      set("Use Cases", "Nightly Sync", "current_version", "2", "1"),
-      add("Questions", "Daily Report/Q9", "question_text", "Which retention applies?"),
-      add("Questions", "Daily Report/Q9", "spec_refs", "Daily Report/Q9@v2"),
-      add("Identity & Access", "Daily Report/prod", "service", "Reports"),
-      add("Identity & Access", "Daily Report/prod", "environment", "test"),
-      add("Identity & Access", "Daily Report/prod", "auth_type", "api-credential"),
-      set("Use Cases", "Daily Report", "stage", "acknowledged", "sent"),
+      set("Use Cases", DAILY, "current_version", "2", "1"),
+      set("Use Cases", NIGHTLY, "current_version", "2", "1"),
+      add("Questions", `${DAILY}/Q9`, "question_text", "Which retention applies?"),
+      add("Questions", `${DAILY}/Q9`, "spec_refs", `${DAILY}/Q9@v2`),
+      add("Identity & Access", `${DAILY}/reports/prod`, "service", "Reports"),
+      add("Identity & Access", `${DAILY}/reports/prod`, "environment", "test"),
+      add("Identity & Access", `${DAILY}/reports/prod`, "auth_type", "api-credential"),
+      set("Use Cases", DAILY, "stage", "acknowledged", "sent"),
     ],
   });
   await exported(f);
-  for (const [file, match] of [["review-use-cases.csv", "UC-001"], ["review-use-cases.csv", "UC-002"], ["review-questions.csv", "Daily Report/Q9"], ["review-identity-access.csv", "Daily Report/prod"]] as const) {
+  for (const [file, match] of [["review-use-cases.csv", "UC-001"], ["review-use-cases.csv", "UC-002"], ["review-questions.csv", `${DAILY}/Q9`], ["review-identity-access.csv", `${DAILY}/reports/prod`]] as const) {
     await edit(f, file, match, { review_status: "accepted", reviewer: "Lead Rae", reviewed_on: "2026-11-19" });
   }
   const w = await world();

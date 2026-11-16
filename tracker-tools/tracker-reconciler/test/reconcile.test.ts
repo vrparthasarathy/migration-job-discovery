@@ -2,8 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import type { Row } from "../../tracker-tables/src/csv.ts";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import { baseExport } from "./fixtures.ts";
-import { fixture, MANIFEST, reconcile, rows, snapshot, text, writeExport, writeProposal, type Fixture, type PRow } from "./support.ts";
+import { fixture, MANIFEST, nameOf, reconcile, rows, snapshot, text, writeExport, writeProposal, type Fixture, type PRow } from "./support.ts";
 
 async function setup(proposals: PRow[], data = baseExport(), id = "mr-12", manifest = MANIFEST): Promise<Fixture> {
   const f = await fixture();
@@ -25,7 +26,7 @@ async function run(f: Fixture) {
 }
 
 const question = (key: string, extra: PRow[] = []): PRow[] => [
-  { tab: "Questions", op: "add", key, field: "use_case_name", value: key.split("/")[0]!, source: "daily/daily.md@v2#q3" },
+  { tab: "Questions", op: "add", key, field: "use_case_name", value: nameOf(key.split("/")[0]!), source: "daily/daily.md@v2#q3" },
   { tab: "Questions", op: "add", key, field: "spec_refs", value: `${key}@v2`, source: "daily/daily.md@v2#q3" },
   ...extra,
 ];
@@ -37,10 +38,10 @@ test("[B01] an absent question is an addition with traceability, a suggested ref
   data["Question Links"]!.push({ link_ref: "QL-0002", question_ref: "QN-0009" });
   const f = await setup(
     [
-      { tab: "Use Cases", op: "set", key: "Daily Report", field: "mr_link", value: "https://git.example/mr/12", base: "" },
-      ...question("Daily Report/Q3", [
-        { tab: "Questions", op: "add", key: "Daily Report/Q3", field: "question_text", value: "What is the delivery format of the report?", source: "daily/daily.md@v2#q3" },
-        { tab: "Questions", op: "add", key: "Daily Report/Q3", field: "status", value: "captured", source: "daily/daily.md@v2#q3" },
+      { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "mr_link", value: "https://git.example/mr/12", base: "" },
+      ...question("uc-acme-daily-report/Q3", [
+        { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q3", field: "question_text", value: "What is the delivery format of the report?", source: "daily/daily.md@v2#q3" },
+        { tab: "Questions", op: "add", key: "uc-acme-daily-report/Q3", field: "status", value: "captured", source: "daily/daily.md@v2#q3" },
       ]),
     ],
     data,
@@ -51,7 +52,7 @@ test("[B01] an absent question is an addition with traceability, a suggested ref
   const row = added[0]!;
   assert.equal(row.suggested_ref, "QN-0010", "next after every reference in the export, including QN-0009 held only in a link");
   assert.equal(row.ref_status, "suggested");
-  assert.equal(row.local_key, "Daily Report/Q3");
+  assert.equal(row.local_key, "uc-acme-daily-report/Q3");
   assert.equal(row.use_case_name, "Daily Report");
   assert.equal(row.suggested_question_text, "What is the delivery format of the report?");
   assert.equal(row.suggested_status, "captured");
@@ -61,42 +62,42 @@ test("[B01] an absent question is an addition with traceability, a suggested ref
   assert.equal(row.trace_source, "daily/daily.md@v2#q3");
   assert.equal(row.trace_spec_version, "v2");
   assert.equal(row.trace_mr_link, "https://git.example/mr/12");
-  assert.deepEqual(row.suggested_proposal_refs!.split(";").sort(), ["mr-12:Questions:Daily Report/Q3:question_text", "mr-12:Questions:Daily Report/Q3:spec_refs", "mr-12:Questions:Daily Report/Q3:status", "mr-12:Questions:Daily Report/Q3:use_case_name"]);
+  assert.deepEqual(row.suggested_proposal_refs!.split(";").sort(), ["mr-12:Questions:uc-acme-daily-report/Q3:question_text", "mr-12:Questions:uc-acme-daily-report/Q3:spec_refs", "mr-12:Questions:uc-acme-daily-report/Q3:status", "mr-12:Questions:uc-acme-daily-report/Q3:use_case_name"]);
 });
 
 test("[B01] a new use case is an addition with its own suggested reference and no reuse of an export reference", async () => {
   const f = await setup([
-    { tab: "Use Cases", op: "add", key: "Fresh Case", field: "use_case_name", value: "Fresh Case", source: "fresh/fresh.md@v1#use-case" },
-    { tab: "Use Cases", op: "add", key: "Fresh Case", field: "current_version", value: "1", source: "fresh/fresh.md@v1#change-log" },
-    { tab: "Use Cases", op: "add", key: "Fresh Case", field: "our_owner", value: "Lena", source: "fresh/fresh.md@v1#use-case" },
-    { tab: "Use Cases", op: "add", key: "Other Case", field: "use_case_name", value: "Other Case", source: "other/other.md#use-case" },
+    { tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "use_case_name", value: "Fresh Case", source: "fresh/fresh.md@v1#use-case" },
+    { tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "current_version", value: "1", source: "fresh/fresh.md@v1#change-log" },
+    { tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "our_owner", value: "Lena", source: "fresh/fresh.md@v1#use-case" },
+    { tab: "Use Cases", op: "add", key: "uc-acme-other-case", field: "use_case_name", value: "Other Case", source: "other/other.md#use-case" },
   ]);
   const result = await run(f);
   const added = await result.additions("use-cases.csv");
-  assert.deepEqual(added.map((r) => [r.suggested_ref, r.local_key, r.suggested_our_owner ?? ""]), [["UC-004", "Fresh Case", "Lena"], ["UC-005", "Other Case", ""]]);
+  assert.deepEqual(added.map((r) => [r.suggested_ref, r.local_key, r.suggested_our_owner ?? ""]), [["UC-004", "uc-acme-fresh-case", "Lena"], ["UC-005", "uc-acme-other-case", ""]]);
   assert.equal(added[0]!.trace_spec_version, "v1");
   assert.equal(added[1]!.trace_spec_version, "", "no version is invented when the source names none");
   assert.equal(added[0]!.current_version, "1");
 });
 
 test("[B02] a differing spec field is a field update with both values and never touches the export", async () => {
-  const f = await setup([{ tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" }]);
+  const f = await setup([{ tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" }]);
   const before = await snapshot(f.exportDir);
   const result = await run(f);
   const updates = await result.updates();
   assert.equal(updates.length, 1);
   assert.deepEqual(
     [updates[0]!.tab, updates[0]!.record, updates[0]!.field, updates[0]!.current_value, updates[0]!.proposed_value, updates[0]!.update_id],
-    ["Use Cases", "UC-001", "current_version", "1", "2", "mr-12:Use Cases:Daily Report:current_version"],
+    ["Use Cases", "UC-001", "current_version", "1", "2", "mr-12:Use Cases:uc-acme-daily-report:current_version"],
   );
   assert.deepEqual(await snapshot(f.exportDir), before);
 });
 
 test("[B02] a human-owned field is suggested only and is never overwritten", async () => {
   const f = await setup([
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "our_owner", value: "Zed" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "source_owner", value: "Quinn", base: "Sam" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "next_action", value: "Ask Acme for the sample file" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "our_owner", value: "Zed" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "source_owner", value: "Quinn", base: "Sam" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "next_action", value: "Ask Acme for the sample file" },
   ]);
   const result = await run(f);
   assert.deepEqual(await result.updates(), []);
@@ -113,23 +114,23 @@ test("[B02] a human-owned field is suggested only and is never overwritten", asy
 
 test("[B02] a blank suggestion is ignored, a record missing from the export cannot be set and a value outside its list is rejected", async () => {
   const f = await setup([
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "next_action_owner", value: "" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q9", field: "spec_refs", value: "Daily Report/Q9@v2", base: "" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "last_change_class", value: "sideways", base: "" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "next_action_owner", value: "" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q9", field: "spec_refs", value: "uc-acme-daily-report/Q9@v2", base: "" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "last_change_class", value: "sideways", base: "" },
   ]);
   const result = await run(f);
   assert.deepEqual(await result.updates(), []);
   assert.deepEqual(await result.suggestions(), []);
   const report = await result.report();
-  assert.match(report, /Daily Report\/Q9:spec_refs` rejected: record "Daily Report\/Q9" is not in the export; only add creates a record/);
+  assert.match(report, /uc-acme-daily-report\/Q9:spec_refs` rejected: record "uc-acme-daily-report\/Q9" is not in the export; only add creates a record/);
   assert.match(report, /last_change_class` rejected: invalid value: "sideways" is not one of behavior-change, non-behavior-change/);
 });
 
 test("[B02] a reworded question is a current_spec_text update with a text-review suggestion and the released text and answer stay untouched", async () => {
   const f = await setup([
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "current_spec_text", value: "Which time zone does the daily report use for its timestamps?", base: "Which time zone does the daily report use?" },
-    { tab: "Questions", op: "suggest", key: "Daily Report/Q1", field: "text_review", value: "possible-meaning-change", reason: "timestamps are new" },
-    { tab: "Questions", op: "suggest", key: "Daily Report/Q1", field: "question_text", value: "Reworded released text" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "current_spec_text", value: "Which time zone does the daily report use for its timestamps?", base: "Which time zone does the daily report use?" },
+    { tab: "Questions", op: "suggest", key: "uc-acme-daily-report/Q1", field: "text_review", value: "possible-meaning-change", reason: "timestamps are new" },
+    { tab: "Questions", op: "suggest", key: "uc-acme-daily-report/Q1", field: "question_text", value: "Reworded released text" },
   ]);
   const result = await run(f);
   const updates = await result.updates();
@@ -150,11 +151,11 @@ test("[B02] a reworded question is a current_spec_text update with a text-review
 
 test("[B04] a base mismatch is a conflict with both values; the record and the rows that refer to it are held and unrelated changes are still reported", async () => {
   const f = await setup([
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "0" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "our_owner", value: "Zed" },
-    ...question("Daily Report/Q3", [{ tab: "Questions", op: "add", key: "Daily Report/Q3", field: "question_text", value: "Held question text about delivery?" }]),
-    { tab: "Use Cases", op: "set", key: "Nightly Sync", field: "current_version", value: "2", base: "1" },
-    ...question("Nightly Sync/Q2"),
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "0" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "our_owner", value: "Zed" },
+    ...question("uc-acme-daily-report/Q3", [{ tab: "Questions", op: "add", key: "uc-acme-daily-report/Q3", field: "question_text", value: "Held question text about delivery?" }]),
+    { tab: "Use Cases", op: "set", key: "uc-beta-nightly-sync", field: "current_version", value: "2", base: "1" },
+    ...question("uc-beta-nightly-sync/Q2"),
   ]);
   const result = await run(f);
   const conflicts = await result.conflicts();
@@ -163,21 +164,21 @@ test("[B04] a base mismatch is a conflict with both values; the record and the r
   assert.deepEqual([base[0]!.record, base[0]!.field, base[0]!.current_value, base[0]!.proposed_value, base[0]!.base_value], ["UC-001", "current_version", "1", "2", "0"]);
   const held = by(conflicts, "kind", "held");
   const heldIds = held.map((h) => h.update_id).sort();
-  assert.ok(heldIds.includes("mr-12:Use Cases:Daily Report:our_owner"), "another change to the affected record is held");
-  assert.ok(heldIds.includes("mr-12:Questions:Daily Report/Q3:question_text"), "a row that refers to the record is held");
-  assert.ok(held.every((h) => h.detail === `held by base-mismatch:mr-12:Use Cases:Daily Report:current_version`));
+  assert.ok(heldIds.includes("mr-12:Use Cases:uc-acme-daily-report:our_owner"), "another change to the affected record is held");
+  assert.ok(heldIds.includes("mr-12:Questions:uc-acme-daily-report/Q3:question_text"), "a row that refers to the record is held");
+  assert.ok(held.every((h) => h.detail === `held by base-mismatch:mr-12:Use Cases:uc-acme-daily-report:current_version`));
   const added = await result.additions("questions.csv");
-  assert.deepEqual(added.map((r) => r.local_key), ["Nightly Sync/Q2"], "the unrelated question is still an addition");
+  assert.deepEqual(added.map((r) => r.local_key), ["uc-beta-nightly-sync/Q2"], "the unrelated question is still an addition");
   assert.deepEqual((await result.updates()).map((u) => u.record), ["UC-002"], "the unrelated field update is still reported");
-  assert.equal(by(await result.suggestions(), "update_id", "mr-12:Use Cases:Daily Report:our_owner").length, 0);
+  assert.equal(by(await result.suggestions(), "update_id", "mr-12:Use Cases:uc-acme-daily-report:our_owner").length, 0);
 });
 
 test("[B04] a row edited after the proposal was created is a later-edit conflict and is never overwritten", async () => {
-  const f = await setup([{ tab: "Questions", op: "set", key: "Daily Report/Q1", field: "spec_refs", value: "Daily Report/Q1@v2", base: "Daily Report/Q1@v1", created: "2026-11-12" }]);
+  const f = await setup([{ tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "spec_refs", value: "uc-acme-daily-report/Q1@v2", base: "uc-acme-daily-report/Q1@v1", created: "2026-11-12" }]);
   const result = await run(f);
   const conflicts = await result.conflicts();
   assert.equal(conflicts.length, 1);
-  assert.deepEqual([conflicts[0]!.kind, conflicts[0]!.record, conflicts[0]!.current_value, conflicts[0]!.proposed_value], ["later-edit", "QN-0001", "Daily Report/Q1@v1", "Daily Report/Q1@v2"]);
+  assert.deepEqual([conflicts[0]!.kind, conflicts[0]!.record, conflicts[0]!.current_value, conflicts[0]!.proposed_value], ["later-edit", "QN-0001", "uc-acme-daily-report/Q1@v1", "uc-acme-daily-report/Q1@v2"]);
   assert.match(conflicts[0]!.detail!, /2026-11-13.*2026-11-12/);
   assert.deepEqual(await result.updates(), []);
 });
@@ -185,8 +186,8 @@ test("[B04] a row edited after the proposal was created is a later-edit conflict
 test("[B04] an export older than the proposal is a stale-export conflict; a new record that touches nothing in the export is still an addition", async () => {
   const f = await setup(
     [
-      { tab: "Use Cases", op: "set", key: "Nightly Sync", field: "current_version", value: "2", base: "1", created: "2026-11-18" },
-      { tab: "Use Cases", op: "add", key: "Fresh Case", field: "use_case_name", value: "Fresh Case", created: "2026-11-18" },
+      { tab: "Use Cases", op: "set", key: "uc-beta-nightly-sync", field: "current_version", value: "2", base: "1", created: "2026-11-18" },
+      { tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "use_case_name", value: "Fresh Case", created: "2026-11-18" },
     ],
     baseExport(),
     "mr-13",
@@ -196,27 +197,27 @@ test("[B04] an export older than the proposal is a stale-export conflict; a new 
   const conflicts = await result.conflicts();
   assert.deepEqual(by(conflicts, "kind", "stale-export").map((c) => [c.record, c.current_value, c.proposed_value]), [["UC-002", "2026-11-10", "2026-11-18"]]);
   assert.deepEqual(await result.updates(), []);
-  assert.deepEqual((await result.additions("use-cases.csv")).map((r) => r.local_key), ["Fresh Case"]);
+  assert.deepEqual((await result.additions("use-cases.csv")).map((r) => r.local_key), ["uc-acme-fresh-case"]);
 });
 
 test("[B04] two proposals that disagree about the same field are a conflict that holds the record", async () => {
-  const f = await setup([{ tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" }]);
+  const f = await setup([{ tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" }]);
   await writeProposal(f.proposals, "mr-14", [
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "3", base: "1" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "spec_revision", value: "abc123", base: "" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "3", base: "1" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "spec_revision", value: "abc123", base: "" },
   ]);
   const result = await run(f);
   const conflicts = await result.conflicts();
-  assert.deepEqual(by(conflicts, "kind", "proposal-disagreement").map((c) => c.update_id).sort(), ["mr-12:Use Cases:Daily Report:current_version", "mr-14:Use Cases:Daily Report:current_version"]);
-  assert.deepEqual(by(conflicts, "kind", "held").map((c) => c.update_id), ["mr-14:Use Cases:Daily Report:spec_revision"]);
+  assert.deepEqual(by(conflicts, "kind", "proposal-disagreement").map((c) => c.update_id).sort(), ["mr-12:Use Cases:uc-acme-daily-report:current_version", "mr-14:Use Cases:uc-acme-daily-report:current_version"]);
+  assert.deepEqual(by(conflicts, "kind", "held").map((c) => c.update_id), ["mr-14:Use Cases:uc-acme-daily-report:spec_revision"]);
   assert.deepEqual(await result.updates(), []);
 });
 
 test("[B04] two proposals that add the same new record with different values conflict under its local key", async () => {
-  const f = await setup([{ tab: "Use Cases", op: "add", key: "Fresh Case", field: "current_version", value: "1" }]);
-  await writeProposal(f.proposals, "mr-14", [{ tab: "Use Cases", op: "add", key: "Fresh Case", field: "current_version", value: "2" }]);
+  const f = await setup([{ tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "current_version", value: "1" }]);
+  await writeProposal(f.proposals, "mr-14", [{ tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "current_version", value: "2" }]);
   const result = await run(f);
-  assert.deepEqual((await result.conflicts()).map((c) => [c.kind, c.record, c.current_value, c.proposed_value]), [["proposal-disagreement", "Fresh Case", "2", "1"], ["proposal-disagreement", "Fresh Case", "1", "2"]]);
+  assert.deepEqual((await result.conflicts()).map((c) => [c.kind, c.record, c.current_value, c.proposed_value]), [["proposal-disagreement", "uc-acme-fresh-case", "2", "1"], ["proposal-disagreement", "uc-acme-fresh-case", "1", "2"]]);
   assert.deepEqual(await result.additions("use-cases.csv"), []);
 });
 
@@ -225,36 +226,36 @@ test("[B04] a conflict on a question holds the mapping that names it as blocking
   data.Mappings!.push({ mapping_ref: "MP-002", use_case_ref: "UC-002", workflow_candidate: "Sync Hub", mapping_status: "candidate", blocking_question_refs: "QN-0001", last_updated: "2026-11-10" });
   const f = await setup(
     [
-      { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "spec_refs", value: "Daily Report/Q1@v2", base: "stale", created: "2026-11-18" },
-      { tab: "Mappings", op: "set", key: "Nightly Sync->>sync-hub", field: "parameter_differences", value: "Schedules differ", base: "" },
-      { tab: "Mappings", op: "set", key: "Nightly Sync->>sync-hub", field: "blocking_question_refs", value: "QN-0001;Daily Report/Q1", base: "QN-0001" },
+      { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "spec_refs", value: "uc-acme-daily-report/Q1@v2", base: "stale", created: "2026-11-18" },
+      { tab: "Mappings", op: "set", key: "uc-beta-nightly-sync->>sync-hub", field: "parameter_differences", value: "Schedules differ", base: "" },
+      { tab: "Mappings", op: "set", key: "uc-beta-nightly-sync->>sync-hub", field: "blocking_question_refs", value: "QN-0001;uc-acme-daily-report/Q1", base: "QN-0001" },
     ],
     data,
   );
   const result = await run(f);
   const held = by(await result.conflicts(), "kind", "held");
-  assert.deepEqual(held.map((h) => h.update_id).sort(), ["mr-12:Mappings:Nightly Sync->>sync-hub:blocking_question_refs", "mr-12:Mappings:Nightly Sync->>sync-hub:parameter_differences"]);
+  assert.deepEqual(held.map((h) => h.update_id).sort(), ["mr-12:Mappings:uc-beta-nightly-sync->>sync-hub:blocking_question_refs", "mr-12:Mappings:uc-beta-nightly-sync->>sync-hub:parameter_differences"]);
   assert.deepEqual(await result.updates(), []);
 });
 
 test("[B04] a new mapping that names a conflicted question is held whole, not added without it", async () => {
   const f = await setup([
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "spec_refs", value: "Daily Report/Q1@v2", base: "stale" },
-    { tab: "Mappings", op: "add", key: "Daily Report->>fresh-hub", field: "workflow_candidate", value: "Fresh Hub" },
-    { tab: "Mappings", op: "add", key: "Daily Report->>fresh-hub", field: "blocking_question_refs", value: "Daily Report/Q1" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "spec_refs", value: "uc-acme-daily-report/Q1@v2", base: "stale" },
+    { tab: "Mappings", op: "add", key: "uc-acme-daily-report->>fresh-hub", field: "workflow_candidate", value: "Fresh Hub" },
+    { tab: "Mappings", op: "add", key: "uc-acme-daily-report->>fresh-hub", field: "blocking_question_refs", value: "uc-acme-daily-report/Q1" },
   ]);
   const result = await run(f);
   assert.deepEqual(await result.additions("mappings.csv"), []);
-  assert.deepEqual(by(await result.conflicts(), "kind", "held").map((h) => h.update_id).sort(), ["mr-12:Mappings:Daily Report->>fresh-hub:blocking_question_refs", "mr-12:Mappings:Daily Report->>fresh-hub:workflow_candidate"]);
+  assert.deepEqual(by(await result.conflicts(), "kind", "held").map((h) => h.update_id).sort(), ["mr-12:Mappings:uc-acme-daily-report->>fresh-hub:blocking_question_refs", "mr-12:Mappings:uc-acme-daily-report->>fresh-hub:workflow_candidate"]);
 });
 
 test("[B05] a similar new question is a link suggestion for review, nothing is linked and no answer is inherited", async () => {
   const f = await setup([
-    ...question("Daily Report/Q3", [{ tab: "Questions", op: "add", key: "Daily Report/Q3", field: "question_text", value: "Which time zone is used by the daily report?" }]),
-    ...question("Nightly Sync/Q2", [{ tab: "Questions", op: "add", key: "Nightly Sync/Q2", field: "question_text", value: "How are retries scheduled for the nightly sync?" }]),
-    ...question("Invoice Feed/Q2", [{ tab: "Questions", op: "add", key: "Invoice Feed/Q2", field: "question_text", value: "What colour is the logo on the invoice?" }]),
-    ...question("Invoice Feed/Q3", [{ tab: "Questions", op: "add", key: "Invoice Feed/Q3", field: "question_text", value: "What is the main brand colour of the logo on the invoice?" }]),
-    ...question("Daily Report/Q4", [{ tab: "Questions", op: "add", key: "Daily Report/Q4", field: "question_text", value: "Which time zone is used by the daily report job?" }]),
+    ...question("uc-acme-daily-report/Q3", [{ tab: "Questions", op: "add", key: "uc-acme-daily-report/Q3", field: "question_text", value: "Which time zone is used by the daily report?" }]),
+    ...question("uc-beta-nightly-sync/Q2", [{ tab: "Questions", op: "add", key: "uc-beta-nightly-sync/Q2", field: "question_text", value: "How are retries scheduled for the nightly sync?" }]),
+    ...question("uc-gamma-invoice-feed/Q2", [{ tab: "Questions", op: "add", key: "uc-gamma-invoice-feed/Q2", field: "question_text", value: "What colour is the logo on the invoice?" }]),
+    ...question("uc-gamma-invoice-feed/Q3", [{ tab: "Questions", op: "add", key: "uc-gamma-invoice-feed/Q3", field: "question_text", value: "What is the main brand colour of the logo on the invoice?" }]),
+    ...question("uc-acme-daily-report/Q4", [{ tab: "Questions", op: "add", key: "uc-acme-daily-report/Q4", field: "question_text", value: "Which time zone is used by the daily report job?" }]),
   ]);
   const result = await run(f);
   const links = by(await result.suggestions(), "kind", "link");
@@ -281,25 +282,25 @@ test("[B05] a similar new question is a link suggestion for review, nothing is l
 
 test("[B06] forbidden fields and non-suggestible request statuses are rejected with a reason and release status comes only from the tracker", async () => {
   const forbidden: PRow[] = [
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "released_on", value: "2026-11-30", base: "2026-11-12" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "batch_ref", value: "BT-009", base: "BT-001" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "answer", value: "Proposed answer", base: "x" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "answer_status", value: "answered", base: "x" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "acknowledged_on", value: "2026-11-19", base: "2026-11-05" },
-    { tab: "Mappings", op: "set", key: "Daily Report->>report-builder", field: "decision_ref", value: "WD-009", base: "WD-001" },
-    { tab: "Identity & Access", op: "add", key: "Daily Report/reports/prod", field: "ticket_ref", value: "TCK-99" },
-    { tab: "Identity & Access", op: "add", key: "Daily Report/reports/prod", field: "verification", value: "verified" },
-    { tab: "Identity & Access", op: "add", key: "Daily Report/reports/prod", field: "request_status", value: "raised" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "last_updated", value: "2026-11-30", base: "2026-11-13" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "proposal_refs", value: "x:y:z:w" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "use_case_ref", value: "UC-777" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "released_on", value: "2026-11-30", base: "2026-11-12" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "batch_ref", value: "BT-009", base: "BT-001" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "answer", value: "Proposed answer", base: "x" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "answer_status", value: "answered", base: "x" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "acknowledged_on", value: "2026-11-19", base: "2026-11-05" },
+    { tab: "Mappings", op: "set", key: "uc-acme-daily-report->>report-builder", field: "decision_ref", value: "WD-009", base: "WD-001" },
+    { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report/reports/prod", field: "ticket_ref", value: "TCK-99" },
+    { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report/reports/prod", field: "verification", value: "verified" },
+    { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report/reports/prod", field: "request_status", value: "raised" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "last_updated", value: "2026-11-30", base: "2026-11-13" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "proposal_refs", value: "x:y:z:w" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "use_case_ref", value: "UC-777" },
     { tab: "Batches", op: "add", key: "BT-new", field: "vendor", value: "Acme" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "spec_link", value: "https://elsewhere.example" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "spec_link", value: "https://elsewhere.example" },
   ];
   const f = await setup([
     ...forbidden,
-    { tab: "Identity & Access", op: "add", key: "Daily Report/reports/prod", field: "service", value: "Reports" },
-    { tab: "Identity & Access", op: "add", key: "Daily Report/reports/prod", field: "request_status", value: "proposed", id: "mr-13" },
+    { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report/reports/prod", field: "service", value: "Reports" },
+    { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report/reports/prod", field: "request_status", value: "proposed", id: "mr-13" },
   ]);
   const result = await run(f);
   const report = await result.report();
@@ -321,13 +322,13 @@ test("[B06] forbidden fields and non-suggestible request statuses are rejected w
 
 test("[B06] a suggested ready-to-raise request status is accepted and any other status is rejected", async () => {
   const f = await setup([
-    { tab: "Identity & Access", op: "suggest", key: "Daily Report/reports/prod", field: "request_status", value: "approved" },
-    { tab: "Identity & Access", op: "add", key: "Daily Report/billing/prod", field: "request_status", value: "ready-to-raise" },
+    { tab: "Identity & Access", op: "suggest", key: "uc-acme-daily-report/reports/prod", field: "request_status", value: "approved" },
+    { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report/billing/prod", field: "request_status", value: "ready-to-raise" },
   ]);
   const result = await run(f);
   const added = await result.additions("identity-access.csv");
-  assert.deepEqual(added.map((r) => [r.local_key, r.suggested_request_status]), [["Daily Report/billing/prod", "ready-to-raise"]]);
-  assert.match(await result.report(), /mr-12:Identity & Access:Daily Report\/reports\/prod:request_status.*(request_status|suggested)/);
+  assert.deepEqual(added.map((r) => [r.local_key, r.suggested_request_status]), [["uc-acme-daily-report/billing/prod", "ready-to-raise"]]);
+  assert.match(await result.report(), /mr-12:Identity & Access:uc-acme-daily-report\/reports\/prod:request_status.*(request_status|suggested)/);
 });
 
 function impactFixture() {
@@ -350,9 +351,9 @@ function impactFixture() {
   Object.entries(cases).forEach(([name, c], index) => {
     data["Use Cases"]!.push({ use_case_ref: `UC-${100 + index}`, use_case_name: name, vendor: "Acme", current_version: "1", grouping_impact_lead: c.lead ?? "", last_updated: "2026-11-10" });
     data.Mappings!.push({ mapping_ref: `MP-${100 + index}`, use_case_ref: `UC-${100 + index}`, workflow_candidate: "Candidate", mapping_status: "accepted", decision_ref: `WD-${100 + index}`, decided_by: "Lead Rae", decided_on: "2026-11-08", spec_versions_considered: c.considered ?? "1", last_updated: "2026-11-08" });
-    proposals.push({ tab: "Use Cases", op: "set", key: name, field: "current_version", value: "2", base: "1" });
-    if (c.change) proposals.push({ tab: "Use Cases", op: "set", key: name, field: "last_change_class", value: c.change, base: "" });
-    if (c.impact) proposals.push({ tab: "Use Cases", op: "set", key: name, field: "grouping_impact", value: c.impact, base: "", reason: `${c.impact}: reason text` });
+    proposals.push({ tab: "Use Cases", op: "set", key: useCaseId("Acme", name)!, field: "current_version", value: "2", base: "1" });
+    if (c.change) proposals.push({ tab: "Use Cases", op: "set", key: useCaseId("Acme", name)!, field: "last_change_class", value: c.change, base: "" });
+    if (c.impact) proposals.push({ tab: "Use Cases", op: "set", key: useCaseId("Acme", name)!, field: "grouping_impact", value: c.impact, base: "", reason: `${c.impact}: reason text` });
   });
   data.Mappings!.push({ mapping_ref: "MP-900", use_case_ref: "UC-100", workflow_candidate: "Undecided", mapping_status: "candidate", spec_versions_considered: "1" });
   return { data, proposals };
@@ -367,7 +368,7 @@ test("[B07] re-review is suggested for could-affect and unknown, never for not-e
   assert.deepEqual(Object.keys(byMapping).sort(), ["MP-100", "MP-102", "MP-104", "MP-106", "MP-108"], "could, unknown, lead-loud, the unstated case and a decision that recorded no version");
   assert.ok(re.every((r) => r.tab === "Mappings" && r.field === "mapping_status" && r.suggested_value === "re-review-suggested" && r.current_value === "accepted"));
   assert.equal(byMapping["MP-100"]!.review, "impact: could-affect");
-  assert.match(byMapping["MP-100"]!.reason!, /Could Case.*version 2.*considered 1/);
+  assert.match(byMapping["MP-100"]!.reason!, /uc-acme-could-case.*version 2.*considered 1/);
   assert.equal(byMapping["MP-102"]!.review, "impact: unknown");
   assert.match(byMapping["MP-102"]!.reason!, /unknown/);
   assert.equal(/no impact/i.test(byMapping["MP-102"]!.reason!), false, "unknown is never described as no impact");
@@ -392,7 +393,7 @@ test("[B07] re-review never edits decision fields or writes a mapping update", a
 test("[B07] a held version change suggests nothing", async () => {
   const { data, proposals } = impactFixture();
   const f = await setup(
-    proposals.map((p) => (p.key === "Could Case" && p.field === "current_version" ? { ...p, base: "0" } : p)),
+    proposals.map((p) => (p.key === useCaseId("Acme", "Could Case") && p.field === "current_version" ? { ...p, base: "0" } : p)),
     data,
   );
   const result = await run(f);
@@ -404,19 +405,19 @@ test("[B07] a held version change suggests nothing", async () => {
 
 test("[B10] existing references, answers, owners, tickets, dates and acknowledgements are never changed, reassigned or proposed for change", async () => {
   const f = await setup([
-    { tab: "Questions", op: "suggest", key: "Daily Report/Q1", field: "status", value: "closed" },
-    { tab: "Questions", op: "suggest", key: "Daily Report/Q1", field: "our_owner", value: "Zed" },
-    { tab: "Questions", op: "suggest", key: "Daily Report/Q1", field: "resolver", value: "Other Lead" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "answer", value: "Changed", base: "x" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "answer_status", value: "not-answered", base: "answered" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "released_on", value: "2026-12-01", base: "2026-11-12" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "due_on", value: "2026-12-03", base: "2026-11-16" },
-    { tab: "Questions", op: "set", key: "Daily Report/Q1", field: "question_ref", value: "QN-0099", base: "QN-0001" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "use_case_ref", value: "UC-099", base: "UC-001" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "acknowledged_version", value: "9", base: "1" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "acknowledgement_reference", value: "ACK-99", base: "ACK-77" },
-    { tab: "Identity & Access", op: "set", key: "Daily Report/Reports/prod", field: "ticket_ref", value: "TCK-1", base: "TCK-9" },
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" },
+    { tab: "Questions", op: "suggest", key: "uc-acme-daily-report/Q1", field: "status", value: "closed" },
+    { tab: "Questions", op: "suggest", key: "uc-acme-daily-report/Q1", field: "our_owner", value: "Zed" },
+    { tab: "Questions", op: "suggest", key: "uc-acme-daily-report/Q1", field: "resolver", value: "Other Lead" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "answer", value: "Changed", base: "x" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "answer_status", value: "not-answered", base: "answered" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "released_on", value: "2026-12-01", base: "2026-11-12" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "due_on", value: "2026-12-03", base: "2026-11-16" },
+    { tab: "Questions", op: "set", key: "uc-acme-daily-report/Q1", field: "question_ref", value: "QN-0099", base: "QN-0001" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "use_case_ref", value: "UC-099", base: "UC-001" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "acknowledged_version", value: "9", base: "1" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "acknowledgement_reference", value: "ACK-99", base: "ACK-77" },
+    { tab: "Identity & Access", op: "set", key: "uc-acme-daily-report/Reports/prod", field: "ticket_ref", value: "TCK-1", base: "TCK-9" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" },
   ]);
   const before = await snapshot(f.exportDir);
   const result = await run(f);
@@ -432,10 +433,85 @@ test("[B10] existing references, answers, owners, tickets, dates and acknowledge
   assert.equal(Object.values(files).some((content) => content.includes("QN-0099") && !content.includes("rejected")), false);
 });
 
+function twoVendors(): Record<string, Row[]> {
+  const data = baseExport();
+  data["Use Cases"] = [
+    { use_case_ref: "UC-001", use_case_name: "Daily Report", vendor: "Acme", current_version: "1", last_updated: "2026-11-10" },
+    { use_case_ref: "UC-002", use_case_name: "Daily Report", vendor: "Beta", current_version: "1", last_updated: "2026-11-10" },
+  ];
+  data.Questions = [
+    { question_ref: "QN-0001", use_case_ref: "UC-001", use_case_name: "Daily Report", vendor: "Acme", spec_refs: "uc-acme-daily-report/Q1@v1", question_text: "Which time zone does the daily report use?", status: "captured", last_updated: "2026-11-10" },
+    { question_ref: "QN-0002", use_case_ref: "UC-002", use_case_name: "Daily Report", vendor: "Beta", spec_refs: "uc-beta-daily-report/Q1@v1", question_text: "Which time zone does the daily report use?", status: "captured", last_updated: "2026-11-10" },
+  ];
+  data.Mappings = [];
+  data["Identity & Access"] = [];
+  return data;
+}
+
+test("[B11] same-named use cases of two vendors are separate records: updates and additions reach only their own ID's row", async () => {
+  const acme = "uc-acme-daily-report";
+  const beta = "uc-beta-daily-report";
+  const f = await setup(
+    [
+      { tab: "Use Cases", op: "set", key: beta, field: "current_version", value: "2", base: "1" },
+      { tab: "Questions", op: "set", key: `${acme}/Q1`, field: "current_spec_text", value: "Acme wording", base: "" },
+      ...question(`${acme}/Q2`),
+      ...question(`${beta}/Q2`),
+    ],
+    twoVendors(),
+  );
+  const result = await run(f);
+  assert.deepEqual((await result.updates()).map((u) => [u.record, u.field, u.proposed_value]), [["UC-002", "current_version", "2"], ["QN-0001", "current_spec_text", "Acme wording"]]);
+  assert.deepEqual((await result.additions("questions.csv")).map((r) => [r.suggested_ref, r.local_key]), [["QN-0004", `${acme}/Q2`], ["QN-0005", `${beta}/Q2`]]);
+});
+
+test("[B11] with an empty export both vendors' use cases and question 1 are additions under their own IDs and equal texts are only a link suggestion", async () => {
+  const data = twoVendors();
+  for (const tab of Object.keys(data)) data[tab] = [];
+  const proposals: PRow[] = [];
+  for (const [vendor, id] of [["Acme", "uc-acme-daily-report"], ["Beta", "uc-beta-daily-report"]] as const) {
+    proposals.push({ tab: "Use Cases", op: "add", key: id, field: "use_case_name", value: "Daily Report" }, { tab: "Use Cases", op: "add", key: id, field: "vendor", value: vendor });
+    proposals.push(...question(`${id}/Q1`, [{ tab: "Questions", op: "add", key: `${id}/Q1`, field: "question_text", value: "Which time zone does the daily report use?" }]));
+  }
+  const result = await run(await setup(proposals, data));
+  assert.deepEqual((await result.additions("use-cases.csv")).map((r) => [r.suggested_ref, r.local_key]), [["UC-001", "uc-acme-daily-report"], ["UC-002", "uc-beta-daily-report"]]);
+  assert.deepEqual((await result.additions("questions.csv")).map((r) => [r.suggested_ref, r.local_key]), [["QN-0001", "uc-acme-daily-report/Q1"], ["QN-0002", "uc-beta-daily-report/Q1"]]);
+  const links = by(await result.suggestions(), "kind", "link");
+  assert.deepEqual(links.map((l) => [l.record, l.related_record, l.score, l.review]), [["QN-0002", "QN-0001", "1", "likely"]]);
+  assert.deepEqual(await result.conflicts(), []);
+});
+
+test("[B01] the MR link of an addition comes from the export row of the same use case ID, not a same-named use case of another vendor", async () => {
+  const data = twoVendors();
+  data["Use Cases"]![0]!.mr_link = "https://git.example/acme";
+  data["Use Cases"]![1]!.mr_link = "https://git.example/beta";
+  const f = await setup(question("uc-beta-daily-report/Q2"), data);
+  const added = await (await run(f)).additions("questions.csv");
+  assert.equal(added[0]!.trace_mr_link, "https://git.example/beta");
+});
+
+test("[B11] an export use case without a vendor has no ID: it matches no key and its mapping and access rows are never matched by a key", async () => {
+  const data = baseExport();
+  data["Use Cases"]!.push({ use_case_ref: "UC-009", use_case_name: "Orphan", vendor: "", current_version: "1" });
+  data.Mappings!.push({ mapping_ref: "MP-009", use_case_ref: "UC-009", workflow_candidate: "Hub", mapping_status: "candidate" });
+  data["Identity & Access"]!.push({ access_ref: "AX-009", use_case_ref: "UC-009", endpoint: "/e", environment: "prod" });
+  data.Mappings!.push({ mapping_ref: "MP-010", use_case_ref: "UC-777", workflow_candidate: "Lost", mapping_status: "candidate" });
+  const f = await setup(
+    [
+      { tab: "Mappings", op: "add", key: "uc-acme-daily-report->>hub", field: "workflow_candidate", value: "Hub" },
+      { tab: "Identity & Access", op: "add", key: "uc-acme-daily-report//e/prod", field: "service", value: "Orphans" },
+    ],
+    data,
+  );
+  const result = await run(f);
+  assert.deepEqual((await result.additions("mappings.csv")).map((r) => r.local_key), ["uc-acme-daily-report->>hub"]);
+  assert.deepEqual((await result.additions("identity-access.csv")).map((r) => r.local_key), ["uc-acme-daily-report//e/prod"]);
+});
+
 test("[B10] a repeated run does not overwrite a newer human edit", async () => {
   const f = await setup([
-    { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" },
-    { tab: "Use Cases", op: "suggest", key: "Daily Report", field: "our_owner", value: "Zed" },
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" },
+    { tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "our_owner", value: "Zed" },
   ]);
   const first = await run(f);
   assert.equal((await first.updates()).length, 1);

@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ok, review, set, setup } from "./support.ts";
+import { ids, ok, review, set, setup } from "./support.ts";
 
 test("[B03] a record proposed in several proposals and folders appears once, keyed by its reference", async () => {
-  const change = set("Use Cases", "Nightly Sync", "current_version", "2", "1");
+  const change = set("Use Cases", ids.nightly, "current_version", "2", "1");
   const f = await setup({
     "mr-1": [change],
     "mr-2": [{ ...change, id: "mr-2" }],
-    "mr-3": [set("Use Cases", "Nightly Sync", "vendor", "Beta Inc", "Beta")],
+    "mr-3": [set("Use Cases", ids.nightly, "vendor", "Beta Inc", "Beta")],
   });
   await ok(f);
   const rows = await review(f, "review-use-cases.csv");

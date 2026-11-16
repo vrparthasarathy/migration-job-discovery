@@ -16,7 +16,7 @@ node src/main.ts update-master-workbook
 ```
 
 - `--from-export` takes the Tracker Data Contract's export folder (a CSV per tab plus `manifest.csv`), read through the Tracker Reconciler's loader; it bootstraps the first master.
-- `--reviews` holds the four exporter files, `review-use-cases.csv`, `review-questions.csv`, `review-identity-access.csv` and `review-mappings.csv`; `--headings` is the file the exporter used and defaults to the exporter's.
+- `--reviews` holds the four exporter files, `review-use-cases.csv`, `review-questions.csv`, `review-identity-access.csv` and `review-mappings.csv`; `--headings` is the file the exporter used and defaults to the exporter's. The `use_case` cell is blank or a use case ID `uc-<vendor-slug>-<use-case-slug>`; any other text, including the use case name or the slug alone, stops the run with `file: line N: message` naming the expected form.
 - `--run-date` is the only clock input and defaults to today, supplied by the adapter. Holidays come from the master's Holidays sheet, else `--holidays`, else none.
 - Exit 0 done; exit 1 any input problem, every finding as `file: line N: message`, nothing written; exit 2 bad usage. Conflicts, skips and held vendor workbooks are not errors.
 - `--out`, `--report` and every vendor output must differ from each other and from every input file and must not be a folder; a violation is an input problem. Every output is written to a temporary name and renamed, the review files last.
@@ -31,11 +31,11 @@ node src/main.ts update-master-workbook
 
 For each review row, on every tab:
 
-1. **Scope.** A record is found by its central reference; a new question or access row finds its use case by name.
+1. **Scope.** A record is found by its central reference; a new question, access or mapping row finds its use case by the ID in its `use_case` cell, matched against the ID derived (by the Tracker Tables `useCaseId` helper) from each master Use Cases row's `vendor` and `use_case_name`. An ID that is not in the master but is a new use case row of the review files is skipped as "not in the master"; an ID that is in neither (a blank cell included) stops the run.
 2. Only `accepted` goes on; blank, `rejected` and `clarify` are listed as skipped.
-3. **Conflict** (the whole row left alone and listed): `changed_since_review` is `yes`; a field is `held` or `conflict` or the `conflict` cell is filled; the digest does not match; a field's `current` differs from the master cell (trimmed, newlines normalized); an `other_changes` entry cannot be read; the use case name matches more than one master row.
+3. **Conflict** (the whole row left alone and listed): `changed_since_review` is `yes`; a field is `held` or `conflict` or the `conflict` cell is filled; the digest does not match; a field's `current` differs from the master cell (trimmed, newlines normalized); an `other_changes` entry cannot be read; the use case ID matches more than one master row; a new use case has no name or no vendor, or its ID differs from its `use_case` cell or already exists in the master.
 4. Fields with state `add`, `update` or `suggest` apply when their schema owner is `spec` or `human`, including internal columns and every readable `other_changes` entry. Forbidden fields (`released_on`, `batch_ref`, answers, acknowledgements, `ticket_ref`, `verification`, decision fields) and computed fields (`due_on`) are never applied and are listed. A value outside the schema's list, date or reference format stops the run.
-5. A new record takes `suggested_ref`; a blank or malformed ref, or one that collides with the master or earlier in the run, stops the run. A new question takes `captured_on` = the run date and `status` `captured`, left unreleased; a new use case takes its name from the `use_case` cell.
+5. A new record takes `suggested_ref`; a blank or malformed ref, or one that collides with the master or earlier in the run, stops the run. A new question takes `captured_on` = the run date and `status` `captured`, left unreleased, with `use_case_ref`, `use_case_name` and `vendor` from its use case; a new access row takes `use_case_ref` and `vendor` and a new mapping `use_case_ref` the same way; a new use case takes its `use_case_name` from the proposed field.
 6. The row's proposal IDs are appended verbatim to `proposal_refs`; a changed row's `last_updated` is the run date.
 7. `applied_on` already set: skipped, and listed under "marked applied, not in the master" when its proposed values are not in the master; the lead clears the cell to re-apply.
 
@@ -58,12 +58,3 @@ Per matched row (by `question_ref`, `use_case_ref` or `access_ref`), vendor-owne
 - **Vendor workbooks**, one per named vendor, in the Updater's vendor-safe format built by its writer: that vendor's rows, vendor-visible columns, released questions, `due_on` filled as release plus two working days where blank (a differing stored value is listed, not changed), rows in master order, `evidence_refs` dropped because the sample headings omit it.
 - **Report**, Markdown, marked internal, no absolute paths and no secret value. Sections: run facts; applied rows with old and new values; skipped rows with reasons; conflicts with causes; marked applied but not in the master; vendor values synced; sync conflicts; vendor rows held; master rows added to each vendor workbook; fields not applied; extra columns carried or dropped; files written.
 - **Review CSVs**: only `applied_on` of the rows this run applied, rewritten last through the library's CSV writer.
-
-### Planned: use case ID matching
-
-Planned, not built; these replace the matching text above when built (Decision order items 1, 3 and 5, and one bullet of Inputs).
-
-- **Review CSVs** (added to the Inputs bullet). The `use_case` cell is blank or a use case ID `uc-<vendor-slug>-<use-case-slug>`; any other text, including the use case name or the slug alone, stops the run with `file: line N: message` naming the expected form.
-- **Decision order, item 1.** Scope. A record is found by its central reference; a new question, access or mapping row finds its use case by the ID in its `use_case` cell, matched against the ID derived from each master Use Cases row's `vendor` and `use_case_name`. An ID that is not in the master but is a new use case row of the review files is skipped as "not in the master"; an ID that is in neither stops the run.
-- **Decision order, item 3.** Conflict (the whole row left alone and listed): `changed_since_review` is `yes`; a field is `held` or `conflict` or the `conflict` cell is filled; the digest does not match; a field's `current` differs from the master cell (trimmed, newlines normalized); an `other_changes` entry cannot be read; the use case ID matches more than one master row; a new use case has no name or no vendor, or its ID differs from its `use_case` cell or already exists in the master.
-- **Decision order, item 5.** A new record takes `suggested_ref`; a blank or malformed ref, or one that collides with the master or earlier in the run, stops the run. A new question takes `captured_on` = the run date and `status` `captured`, left unreleased, with `use_case_ref`, `use_case_name` and `vendor` from its use case; a new access row takes `use_case_ref` and `vendor` and a new mapping `use_case_ref` the same way; a new use case takes its `use_case_name` from the proposed field.

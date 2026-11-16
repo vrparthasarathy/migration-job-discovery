@@ -6,7 +6,7 @@ This is the specification the builder turns into `tracker-data-contract.md`, `tr
 
 ### Vocabulary
 
-- A **use case** is what the business needs done. It carries the vendor's own name, and that name is its identity.
+- A **use case** is what the business needs done. It carries the vendor's own name, and the vendor with that name is its identity, written as its use case ID.
 - A **script** (or job script) is the vendor's current implementation of a use case.
 - A **workflow** is one reusable implementation on our platform that supports several use cases through configuration. Workflows and grouping appear only in internal files, never in a vendor-readable file.
 
@@ -30,7 +30,7 @@ CSV file names are kebab-case, one file per tab. V is vendor-visible, I is inter
 | Tab (file) | Columns |
 | --- | --- |
 | Use Cases (`use-cases.csv`) | V: `use_case_ref`, `use_case_name` (natural key, never renamed), `vendor`, `source_ref` (may be empty when the source is not located), `spec_link`, `current_version`, `spec_revision`, `vendor_contact`, `acknowledgement_requested_on`, `acknowledged_version`, `acknowledged_on`, `acknowledgement_reference`. I: `stage`, `blocked_reason`, `source_status` (not-screened, located, not-located, empty, confirmed-unavailable, uncertain-mapping), `source_owner` (who must locate or confirm the source), `source_note`, `supporting_documents` (`;`-list of tagged documents that allow preliminary work), `last_change_class` (behavior-change, non-behavior-change; set by the proposer for the latest specification change), `grouping_impact` (could-affect, not-expected, unknown; the skill's suggestion, separate from the change class, with its short reason carried in the proposal row's `reason`), `grouping_impact_lead` (could-affect, no-impact; a lead's override, human-owned and blank until set), `our_owner`, `next_action`, `next_action_owner`, `workflow_candidate`, `mr_link`, `proposal_refs`, `notes_internal`, `last_updated`. |
-| Questions (`questions.csv`) | One row per use case per question, and it is the only question sheet a vendor sees. V (released rows only): `question_ref`, `use_case_ref`, `use_case_name`, `vendor`, `spec_refs` (one specification question, for example `website-availability-check/Q3@v1`), `question_text` (the wording as released), `batch_ref`, `released_on`, `due_on` (computed), `answer`, `answer_status` (not-answered, answered, partially-answered, cannot-answer), `answered_on`, `answered_by`, `incorporated_version`. I: `status`, `resolver` (who a lead assigned to resolve it), `closed_reason`, `superseded_by`, `captured_on`, `our_owner`, `current_spec_text` (the specification's latest wording), `text_review` (none, wording-edit, possible-meaning-change), `blocks_mapping` (yes, no, unknown), `source_links`, `proposal_refs`, `notes_internal`, `last_updated`. |
+| Questions (`questions.csv`) | One row per use case per question, and it is the only question sheet a vendor sees. V (released rows only): `question_ref`, `use_case_ref`, `use_case_name`, `vendor`, `spec_refs` (one specification question, for example `uc-example-vendor-website-availability-check/Q3@v1`), `question_text` (the wording as released), `batch_ref`, `released_on`, `due_on` (computed), `answer`, `answer_status` (not-answered, answered, partially-answered, cannot-answer), `answered_on`, `answered_by`, `incorporated_version`. I: `status`, `resolver` (who a lead assigned to resolve it), `closed_reason`, `superseded_by`, `captured_on`, `our_owner`, `current_spec_text` (the specification's latest wording), `text_review` (none, wording-edit, possible-meaning-change), `blocks_mapping` (yes, no, unknown), `source_links`, `proposal_refs`, `notes_internal`, `last_updated`. |
 | Question Groups (`question-groups.csv`), internal tab only | I: `group_ref`, `canonical_text`, `our_owner`, `notes_internal`, `last_updated`. A group is a lead's record that several question rows ask the same thing. |
 | Question Links (`question-links.csv`), internal tab only; no skill proposes rows for it, and a lead copies the reconciler's link suggestions by hand | I: `link_ref`, `group_ref`, `question_ref`, `link_status` (suggested, confirmed, rejected), `similar_to` (the question row the tool compared with), `match_note`, `reviewed_by`, `reviewed_on`, `proposal_refs`, `last_updated`. |
 | Mappings (`mappings.csv`), internal tab only | I: `mapping_ref`, `use_case_ref`, `workflow_candidate`, `candidate_source` (behavior-comparison, prior-analysis, both), `mapping_status`, `decision_ref`, `decided_by`, `decided_on`, `spec_versions_considered`, `blocking_question_refs`, `shared_behaviors_summary`, `parameter_differences`, `re_review_reason`, `proposal_refs`, `last_updated`. |
@@ -59,16 +59,20 @@ Notes: `request_status` is human, so a skill may only suggest `proposed` or `rea
 
 Central references are assigned by leads only. A tool may print a suggested next reference labelled `suggested` and never reuses or changes an existing one.
 
+The **use case ID** is `uc-<vendor-slug>-<use-case-slug>`: the vendor and the use case name, each reduced to a slug (lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed). It is derived from the `vendor` and `use_case_name` columns and never stored in a column. It needs a non-empty vendor and a non-empty slug for both parts; with either missing there is no ID, so a skill asks for the vendor once and writes no keyed row until it is known. The use case ID is also the proposal ID the discovery orchestrator derives for a folder, which points here for the definition. The use case name stays the readable name in the `use_case_name` column of Use Cases and Questions and is still the vendor's own name for the use case.
+
 | Entity | Central reference | Local reference used in proposals |
 | --- | --- | --- |
-| Use case | `UC-###`, created up front from the inventory | the use case name |
-| Question row (one use case, one question) | `QN-####` | `<use-case-name>/Q<n>`; specification question IDs are never renumbered and an answered row is kept |
+| Use case | `UC-###`, created up front from the inventory | the use case ID |
+| Question row (one use case, one question) | `QN-####` | `<use-case-id>/Q<n>`; specification question IDs are never renumbered and an answered row is kept |
 | Question group | `QG-###` | none (created by leads) |
-| Question link | `QL-####` | `<use-case-name>/Q<n>` plus the group reference or the `similar_to` row |
-| Mapping | `MP-###` | `<use-case-name>->>candidate-slug` |
-| Access request (one use case and endpoint) | `AX-###` | `<use-case-name>/<endpoint>/<environment>` |
+| Question link | `QL-####` | `<use-case-id>/Q<n>` plus the group reference or the `similar_to` row |
+| Mapping | `MP-###` | `<use-case-id>->>candidate-slug` |
+| Access request (one use case and endpoint) | `AX-###` | `<use-case-id>/<endpoint>/<environment>` |
 | Batch | `BT-###` | none (never proposed) |
 | Decision | `WD-###` | assigned by the lead in the decisions file |
+
+- `spec_refs` entries are `<use-case-id>/Q<n>@v<version>`, for example `uc-example-vendor-website-availability-check/Q3@v1`; a tool matches a Questions row by the entry without its `@v` suffix, which equals the question's local reference.
 
 ### Status lists
 
@@ -105,6 +109,7 @@ A change to a use case's specification has two separate assessments: `last_chang
 - Encoding: UTF-8 without a byte order mark, comma-separated, RFC 4180 quoting, LF line ends and one header row.
 - Long format, one row per field, so a single file can address several tabs. Columns: `update_id,proposal_id,tab,operation,record_key,field,value,base_value,source,reason,created_on,author`.
 - `update_id` is `<proposal_id>:<tab>:<record_key>:<field>`. It is composed and not hashed, so regenerating the same content gives the same IDs.
+- `record_key` is the local reference from the table; a proposal never carries a central reference for a new row, and a reference in the use case name form or in the slug-alone form is not valid.
 - `operation` is `add` (one row per field of a new record), `set` (carries `base_value`), `link`, or `suggest` (for human-owned fields).
 - `source` is a specification path with `@version#anchor`, a script path `@revision:place`, an inventory or source-screening reference (`inventory:<row>` or `source-screen:<path>`) for source-screening rows, or a dependency evidence reference for access rows. Every row is traceable to a specification, to inventory or source-screening evidence, or to dependency evidence. Source-screening and access rows need no specification.
 - Location: `tracker-updates/<proposal-id>/tracker-updates.csv`, where `<proposal-id>` is the MR number or branch slug. Each skill rewrites only the rows of its own tabs in its own proposal directory: the proposer owns Use Cases and Questions; access discovery owns Identity & Access; the recommender owns Mappings.
@@ -116,28 +121,4 @@ One CSV per tab named as above, with the schema's column names (extra lead colum
 
 ### Workbook layout (for `workbook-layout-guide.md`)
 
-Separate vendor access is a deployment prerequisite, not an implementation blocker: each vendor workbook is a separate file shared only with that vendor, and no internal analysis (mappings, recommendations, decisions, proposals, exports, groups and links) is stored where a vendor can read it. Hidden tabs or folders do not count as separation. The vendor storage and repository choice is deferred to the client's confirmation and is settled before the first release to a vendor. One internal master workbook on SharePoint is authoritative for everything. Each vendor gets a workbook with only its own rows and its vendor-visible columns, including one simple Questions sheet of its own released rows. The vendor edits only `answer`, `answer_status`, `answered_on` and `answered_by` on a question row, the acknowledgement fields on its use case and the vendor-side access fields. After each vendor edit a lead copies those fields row for row into the master, matching on `question_ref`, `use_case_ref` or `access_ref`, then reviews each row for completeness and sets `status` (`accepted` or `clarification-requested`) and, for a cannot-answer row, a `resolver` or a `closed_reason`. A response that is partial or cannot-answer stays open. The guide gives each tab's columns, drop-down lists for the status fields, the due-date formula (release plus two working days), the vendor-view rule, the manual apply steps for the reconciler's output, and the use case inventory template (`use_case_name,vendor,source_ref`, where an empty `source_ref` means the source is not located), which the lead pastes into the Use Cases tab. The inventory is a list and not a prerequisite analysis.
-
-### Planned: use case ID and local references
-
-These replace the matching text above when built (the `Vocabulary` line, the `References` table, the `spec_refs` example in the Questions row and the `record_key` bullet of the proposal file). The schema is not changed.
-
-The **use case ID** is `uc-<vendor-slug>-<use-case-slug>`: the vendor and the use case name, each reduced to a slug (lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed). It is derived from the `vendor` and `use_case_name` columns and never stored in a column. It needs a non-empty vendor and a non-empty slug for both parts; with either missing there is no ID, so a skill asks for the vendor once and writes no keyed row until it is known. The use case ID is also the proposal ID the discovery orchestrator derives for a folder, which points here for the definition. The use case name stays the readable name in the `use_case_name` column of Use Cases and Questions and is still the vendor's own name for the use case.
-
-Vocabulary line: "A **use case** is what the business needs done. It carries the vendor's own name, and the vendor with that name is its identity, written as its use case ID."
-
-| Entity | Central reference | Local reference used in proposals |
-| --- | --- | --- |
-| Use case | `UC-###`, created up front from the inventory | the use case ID |
-| Question row (one use case, one question) | `QN-####` | `<use-case-id>/Q<n>`; specification question IDs are never renumbered and an answered row is kept |
-| Question group | `QG-###` | none (created by leads) |
-| Question link | `QL-####` | `<use-case-id>/Q<n>` plus the group reference or the `similar_to` row |
-| Mapping | `MP-###` | `<use-case-id>->>candidate-slug` |
-| Access request (one use case and endpoint) | `AX-###` | `<use-case-id>/<endpoint>/<environment>` |
-| Batch | `BT-###` | none (never proposed) |
-| Decision | `WD-###` | assigned by the lead in the decisions file |
-
-- `spec_refs` entries are `<use-case-id>/Q<n>@v<version>`, for example `uc-example-vendor-website-availability-check/Q3@v1`; a tool matches a Questions row by the entry without its `@v` suffix, which equals the question's local reference.
-- `record_key` is the local reference from the table; a proposal never carries a central reference for a new row, and a reference in the use case name form or in the slug-alone form is not valid.
-- `use-case-inventory-template.csv` keeps its columns, and its `vendor` value is required, because the use case ID is derived from it.
-
+Separate vendor access is a deployment prerequisite, not an implementation blocker: each vendor workbook is a separate file shared only with that vendor, and no internal analysis (mappings, recommendations, decisions, proposals, exports, groups and links) is stored where a vendor can read it. Hidden tabs or folders do not count as separation. The vendor storage and repository choice is deferred to the client's confirmation and is settled before the first release to a vendor. One internal master workbook on SharePoint is authoritative for everything. Each vendor gets a workbook with only its own rows and its vendor-visible columns, including one simple Questions sheet of its own released rows. The vendor edits only `answer`, `answer_status`, `answered_on` and `answered_by` on a question row, the acknowledgement fields on its use case and the vendor-side access fields. After each vendor edit a lead copies those fields row for row into the master, matching on `question_ref`, `use_case_ref` or `access_ref`, then reviews each row for completeness and sets `status` (`accepted` or `clarification-requested`) and, for a cannot-answer row, a `resolver` or a `closed_reason`. A response that is partial or cannot-answer stays open. The guide gives each tab's columns, drop-down lists for the status fields, the due-date formula (release plus two working days), the vendor-view rule, the manual apply steps for the reconciler's output, and the use case inventory template (`use_case_name,vendor,source_ref`, where the `vendor` value is required because the use case ID derives from it, and an empty `source_ref` means the source is not located), which the lead pastes into the Use Cases tab. The inventory is a list and not a prerequisite analysis.

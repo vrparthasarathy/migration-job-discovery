@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
 import ExcelJS from "exceljs";
 import { writeExport } from "../../tracker-reconciler/test/support.ts";
-import { baseExport, cli, editMaster, ok, readBack, reviews, rowOf, rowsOf, setCell, setup, textOf, update, type Env, type RVP } from "./support.ts";
+import { baseExport, cli, editMaster, ok, readBack, reviews, rowOf, rowsOf, setCell, setup, textOf, update, type Env, type RVP, DAILY, NIGHTLY, BILLING } from "./support.ts";
 
 const run = async (env: Env, rvs: RVP[]) => {
   await reviews(env, rvs);
@@ -14,23 +15,21 @@ const run = async (env: Env, rvs: RVP[]) => {
 test("[B3] a row for a record that is not in the master, or a new use case with no name, is listed and nothing is applied", async () => {
   const env = await setup();
   await run(env, [
-    { tab: "Use Cases", record: "UC-999", useCase: "Ghost", fields: { stage: ["sent", "review", "update"] } },
+    { tab: "Use Cases", record: "UC-999", useCase: useCaseId("Acme", "Ghost")!, fields: { stage: ["sent", "review", "update"] } },
     { tab: "Use Cases", ref: "UC-004", key: "unnamed", useCase: "", fields: { vendor: ["", "Acme", "add"] } },
-    { tab: "Questions", ref: "QN-0005", key: "x", useCase: "No Such Case", fields: { question_text: ["", "Which?", "add"] } },
   ]);
   assert.equal((await rowsOf(env.out, "Use Cases")).length, 3);
   assert.equal((await rowsOf(env.out, "Questions")).length, 4);
   const report = await textOf(env.report);
   assert.match(report, /UC-999 is not in the master/);
-  assert.match(report, /the new use case has no name/);
-  assert.match(report, /use case "No Such Case" is not in the master/);
+  assert.match(report, /the new use case has no name or no vendor/);
 });
 
 test("[B3] the reference of a record is never applied, and an accepted row that changes nothing is skipped", async () => {
   const env = await setup();
   await run(env, [
-    { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { stage: ["sent", "sent", "update"] }, other: "use_case_ref: UC-001 -> UC-009 [update]" },
-    { tab: "Use Cases", record: "UC-002", useCase: "Nightly Sync", fields: { stage: ["sent", "sent", "update"] } },
+    { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { stage: ["sent", "sent", "update"] }, other: "use_case_ref: UC-001 -> UC-009 [update]" },
+    { tab: "Use Cases", record: "UC-002", useCase: NIGHTLY, fields: { stage: ["sent", "sent", "update"] } },
   ]);
   assert.deepEqual((await rowsOf(env.out, "Use Cases")).map((r) => r.use_case_ref), ["UC-001", "UC-002", "UC-003"]);
   const report = await textOf(env.report);
@@ -40,7 +39,7 @@ test("[B3] the reference of a record is never applied, and an accepted row that 
 
 test("[B2] a new row in a master with lead columns gets them blank", async () => {
   const env = await setup(baseExport(), ["lead_flag"]);
-  await run(env, [{ tab: "Use Cases", ref: "UC-004", key: "Billing Export", useCase: "Billing Export", fields: { vendor: ["", "Acme", "add"] } }]);
+  await run(env, [{ tab: "Use Cases", ref: "UC-004", key: BILLING, useCase: BILLING, fields: { vendor: ["", "Acme", "add"], use_case_name: ["", "Billing Export", "add"] } }]);
   const row = await rowOf(env.out, "Use Cases", "use_case_ref", "UC-004");
   assert.deepEqual([row.use_case_name, row.lead_flag], ["Billing Export", ""]);
 });

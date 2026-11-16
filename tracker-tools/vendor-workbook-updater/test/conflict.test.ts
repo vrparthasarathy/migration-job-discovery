@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { acmeRows, ok, rowsOf, setup, sheetRows, textOf, type RV } from "./support.ts";
+import { acmeRows, ok, rowsOf, setup, sheetRows, textOf, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
-const version = (extra: Partial<RV> = {}): RV => ({ tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] }, ...extra });
-const contact = (): RV => ({ tab: "Identity & Access", record: "AX-001", useCase: "Daily Report", fields: { service: ["Reports", "Reports v2", "update"] } });
+const version = (extra: Partial<RV> = {}): RV => ({ tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] }, ...extra });
+const contact = (): RV => ({ tab: "Identity & Access", record: "AX-001", useCase: DAILY, fields: { service: ["Reports", "Reports v2", "update"] } });
 
 async function expectConflict(rv: RV, reason: RegExp): Promise<void> {
   const f = await setup([rv, contact()]);

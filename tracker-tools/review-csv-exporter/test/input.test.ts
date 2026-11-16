@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { cli, exportReview, ok, put, set, setup, snapshot, text, type Fixture } from "./support.ts";
+import { ids, cli, exportReview, ok, put, set, setup, snapshot, text, type Fixture } from "./support.ts";
 
 async function fails(f: Fixture, pattern: RegExp, ...more: string[]): Promise<void> {
   const before = await snapshot(f.out);
@@ -12,15 +12,15 @@ async function fails(f: Fixture, pattern: RegExp, ...more: string[]): Promise<vo
   assert.deepEqual(await snapshot(f.out), before, "nothing is written");
 }
 
-const good = set("Use Cases", "Nightly Sync", "vendor", "Beta Inc", "Beta");
+const good = set("Use Cases", ids.nightly, "vendor", "Beta Inc", "Beta");
 
 test("[B08] an invalid proposal stops the run, names the file and line and writes nothing", async () => {
-  const f = await setup({ "mr-1": [good, set("Use Cases", "Nightly Sync", "no_such_field", "x", "")] });
+  const f = await setup({ "mr-1": [good, set("Use Cases", ids.nightly, "no_such_field", "x", "")] });
   await fails(f, /mr-1\/tracker-updates\.csv: line 3: unknown field "no_such_field"/);
 });
 
 test("[B08] a secret-looking value in a proposal or the export stops the run without echoing it", async () => {
-  const f = await setup({ "mr-1": [set("Use Cases", "Nightly Sync", "vendor", "password: hunter2hunter2", "Beta")] });
+  const f = await setup({ "mr-1": [set("Use Cases", ids.nightly, "vendor", "password: hunter2hunter2", "Beta")] });
   await fails(f, /line 2: secret-looking value in "value"/);
   const g = await setup({ "mr-1": [good] });
   await put(join(g.exportDir, "use-cases.csv"), (await text(join(g.exportDir, "use-cases.csv"))).replace("Beta", "token=abcdef123456"));

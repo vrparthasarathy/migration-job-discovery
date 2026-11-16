@@ -3,9 +3,9 @@ import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import ExcelJS from "exceljs";
 import { COLOURS } from "../../sample-tracker-workbook/src/layout.ts";
-import { acmeRows, ok, RELEASE, setup, sheetRows, world, type RV } from "./support.ts";
+import { acmeRows, ok, RELEASE, setup, sheetRows, world, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
-const rvs: RV[] = [{ tab: "Questions", key: "Daily Report/Q9@v2", ref: "QN-0005", useCase: "Daily Report", fields: { question_text: ["", "Which retention applies?", "add"] } }];
+const rvs: RV[] = [{ tab: "Questions", key: `${DAILY}/Q9@v2`, ref: "QN-0005", useCase: DAILY, fields: { question_text: ["", "Which retention applies?", "add"] } }];
 
 async function open(path: string): Promise<ExcelJS.Workbook> {
   const wb = new ExcelJS.Workbook();

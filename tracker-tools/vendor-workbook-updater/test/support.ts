@@ -14,7 +14,14 @@ import { loadColumns, VENDOR_TABS, type Columns } from "../src/columns.ts";
 import { run } from "../src/cli.ts";
 import { buildVendorWorkbook } from "../src/workbook_write.ts";
 
+import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
+
 export { baseExport };
+
+/** Use case IDs of the fixtures, from the library's one helper. */
+export const DAILY = useCaseId("Acme", "Daily Report")!;
+export const NIGHTLY = useCaseId("Beta", "Nightly Sync")!;
+export const WEEKLY = useCaseId("Acme", "Weekly Digest")!;
 
 export const schemaPath = fileURLToPath(new URL("../../../tracker-data-contract/tracker-schema.csv", import.meta.url));
 export const headingsPath = fileURLToPath(new URL("../../review-csv-exporter/data/review-headings.csv", import.meta.url));

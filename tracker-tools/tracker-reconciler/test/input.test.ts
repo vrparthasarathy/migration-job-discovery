@@ -8,7 +8,7 @@ import { run } from "../src/cli.ts";
 import { baseExport } from "./fixtures.ts";
 import { cli, examplePath, fixture, proposalText, PROPOSAL_HEADER, put, reconcile, snapshot, writeExport, writeProposal, type Fixture, type PRow } from "./support.ts";
 
-const good: PRow = { tab: "Use Cases", op: "set", key: "Daily Report", field: "current_version", value: "2", base: "1" };
+const good: PRow = { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" };
 
 /** A proposal file whose rows come from `proposalText` and may be replaced by raw lines. */
 async function withProposal(rawLines: string[], header = PROPOSAL_HEADER.join(",")): Promise<Fixture> {
@@ -37,14 +37,49 @@ test("[B09] a bad proposal header names the file and line 1 and writes nothing",
 });
 
 test("[B09] an unknown tab or field names the file and line", async () => {
-  const f = await withProposal([line(), line({ tab: "Nonsense" }), line({ key: "Daily Report", field: "no_such_field" })]);
+  const f = await withProposal([line(), line({ tab: "Nonsense" }), line({ key: "uc-acme-daily-report", field: "no_such_field" })]);
   const stderr = await failsWith(f, /tracker-updates\.csv: line 3: .*Nonsense.*known tabs.*Use Cases/, /tracker-updates\.csv: line 4: .*no_such_field/);
   assert.equal(stderr.includes("line 2"), false);
 });
 
-test("[B09] an unknown use case name names the file and line", async () => {
-  const f = await withProposal([line(), line({ tab: "Questions", op: "add", key: "Ghost Case/Q1", field: "use_case_name", value: "Ghost Case" }), line({ tab: "Use Cases", key: "Phantom", field: "current_version" }), line({ tab: "Questions", op: "add", key: "Daily Report/Q8", field: "use_case_name", value: "Another Ghost" })]);
-  await failsWith(f, /line 3: .*unknown use case name.*Ghost Case/, /line 4: .*unknown use case name.*Phantom/, /line 5: .*unknown use case name.*Another Ghost/);
+test("[B09] an unknown use case ID, a name key or a slug key names the file, line and expected form", async () => {
+  const f = await withProposal([
+    line(),
+    line({ tab: "Questions", op: "add", key: "uc-ghost-case/Q1", field: "use_case_name", value: "Ghost Case" }),
+    line({ tab: "Use Cases", key: "uc-ghost-phantom", field: "current_version" }),
+    line({ tab: "Use Cases", key: "Daily Report", field: "current_version" }),
+    line({ tab: "Questions", op: "add", key: "daily-report/Q1", field: "use_case_name", value: "Daily Report" }),
+  ]);
+  await failsWith(
+    f,
+    /line 3: .*unknown use case ID in record_key "uc-ghost-case\/Q1"; expected uc-<vendor-slug>-<use-case-slug>/,
+    /line 4: .*unknown use case ID in record_key "uc-ghost-phantom"/,
+    /line 5: .*unknown use case ID in record_key "Daily Report"/,
+    /line 6: .*unknown use case ID in record_key "daily-report\/Q1"/,
+  );
+});
+
+test("[B09] a use_case_name value that does not belong to the key's use case ID names the file and line", async () => {
+  const f = await withProposal([line(), line({ tab: "Questions", op: "add", key: "uc-acme-daily-report/Q8", field: "use_case_name", value: "Nightly Sync" })]);
+  await failsWith(f, /line 3: .*use_case_name "Nightly Sync" does not belong to use case ID uc-acme-daily-report/);
+});
+
+test("[B09] two export Use Cases rows that derive one use case ID stop the run naming the export file and both lines", async () => {
+  const data = baseExport();
+  data["Use Cases"]!.push({ use_case_ref: "UC-004", use_case_name: "Daily  Report", vendor: "ACME", current_version: "1" });
+  const f = await withProposal([line()]);
+  await writeExport(f.exportDir, data);
+  await failsWith(f, /use-cases\.csv: line 5: use case ID uc-acme-daily-report is also derived by line 2; make the vendor or the name differ/);
+});
+
+test("[B09] a use case added in the proposals is a known ID for the rows that follow it", async () => {
+  const f = await withProposal([
+    line({ tab: "Use Cases", op: "add", key: "uc-acme-fresh-case", field: "use_case_name", value: "Fresh Case" }),
+    line({ tab: "Use Cases", op: "add", key: "uc-acme-bare-case", field: "vendor", value: "Acme" }),
+    line({ tab: "Questions", op: "add", key: "uc-acme-fresh-case/Q1", field: "use_case_name", value: "Fresh Case" }),
+    line({ tab: "Questions", op: "add", key: "uc-acme-bare-case/Q1", field: "use_case_name", value: "Whatever" }),
+  ]);
+  assert.equal((await reconcile(f)).status, 0);
 });
 
 test("[B09] a malformed CSV names the file and the line where the quote was left open", async () => {
@@ -66,11 +101,11 @@ test("[B09] a malformed CSV names the file and the line where the quote was left
 test("[B09] a secret-looking value stops the run, names the file and line and is never echoed", async () => {
   const secrets = ["api_key=AbCd1234efgh", "password: hunter2hunter2", "-----BEGIN RSA PRIVATE KEY-----", "AKIAABCDEFGHIJKLMNOP", `ghp_${"a1".repeat(12)}`, `xoxb-${"1234567890"}-abc`, `Bearer ${"abcdef0123456789"}abcdef`, `sk-${"Ab1".repeat(8)}`];
   for (const secret of secrets) {
-    const f = await withProposal([line(), line({ tab: "Use Cases", op: "suggest", key: "Daily Report", field: "next_action", value: `use ${secret} now` })]);
+    const f = await withProposal([line(), line({ tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "next_action", value: `use ${secret} now` })]);
     const stderr = await failsWith(f, /tracker-updates\.csv: line 3: .*secret-looking value in "value"/);
     assert.equal(stderr.includes(secret), false, "the secret is not echoed");
   }
-  const clean = await withProposal([line({ tab: "Use Cases", op: "suggest", key: "Daily Report", field: "next_action", value: "Reset the password through the portal" })]);
+  const clean = await withProposal([line({ tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "next_action", value: "Reset the password through the portal" })]);
   assert.equal((await reconcile(clean)).status, 0);
 });
 
@@ -78,12 +113,12 @@ test("[B09] a row that breaks the proposal format names the file and line", asyn
   const f = await withProposal([
     line(),
     line({ op: "replace" }),
-    line().replace("mr-1:Use Cases:Daily Report:current_version", "other:id"),
+    line().replace("mr-1:Use Cases:uc-acme-daily-report:current_version", "other:id"),
     line({ created: "18/11/2026" }),
     line({ source: "" }),
     line({ key: "" }),
-    line({ tab: "Use Cases", op: "suggest", key: "Daily Report", field: "our_owner", value: "Zed" }),
-    line({ tab: "Use Cases", op: "set", key: "Daily Report", field: "last_change_class", value: "sideways", base: "" }),
+    line({ tab: "Use Cases", op: "suggest", key: "uc-acme-daily-report", field: "our_owner", value: "Zed" }),
+    line({ tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "last_change_class", value: "sideways", base: "" }),
   ]);
   const stderr = await failsWith(f, /line 3: .*operation "replace"/, /line 4: .*update_id/, /line 5: .*created_on/, /line 6: .*source/, /line 7: .*record_key/);
   assert.equal(stderr.includes("line 2"), false);

@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { test } from "node:test";
-import { listFiles, ok, rowsOf, RUN_DATE, setup, update, type RV } from "./support.ts";
+import { listFiles, ok, rowsOf, RUN_DATE, setup, update, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
-const version: RV = { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] } };
-const service: RV = { tab: "Identity & Access", record: "AX-001", useCase: "Daily Report", fields: { service: ["Reports", "Reports v2", "update"] } };
-const stale: RV = { tab: "Questions", record: "QN-0001", useCase: "Daily Report", fields: { question_text: ["Other", "New", "update"] } };
+const version: RV = { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] } };
+const service: RV = { tab: "Identity & Access", record: "AX-001", useCase: DAILY, fields: { service: ["Reports", "Reports v2", "update"] } };
+const stale: RV = { tab: "Questions", record: "QN-0001", useCase: DAILY, fields: { question_text: ["Other", "New", "update"] } };
 
 test("[B9] applied_on is set to the run date on applied rows only, and only that cell changes", async () => {
   const f = await setup([version, { ...service, status: "rejected" }, stale]);
@@ -28,7 +28,7 @@ test("[B9] a file with no applied row keeps its own formatting", async () => {
 });
 
 test("[B9] when the run fails nothing is written, not even applied_on of rows that were fine", async () => {
-  const f = await setup([version, { tab: "Identity & Access", key: "x", ref: "AX-001", useCase: "Daily Report", fields: { service: ["", "S", "add"] } }]);
+  const f = await setup([version, { tab: "Identity & Access", key: "x", ref: "AX-001", useCase: DAILY, fields: { service: ["", "S", "add"] } }]);
   const before = await listFiles(f.root);
   const content = await readFile(`${f.reviews}/review-use-cases.csv`, "utf8");
   assert.equal((await update(f)).status, 1);

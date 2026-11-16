@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { getTab, tabFileName } from "../tracker-tools/tracker-tables/src/schema.ts";
-import { revisionOfThreeVendors, threeVendorExport } from "./fixtures.ts";
+import { revisionOfThreeVendors, sameNamePairExport, threeVendorExport } from "./fixtures.ts";
 import { reconcile, rows, schema, snapshot, summarize, text, workspace, writeExport, writeProposal, type Workspace } from "./support.ts";
 
 const VENDORS = ["acme", "beta", "gamma"];
@@ -101,4 +101,27 @@ test("[B07] vendor field updates carry only that vendor's visible rows and nothi
   const links = (await rows(join(w.out, "suggestions.csv"))).filter((r) => r.kind === "link");
   assert.equal(links.length, 1, "the cross-vendor link suggestion is internal");
   assert.equal(Object.entries(await snapshot(join(w.out, "vendor"))).some(([, content]) => content.includes("similar_to")), false);
+});
+
+test("[B07] two vendors' same-named use cases stay apart: each vendor folder holds only its own row, answer and updates", async () => {
+  const w = await workspace();
+  await writeExport(w.exportDir, sameNamePairExport());
+  await writeProposal(w.proposals, "mr-22", [
+    { tab: "Use Cases", op: "set", key: "uc-acme-daily-report", field: "current_version", value: "2", base: "1" },
+    { tab: "Use Cases", op: "set", key: "uc-beta-daily-report", field: "current_version", value: "2", base: "1" },
+  ]);
+  const reconciled = await reconcile(w);
+  assert.equal(reconciled.status, 0, reconciled.stderr);
+  const other: Record<string, string[]> = {
+    acme: ["Beta", "beta", "Beta-only answer", "UC-002", "QN-0002", "BT-002"],
+    beta: ["Acme", "acme", "Acme-only answer", "UC-001", "QN-0001", "BT-001"],
+  };
+  for (const [slug, vendor, useCase, question] of [["acme", "Acme", "UC-001", "QN-0001"], ["beta", "Beta", "UC-002", "QN-0002"]] as const) {
+    const dir = join(w.out, "vendor", slug);
+    assert.deepEqual((await rows(join(dir, "use-cases.csv"))).map((r) => [r.use_case_ref, r.vendor]), [[useCase, vendor]], `${slug}: its own use case row only`);
+    assert.deepEqual((await rows(join(dir, "questions.csv"))).map((r) => r.question_ref), [question], `${slug}: its own question row only`);
+    assert.deepEqual((await rows(join(dir, "field-updates.csv"))).map((u) => [u.record, u.field]), [[useCase, "current_version"]], `${slug}: its own update only`);
+    const everything = Object.values(await snapshot(dir)).join("\n");
+    for (const word of other[slug]!) assert.equal(everything.includes(word), false, `${slug} must not contain ${word}`);
+  }
 });

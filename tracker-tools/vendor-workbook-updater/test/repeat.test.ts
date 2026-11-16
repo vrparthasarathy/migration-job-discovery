@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { copyFile, readFile } from "node:fs/promises";
 import { setTimeout as sleep } from "node:timers/promises";
 import { test } from "node:test";
-import { ok, RELEASE, setup, sheetRows, textOf, update, type RV } from "./support.ts";
+import { ok, RELEASE, setup, sheetRows, textOf, update, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
 const rvs: RV[] = [
-  { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] } },
-  { tab: "Questions", key: "Daily Report/Q9@v2", ref: "QN-0005", useCase: "Daily Report", fields: { question_text: ["", "Which retention applies?", "add"] } },
-  { tab: "Identity & Access", key: "Daily Report/prod", ref: "AX-002", useCase: "Daily Report", fields: { service: ["", "Reports", "add"] } },
+  { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] } },
+  { tab: "Questions", key: `${DAILY}/Q9@v2`, ref: "QN-0005", useCase: DAILY, fields: { question_text: ["", "Which retention applies?", "add"] } },
+  { tab: "Identity & Access", key: `${DAILY}/reports/prod`, ref: "AX-002", useCase: DAILY, fields: { service: ["", "Reports", "add"] } },
 ];
 
 test("[B3] the same inputs and run date give a byte-identical workbook and report, even when the clock has moved on", async () => {

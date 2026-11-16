@@ -3,7 +3,7 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { columnsPath, headingsPath, ok, RELEASE, setup, sheetRows, textOf, world } from "./support.ts";
+import { columnsPath, headingsPath, ok, RELEASE, setup, sheetRows, textOf, world, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
 /** A headings file that also shows the vendor-owned, forbidden and computed columns, so review rows can try to set them. */
 async function widened(extra: string[], columns?: string): Promise<{ headings: string; world: Awaited<ReturnType<typeof world>>; columns: string }> {
@@ -21,9 +21,9 @@ test("[B6] vendor answers, acknowledgements, vendor-side access fields and the r
   const w = await widened(EXTRA);
   const f = await setup(
     [
-      { tab: "Questions", record: "QN-0001", useCase: "Daily Report", fields: { question_text: ["Which time zone does the daily report use?", "Which zone?", "update"], answer: ["UTC plus two per the SLA", "overwritten", "update"], answer_status: ["answered", "not-answered", "update"], released_on: ["2026-11-12", "2026-12-01", "update"], due_on: ["2026-11-16", "2026-12-03", "update"], batch_ref: ["BT-001", "BT-009", "update"] } },
-      { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "3", "update"], acknowledged_version: ["1", "3", "update"] } },
-      { tab: "Identity & Access", record: "AX-001", useCase: "Daily Report", fields: { vendor_action_owner: ["", "Mia", "add"], additional_requirements: ["", "VPN", "add"], service: ["Reports", "Reports v2", "update"] } },
+      { tab: "Questions", record: "QN-0001", useCase: DAILY, fields: { question_text: ["Which time zone does the daily report use?", "Which zone?", "update"], answer: ["UTC plus two per the SLA", "overwritten", "update"], answer_status: ["answered", "not-answered", "update"], released_on: ["2026-11-12", "2026-12-01", "update"], due_on: ["2026-11-16", "2026-12-03", "update"], batch_ref: ["BT-001", "BT-009", "update"] } },
+      { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "3", "update"], acknowledged_version: ["1", "3", "update"] } },
+      { tab: "Identity & Access", record: "AX-001", useCase: DAILY, fields: { vendor_action_owner: ["", "Mia", "add"], additional_requirements: ["", "VPN", "add"], service: ["Reports", "Reports v2", "update"] } },
     ],
     undefined,
     undefined,
@@ -45,7 +45,7 @@ test("[B6] vendor answers, acknowledgements, vendor-side access fields and the r
 test("[B6] a new question takes its dates from the release alone and starts unanswered whatever the review row proposes", async () => {
   const w = await widened(EXTRA);
   const f = await setup(
-    [{ tab: "Questions", key: "Daily Report/Q9@v2", ref: "QN-0005", useCase: "Daily Report", fields: { question_text: ["", "New?", "add"], answer: ["", "preset", "add"], answer_status: ["", "answered", "add"], released_on: ["", "2020-01-01", "add"], due_on: ["", "2020-01-03", "add"] } }],
+    [{ tab: "Questions", key: `${DAILY}/Q9@v2`, ref: "QN-0005", useCase: DAILY, fields: { question_text: ["", "New?", "add"], answer: ["", "preset", "add"], answer_status: ["", "answered", "add"], released_on: ["", "2020-01-01", "add"], due_on: ["", "2020-01-03", "add"] } }],
     undefined,
     undefined,
     w.world,
@@ -58,7 +58,7 @@ test("[B6] a new question takes its dates from the release alone and starts unan
 test("[B6] a field that is not a column of the vendor workbook is listed and not applied", async () => {
   const lines = (await readFile(columnsPath, "utf8")).split("\n").filter((l) => !l.startsWith("Use Cases,spec_link,"));
   const w = await widened([], lines.join("\n"));
-  const f = await setup([{ tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { spec_link: ["https://specs.example/daily", "https://specs.example/v2", "update"], current_version: ["1", "2", "update"] } }], undefined, undefined, w.world);
+  const f = await setup([{ tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { spec_link: ["https://specs.example/daily", "https://specs.example/v2", "update"], current_version: ["1", "2", "update"] } }], undefined, undefined, w.world);
   await ok(f, "--columns", w.columns);
   assert.match(await textOf(f.report), /spec_link \(not a column of the vendor workbook\)/);
   assert.equal((await sheetRows(f.out, "Use Cases"))[0]!["Current version"], "2");
@@ -68,7 +68,7 @@ test("[B6] a new use case from headings that do not show the vendor is skipped, 
   const dir = await mkdtemp(join(tmpdir(), "vendor-updater-headings-"));
   const headings = join(dir, "review-headings.csv");
   await writeFile(headings, (await readFile(headingsPath, "utf8")).split("\n").filter((l) => !l.startsWith("Use Cases,vendor,")).join("\n"));
-  const f = await setup([{ tab: "Use Cases", key: "Weekly Digest", ref: "UC-004", useCase: "Weekly Digest", fields: { current_version: ["", "1", "add"] } }], undefined, undefined, await world(headings));
+  const f = await setup([{ tab: "Use Cases", key: `${WEEKLY}`, ref: "UC-004", useCase: WEEKLY, fields: { current_version: ["", "1", "add"] } }], undefined, undefined, await world(headings));
   await ok(f, "--headings", headings);
   assert.match(await textOf(f.report), /the new use case names no vendor/);
   assert.equal((await sheetRows(f.out, "Use Cases")).length, 1);

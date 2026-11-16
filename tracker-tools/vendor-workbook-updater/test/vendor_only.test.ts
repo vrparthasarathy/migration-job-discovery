@@ -4,7 +4,7 @@ import { test } from "node:test";
 import ExcelJS from "exceljs";
 import { vendorView } from "../../tracker-tables/src/vendor_view.ts";
 import { loadExport } from "../../tracker-reconciler/src/inputs.ts";
-import { ok, RELEASE, setup, update, world, zipNames, type RV } from "./support.ts";
+import { ok, RELEASE, setup, update, world, zipNames, type RV, DAILY, NIGHTLY, WEEKLY } from "./support.ts";
 
 const HEADINGS: Record<string, string[]> = {
   "Use Cases": ["Use case ref", "Use case", "Vendor", "Current version", "Specification"],
@@ -38,7 +38,7 @@ async function hostile(path: string, edit: (wb: ExcelJS.Workbook) => void = () =
   await wb.xlsx.writeFile(path);
 }
 
-const review: RV = { tab: "Use Cases", record: "UC-001", useCase: "Daily Report", fields: { current_version: ["1", "2", "update"] } };
+const review: RV = { tab: "Use Cases", record: "UC-001", useCase: DAILY, fields: { current_version: ["1", "2", "update"] } };
 
 test("[B4] the output holds only this vendor's rows and vendor-visible columns, whatever the download hid or linked", async () => {
   const f = await setup([review]);

@@ -8,7 +8,7 @@ import { fieldHeaders, fullHeader, label } from "../../review-csv-exporter/src/h
 import { reviewFile } from "../../review-csv-exporter/src/review.ts";
 import { reviewCells } from "../../vendor-workbook-updater/test/support.ts";
 import { loadReviews } from "../src/reviews.ts";
-import { lib } from "./support.ts";
+import { lib, DAILY } from "./support.ts";
 
 const TAB = "Use Cases";
 
@@ -17,7 +17,7 @@ async function load(rows: ((cells: Row, key: (name: string) => string) => void)[
   const w = await lib();
   const dir = await mkdtemp(join(tmpdir(), "master-reviews-"));
   const cells = rows.map((change, i) => {
-    const row = reviewCells(w, { tab: TAB, record: `UC-00${i + 1}`, useCase: "Daily Report", fields: { stage: ["sent", "review", "update"] } }, i + 1);
+    const row = reviewCells(w, { tab: TAB, record: `UC-00${i + 1}`, useCase: DAILY, fields: { stage: ["sent", "review", "update"] } }, i + 1);
     change(row, (name) => label(w.headings, name));
     return row;
   });
