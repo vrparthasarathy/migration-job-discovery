@@ -1,0 +1,9 @@
+tab,record_ref,kind,reference
+Use Cases,UC-001,specification,specs/harborline-analytics/daily-invoice-status-report.md@v2
+Use Cases,UC-002,specification,specs/harborline-analytics/customer-address-refresh.md@v2
+Use Cases,UC-003,specification,specs/harborline-analytics/shipment-tracking-export.md@v1
+Use Cases,UC-004,specification,specs/meridian-freight-systems/carrier-rate-sync.md@v1
+Use Cases,UC-005,specification,specs/meridian-freight-systems/rate-exception-alert.md@v1
+Use Cases,UC-002,proposal,TP-2026-11-13-B
+Use Cases,UC-003,proposal,TP-2026-11-13-B
+Use Cases,UC-003,source,source-screen:harborline/shipment-tracking-export

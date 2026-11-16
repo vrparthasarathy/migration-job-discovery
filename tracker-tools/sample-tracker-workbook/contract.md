@@ -4,14 +4,14 @@
 
 ### Command
 
-`node src/main.ts generate --out <file.xlsx> --as-of <YYYY-MM-DD>`. Exit 0 and the file on success. Exit 1 with every finding on standard error and no file on invalid data. Exit 2 on bad usage. The file is written to a temporary name and renamed.
+`node src/main.ts generate --out <file.xlsx> --as-of <YYYY-MM-DD> [--data <folder>]`. `--data` names another folder of the same CSV files (the default is `data/`); the tests use it to try invalid data. Exit 0 and the file on success. Exit 1 with every finding on standard error and no file on invalid data. Exit 2 on bad usage. The file is written to a temporary name and renamed.
 
 ### Data files (`data/`)
 
 - `use-cases.csv`, `questions.csv`, `identity-access.csv`, `mappings.csv`: every column of the matching tab in `tracker-schema.csv`, validated with the Tracker Tables library.
 - `proposed-changes.csv`: `change_ref` (`PC-###`), `tab`, `record_ref`, `field`, `operation`, `current_value`, `proposed_value`, `reason`, `review_status`, `reviewer`, then the technical `proposal_id`, `update_id`, `base_value`, `source`, `mr_link`, `author`, `created_on`.
-- `trace.csv`: `tab`, `record_ref`, `kind` (proposal, specification, evidence, source, merge-request), `reference`.
-- `headings.csv`: `tab`, `column`, `heading`, `band`, `visibility` (`V` or `I`) for the main sheets, including the added `Pending change`, `Review state`, `Days past original due` and `Age awaiting review`.
+- `trace.csv`: `tab`, `record_ref`, `kind` (proposal, specification, evidence, source, merge-request), `reference`. The Trace sheet is these rows plus one row for every value of `proposal_refs`, `source_links`, `evidence_refs` and `mr_link` in the four contract files, without duplicates.
+- `headings.csv`: `tab`, `column`, `heading`, `band`, `visibility` (`V` or `I`) for every sheet with a table, including Proposed Changes and Trace and the added `Pending change`, `Review state`, `Days past original due` and `Age awaiting review`. It sets the column order. Every schema column of a main tab has a heading except `proposal_refs`, `source_links`, `evidence_refs`, `mr_link` and `last_updated`.
 
 ### Sheets, in order
 

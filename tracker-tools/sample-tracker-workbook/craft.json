@@ -3,22 +3,5 @@
     "checks": {
       "install": "npm ci --prefix {path}"
     }
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-16T06:40:40Z",
-    "constraints": {
-      "cost": { "currency": "USD", "allocated": 8, "spent": 0, "reserve": 1.5, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
-      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
-      "execution": { "wall-clock": { "allocated-seconds": 7200, "spent-seconds": 0, "reserve-seconds": 900, "source": "unavailable" } },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "`generate` writes the eight-sheet sample workbook, identically twice from fixed data and as-of date, and writes nothing on invalid data. (B1, B2, B5)",
-      "The sample data of 5 fictional use cases across two vendors covers every listed scenario with valid references and schema values, and deadlines and ages computed from working days. (B3, B4, B5, B7)",
-      "The workbook is easy to review: frozen headers, filters, readable widths, schema dropdowns, proposed values apart from accepted values, proposal metadata outside the main tables with traceability, and internal sheets marked with nothing hidden. (B6, B8, B9)",
-      "The walkthrough, feedback questions, differences from the tracker contract and follow-on work exist and agree with the generated workbook. (B10)"
-    ]
   }
 }

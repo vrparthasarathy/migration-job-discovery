@@ -1,0 +1,122 @@
+tab,column,heading,band,visibility
+Use Cases,use_case_ref,Use case ref,Use case,V
+Use Cases,use_case_name,Use case,Use case,V
+Use Cases,vendor,Vendor,Use case,V
+Use Cases,vendor_contact,Vendor contact,Use case,V
+Use Cases,current_version,Current version,Use case,V
+Use Cases,spec_revision,Spec revision,Use case,V
+Use Cases,spec_link,Specification,Use case,V
+Use Cases,acknowledgement_requested_on,Acknowledgement requested on,Acknowledgement,V
+Use Cases,acknowledged_version,Acknowledged version,Acknowledgement,V
+Use Cases,acknowledged_on,Acknowledged on,Acknowledgement,V
+Use Cases,acknowledgement_reference,Acknowledgement reference,Acknowledgement,V
+Use Cases,source_ref,Source,Source,V
+Use Cases,source_status,Source status,Source,I
+Use Cases,source_owner,Source owner,Source,I
+Use Cases,source_note,Source note,Source,I
+Use Cases,supporting_documents,Supporting documents,Source,I
+Use Cases,stage,Stage,Progress,I
+Use Cases,blocked_reason,Blocked reason,Progress,I
+Use Cases,our_owner,Our owner,Progress,I
+Use Cases,next_action,Next action,Progress,I
+Use Cases,next_action_owner,Next action owner,Progress,I
+Use Cases,workflow_candidate,Workflow candidate,Progress,I
+Use Cases,last_change_class,Last change class,Change tracking,I
+Use Cases,grouping_impact,Grouping impact,Change tracking,I
+Use Cases,grouping_impact_lead,Grouping impact (lead),Change tracking,I
+Use Cases,notes_internal,Internal notes,Change tracking,I
+Use Cases,pending_change,Pending change,Change tracking,I
+Questions,question_ref,Question ref,Question,V
+Questions,use_case_ref,Use case ref,Question,V
+Questions,use_case_name,Use case,Question,V
+Questions,vendor,Vendor,Question,V
+Questions,spec_refs,Spec question,Question,V
+Questions,question_text,Question,Question,V
+Questions,batch_ref,Batch,Question,V
+Questions,released_on,Released on,Due date,V
+Questions,due_on,Due on,Due date,V
+Questions,answer,Answer,Vendor answer,V
+Questions,answer_status,Answer status,Vendor answer,V
+Questions,answered_on,Answered on,Vendor answer,V
+Questions,answered_by,Answered by,Vendor answer,V
+Questions,incorporated_version,Incorporated version,Vendor answer,V
+Questions,review_state,Review state,Review,I
+Questions,days_past_original_due,Days past original due,Review,I
+Questions,age_awaiting_review,Age awaiting review,Review,I
+Questions,status,Status,Review,I
+Questions,our_owner,Our owner,Review,I
+Questions,resolver,Resolver,Review,I
+Questions,closed_reason,Closed reason,Review,I
+Questions,superseded_by,Superseded by,Review,I
+Questions,captured_on,Captured on,Review,I
+Questions,current_spec_text,Current spec text,Review,I
+Questions,text_review,Text review,Review,I
+Questions,blocks_mapping,Blocks mapping,Review,I
+Questions,notes_internal,Internal notes,Review,I
+Questions,pending_change,Pending change,Review,I
+Identity & Access,access_ref,Access ref,Access request,V
+Identity & Access,use_case_ref,Use case ref,Access request,V
+Identity & Access,vendor,Vendor,Access request,V
+Identity & Access,service,Service,Access request,V
+Identity & Access,endpoint,Endpoint,Access request,V
+Identity & Access,environment,Environment,Access request,V
+Identity & Access,auth_type,Auth type,Access request,V
+Identity & Access,observed_operations,Observed operations,Observed,V
+Identity & Access,identity_reference,Identity reference,Observed,V
+Identity & Access,observed_access,Observed access,Observed,V
+Identity & Access,proposed_access,Proposed access,Observed,V
+Identity & Access,permissions_to_confirm,Permissions to confirm,Observed,V
+Identity & Access,unknowns,Unknowns,Observed,V
+Identity & Access,unknown_owner,Unknown owner,Observed,V
+Identity & Access,our_coordinator,Our coordinator,Request,V
+Identity & Access,vendor_action_owner,Vendor action owner,Request,V
+Identity & Access,ticket_ref,Ticket,Request,V
+Identity & Access,raised_on,Raised on,Request,V
+Identity & Access,request_status,Request status,Request,V
+Identity & Access,expected_availability,Expected availability,Request,V
+Identity & Access,additional_requirements,Additional requirements,Request,V
+Identity & Access,next_action,Next action,Request,V
+Identity & Access,next_action_owner,Next action owner,Request,V
+Identity & Access,verification,Verification,Verification,V
+Identity & Access,verified_by,Verified by,Verification,V
+Identity & Access,verified_on,Verified on,Verification,V
+Identity & Access,affected_workflow,Affected workflow,Internal,I
+Identity & Access,shared_request_flag,Shared request,Internal,I
+Identity & Access,shared_with,Shared with,Internal,I
+Identity & Access,consolidated_request_ref,Consolidated request,Internal,I
+Identity & Access,notes_internal,Internal notes,Internal,I
+Identity & Access,pending_change,Pending change,Internal,I
+Mappings,mapping_ref,Mapping ref,Mapping,I
+Mappings,use_case_ref,Use case ref,Mapping,I
+Mappings,workflow_candidate,Workflow candidate,Mapping,I
+Mappings,candidate_source,Candidate source,Mapping,I
+Mappings,mapping_status,Mapping status,Mapping,I
+Mappings,decision_ref,Decision ref,Decision (lead only),I
+Mappings,decided_by,Decided by,Decision (lead only),I
+Mappings,decided_on,Decided on,Decision (lead only),I
+Mappings,spec_versions_considered,Spec versions considered,Evidence,I
+Mappings,blocking_question_refs,Blocking questions,Evidence,I
+Mappings,shared_behaviors_summary,Shared behaviors,Evidence,I
+Mappings,parameter_differences,Parameter differences,Evidence,I
+Mappings,re_review_reason,Re-review reason,Evidence,I
+Proposed Changes,change_ref,Change ref,Proposed change,I
+Proposed Changes,tab,Tab,Proposed change,I
+Proposed Changes,record_ref,Record,Proposed change,I
+Proposed Changes,field,Field,Proposed change,I
+Proposed Changes,operation,Operation,Proposed change,I
+Proposed Changes,current_value,Current value,Proposed change,I
+Proposed Changes,proposed_value,Proposed value,Proposed change,I
+Proposed Changes,reason,Reason,Proposed change,I
+Proposed Changes,review_status,Review status,Proposed change,I
+Proposed Changes,reviewer,Reviewer,Proposed change,I
+Proposed Changes,proposal_id,Proposal,Proposal metadata,I
+Proposed Changes,update_id,Update,Proposal metadata,I
+Proposed Changes,base_value,Base value,Proposal metadata,I
+Proposed Changes,source,Source,Proposal metadata,I
+Proposed Changes,mr_link,Merge request,Proposal metadata,I
+Proposed Changes,author,Author,Proposal metadata,I
+Proposed Changes,created_on,Created on,Proposal metadata,I
+Trace,tab,Tab,Trace,I
+Trace,record_ref,Record,Trace,I
+Trace,kind,Kind,Trace,I
+Trace,reference,Reference,Trace,I

@@ -1,0 +1,13 @@
+{
+  "name": "sample-tracker-workbook",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=26" },
+  "scripts": {
+    "generate": "node src/main.ts generate --out sample-tracker-workbook.xlsx --as-of 2026-11-16",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0"
+  }
+}
