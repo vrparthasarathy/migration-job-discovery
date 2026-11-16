@@ -34,7 +34,7 @@
     "acceptance": [
       "`build` writes a deterministic zip of exactly the listed payload, every member named `<original path>.txt` with the original bytes, a manifest of revision, paths and sizes, and stops with no zip on a missing file, a forbidden file or a secret-like value. (B01, B02, B03, B04, B08)",
       "The package carries the five instruction and restore files, the Copilot prompt with every restoration rule, and a `restore.py` that validates paths and sizes, refuses an existing destination, restores exact bytes into a new folder and installs nothing, stopping with nothing written on a bad member. (B05, B06, B07)",
-      "`verify` restores the package into a clean directory, compares every file with its source and checks the zip, and `VERIFICATION.txt` records only what was actually checked and what remains for the client environment; the payload holds the nine skill folders (the four lead tracker skills with their golden fixtures) and no tool or Node test. (B02, B09, B10)"
+      "`verify` restores the package into a clean directory, compares every file with its source and checks the zip, and `VERIFICATION.txt` records only what was actually checked and what remains for the client environment; the payload holds the six skill folders (the five existing and `record-review-decisions`), the tools with their tests and the Vendor Workbook Updater's sources, and the packaged tests run where Node is available. (B02, B09, B10)"
     ]
   }
 }

@@ -1,0 +1,40 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T15:46:04Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "`SKILL.md` lists pending rows (blank `review_status` or `changed_since_review` = `yes`) one use case at a time in the `order` column with every shown item, finds the columns through the headings file keys, and asks once for the folder, headings file, name and date. (B01, B10)",
+      "`SKILL.md` records a decision only from the lead's words in that row's `review_status`, `reviewer`, `review_note` and `reviewed_on`, clears `changed_since_review`, edits no other cell or row, and asks again when an answer is unclear. (B02, B03)",
+      "`SKILL.md` accepts all plain adds of one use case in one step, touching no other row and listing rows recorded and rows left. (B04)",
+      "`SKILL.md` lets the lead change an earlier decision keeping the earlier status and name in the note, warns about a row with `applied_on` first, and sets or clears `applied_on` only on the lead's word. (B05, B06, B07)",
+      "`SKILL.md` reads its edit back, never writes outside the review cells or to the tracker, and the checklist, README, requirements and contract agree with no Craft term in the skill folder. (B08, B09)"
+    ]
+  }
+}

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Markdown-only Copilot agent skills that do the lead tracker tools' jobs on CSV files (reconcile proposals with an export, consolidate the review CSVs, write the daily summary and prepare a vendor's sheets), for the client environment where executables are blocked. The Node tools in Tracker Tools stay as the reference implementation and are not shipped.
+The Copilot agent skills a lead uses in chat to work with the output of the lead tracker tools, starting with the one that records and revisits decisions on the review CSVs. The tools themselves stay Node tools in Tracker Tools and run in the client environment.
 
 ## Navigation
 
@@ -24,10 +24,7 @@ The Markdown-only Copilot agent skills that do the lead tracker tools' jobs on C
 
 | Component | Purpose |
 | --- | --- |
-| [Proposal Reconciliation](proposal-reconciliation/README.md#purpose) | A GitHub Copilot agent skill that compares reviewed tracker proposals with the latest tracker export and writes additions, field updates, conflicts, suggestions and vendor-safe folders as CSV and Markdown files for a lead to review and apply by hand, never overwriting human edits. |
-| [Review Queue Export](review-queue-export/README.md#purpose) | A GitHub Copilot agent skill that turns the reconciliation files and the tracker export into the four consolidated review CSVs, one wide row per record ordered by what needs a lead's judgment, keeping the lead's review cells across refreshes. |
-| [Daily Call Briefing](daily-call-briefing/README.md#purpose) | A GitHub Copilot agent skill that writes the internal daily summary across all vendor tracks from a tracker export (use cases by stage, overdue questions, blockers, access actions, mappings pending a decision and next batch suggestions). |
-| [Vendor Sheet Update](vendor-sheet-update/README.md#purpose) | A GitHub Copilot agent skill that applies the review rows a lead accepted to one vendor's vendor-facing sheets, writes per-tab vendor-safe CSV files and a report for the lead to paste into the vendor workbook and check before upload, and marks the applied rows. |
+| [Review Decisions](review-decisions/README.md#purpose) | A GitHub Copilot agent skill that walks a lead through the pending rows of the review CSVs, records accept, reject or clarify only from the lead's own words in that row's review cells, accepts a use case's plain additions in one step and lets the lead change an earlier decision, so decisions are made in chat and nobody edits the review CSVs by hand. |
 
 ## Design
 
@@ -35,9 +32,8 @@ Not built yet.
 
 ## Relationships
 
-- [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the schema and formats every skill follows, copied into each skill folder.
-- [Tracker Tools](../tracker-tools/README.md#purpose) — the reference Node tools and the source of the golden outputs.
-- [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) — runs `reconcile-tracker` and `export-review` in place of the exporter command, and reads the review headings from the `export-review` folder.
+- [Review CSV Exporter](../tracker-tools/review-csv-exporter/README.md#purpose) — writes the review CSVs the skill edits and owns the headings file it reads.
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) — hands the review of each folder to the skill after the export.
 
 ## Links
 
@@ -60,14 +56,11 @@ Not built yet.
 
 | Component | Purpose |
 | --- | --- |
-| [Proposal Reconciliation](proposal-reconciliation/README.md#planned-design) | A GitHub Copilot agent skill that compares reviewed tracker proposals with the latest tracker export and writes additions, field updates, conflicts, suggestions and vendor-safe folders as CSV and Markdown files for a lead to review and apply by hand, never overwriting human edits. |
-| [Review Queue Export](review-queue-export/README.md#planned-design) | A GitHub Copilot agent skill that turns the reconciliation files and the tracker export into the four consolidated review CSVs, one wide row per record ordered by what needs a lead's judgment, keeping the lead's review cells across refreshes. |
-| [Daily Call Briefing](daily-call-briefing/README.md#planned-design) | A GitHub Copilot agent skill that writes the internal daily summary across all vendor tracks from a tracker export (use cases by stage, overdue questions, blockers, access actions, mappings pending a decision and next batch suggestions). |
-| [Vendor Sheet Update](vendor-sheet-update/README.md#planned-design) | A GitHub Copilot agent skill that applies the review rows a lead accepted to one vendor's vendor-facing sheets, writes per-tab vendor-safe CSV files and a report for the lead to paste into the vendor workbook and check before upload, and marks the applied rows. |
+| [Review Decisions](review-decisions/README.md#planned-design) | A GitHub Copilot agent skill that walks a lead through the pending rows of the review CSVs, records accept, reject or clarify only from the lead's own words in that row's review cells, accepts a use case's plain additions in one step and lets the lead change an earlier decision, so decisions are made in chat and nobody edits the review CSVs by hand. |
 
 ### Planned Design
 
-The group holds four sibling skills of one kind, each the Markdown-only counterpart of a Node lead tool. The reconciliation skill writes the files that the review export skill reads, so classification rules exist once; the vendor update skill reads the review CSVs and the headings file that the export skill writes; the daily briefing stands apart and reads only the tracker export. The four share one `tracker-table-rules.md` (mastered in the reconciliation skill, copied byte for byte into the others) and each holds byte-identical copies of the Tracker Data Contract's contract and schema, as the existing skills do. The group has no behavior of its own.
+The group holds one skill, [Review Decisions](review-decisions/README.md#planned-design), and has no behavior of its own. It replaces the earlier plan of four Markdown counterparts of the Node tools (Proposal Reconciliation, Review Queue Export, Daily Call Briefing and Vendor Sheet Update), which was withdrawn because the user confirmed on 2026-11-16 that scripts can run in the client environment: the Tracker Reconciler, Review CSV Exporter, Tracker Summary and Vendor Workbook Updater stay Node tools in [Tracker Tools](../tracker-tools/README.md#plan) and are shipped to the client as they are. The skill handles what a script cannot do well, which is taking a decision from the lead's words in chat and writing it into the review cells of the CSVs the exporter produced. Later lead skills (for example a runbook helper) would join the group; none is planned now.
 
 #### Planned Diagram
 
@@ -78,20 +71,14 @@ config:
 ---
 %%{init: {"securityLevel": "loose"}}%%
 flowchart TB
-  rec["<a href='proposal-reconciliation/README.md#planned-diagram'>Proposal Reconciliation</a>"]:::planned
-  exp["<a href='review-queue-export/README.md#planned-diagram'>Review Queue Export</a>"]:::planned
-  brief["<a href='daily-call-briefing/README.md#planned-diagram'>Daily Call Briefing</a>"]:::planned
-  upd["<a href='vendor-sheet-update/README.md#planned-diagram'>Vendor Sheet Update</a>"]:::planned
-  exp -->|"reads"| rec
-  upd -->|"reads"| exp
-  brief ~~~ upd
+  rd["<a href='review-decisions/README.md#planned-diagram'>Review Decisions</a>"]:::planned
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
 
 ### Planned Relationships
 
-- [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the schema and formats every skill follows.
-- [Tracker Tools](../tracker-tools/README.md#plan) — the reference Node tools, not shipped.
+- [Review CSV Exporter](../tracker-tools/review-csv-exporter/README.md#purpose) — writes the review CSVs the skill edits and owns the headings file it reads.
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) — hands the review of each folder to the skill after the export.
 
 ### Planned Links
 

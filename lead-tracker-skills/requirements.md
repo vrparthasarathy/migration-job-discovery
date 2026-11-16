@@ -4,11 +4,9 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 
 ## Requirements
 
-- The group holds four Markdown-only skills, one per lead tool converted for the client environment, where executables are blocked: Proposal Reconciliation, Review Queue Export, Daily Call Briefing and Vendor Sheet Update. It has no behavior of its own and no tests.
-- Each skill does its tool's job by following an explicit procedure on CSV files and keeps the tool's output names and shapes, so the Discovery Orchestrator and the other skills read them unchanged.
-- No skill writes an executable, runs anything, or writes into the tracker or SharePoint; none writes `.xlsx`.
-- The reference Node tools stay unchanged in Tracker Tools and are not shipped to the client.
-- Shared across the four: byte-identical copies of the Tracker Data Contract's contract and schema, one `tracker-table-rules.md` mastered in Proposal Reconciliation and copied byte for byte, a count line first in every output, a tally of rows in against rows classified, and stop-with-a-named-error instead of guessing.
+- The group holds Markdown-only Copilot agent skills that a lead uses in chat on top of the lead tracker tools' output. Today it holds one, Review Decisions. It has no behavior of its own and no tests.
+- The lead tracker tools (Tracker Reconciler, Review CSV Exporter, Tracker Summary, Vendor Workbook Updater) stay Node tools in Tracker Tools and run in the client environment; no skill in this group does a tool's job. The earlier plan for four Markdown counterparts is withdrawn.
+- A skill reads and writes only the files the lead names, never the tracker or SharePoint, runs no executable and holds no copy of the Tracker Data Contract unless its own record says so.
 
 ## Must not
 

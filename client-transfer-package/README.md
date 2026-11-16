@@ -94,11 +94,9 @@ flowchart TB
 
 ### Planned Behavior
 
-Planned with the [Lead Tracker Skills](../lead-tracker-skills/README.md#planned-design), because executables are blocked in the client environment: the package no longer carries the Node tools, the Node tests or the Node 26 prerequisite. These replace the current wording of the named behaviors when built; the others are unchanged.
+Planned with the [Review Decisions](../lead-tracker-skills/README.md#planned-design) skill, and after the user confirmed on 2026-11-16 that scripts can run in the client environment, so the tools stay in the package. This replaces the current wording of `B02` when built; the other behaviors are unchanged.
 
-- **B02** When the payload list is read, then the package holds only the listed files: the Copilot skill folders complete (the five existing and the four lead tracker skills with their golden fixtures), the tracker contract, schema and templates with the workbook layout guide, the process guide and usage guidance, the job behavior template with its filling guide and the reference specification; no tool, no Node test, git history, secret, `node_modules`, cache, generated client data, unrelated component or CRAFT metadata is packed.
-- **B09** When `verify` runs, then it restores into a clean temporary directory, compares every restored file byte for byte with its source file, and checks that the zip is intact and every member is `.txt`; it runs no packaged test.
-- **B10** When `VERIFICATION.txt` is written, then it lists only checks actually performed and the checks left for the client environment (including the golden comparisons of the lead tracker skills), and it never claims that Copilot skill discovery or client use cases are validated.
+- **B02** When the payload list is read, then the package holds only the listed files: the six Copilot skill folders complete (the five existing and `record-review-decisions`), the tracker contract, schema and templates with the workbook layout guide, the process guide and usage guidance, the job behavior template with its filling guide and the reference specification, the tracker tools with tests and fictional fixtures (including the Vendor Workbook Updater with its `package.json` and lock file, and the sample's headings file it reads), and the root integration tests with the files they read; git history, secrets, `node_modules`, caches, generated client data, unrelated components and CRAFT metadata (unless runtime use needs it) are left out.
 
 ### Steps
 
@@ -106,7 +104,7 @@ Planned with the [Lead Tracker Skills](../lead-tracker-skills/README.md#planned-
 2. **`src/payload.py`** (B02, B03): reads and expands the list, applies the exclusion rules, scans for secret-like values, reports every finding.
 3. **`src/package.py`** (B01, B04, B05, B08): source revision, manifest, deterministic zip, `.txt` naming, rendering of the templates and the generated process guide, with the "Copilot" wording and the check that each command in the quickstart names a packaged file.
 4. **`src/restore.py`** (B06, B07): the standalone restore script, standard library only, as `contract.md` sets out.
-5. **`src/verify.py`** and **`src/build.py`** (B03, B09, B10): the two commands, the two-pass build, the clean-directory restore, the byte comparison, the zip and member-name checks, and no packaged tests (the Node tests are no longer shipped).
+5. **`src/verify.py`** and **`src/build.py`** (B03, B09, B10): the two commands, the two-pass build, the clean-directory restore, the byte comparison, the zip and member-name checks, and the packaged tests where Node is available (the Vendor Workbook Updater's are skipped until `npm ci` has run in its folder).
 6. **`templates/`**: `START-HERE.txt`, `COPILOT-RESTORE-PROMPT.txt`, `CLIENT-QUICKSTART.md.txt`, `VERIFICATION.txt` (with fixed wording for the client-environment checks).
 7. **Tests** in `test/`, tagged `[B01]` to `[B10]` in the test name and docstring: `test_build` (B01, B04, B08), `test_payload` (B02, B03), `test_texts` (B05, B10), `test_restore` (B06, B07), `test_verify` (B09). Unit tests build a small fixture tree in a temporary directory at test time; one run builds and verifies the real repository.
 8. **Docs:** the built `Design` and diagram in this README, kept in step with `requirements.md` and `contract.md`.
@@ -128,8 +126,11 @@ Assumptions (override by telling the builder, or by editing the file named):
 
 - **Planner substitution.** The planner agent failed with an authentication error (HTTP 403) and was not retried. This plan was written from a direct read of the repository by the planning session. Re-run `/craft:plan` for this component later if an independent planner pass is wanted.
 - **Python 3.9 or later, standard library only**, for the generator and the shipped restore script. To use Node, see `requirements.md`.
-- **No tools are shipped** (planned with the Lead Tracker Skills): executables are blocked in the client environment, so the payload swaps the tools, their tests and the Node prerequisite for the four lead tracker skill folders with their golden fixtures. The root integration tests, which import the tools, are not shipped either; the byte comparison of `verify` replaces them. Override by restoring the tools where Node is allowed.
-- **`restore.py` may not run on the client** for the same reason. The Copilot restore prompt must work by Copilot copying each `.txt` member back to its original path with file operations, using the manifest's paths and sizes; `restore.py` stays an optional, standard-library helper. Override by dropping `restore.py`.
+- **The tools are shipped and scripts run on the client**, by the user's confirmation of 2026-11-16. This withdraws the earlier plan to ship Markdown counterparts of the tools and to drop the Node prerequisite; the Lead Tracker Skills plan was revised the same way. Node 26 stays a prerequisite and the root integration tests are shipped. Override by naming a client where Node is not allowed.
+- **`restore.py` runs on the client** and is the way to restore, as first planned. The Copilot restore prompt still tells Copilot to copy each member back with file operations if it cannot run the script. Override by dropping `restore.py`.
+- **The Vendor Workbook Updater is shipped** with its `package.json`, `package-lock.json`, `src/`, `test/` and `data/`, and with `tracker-tools/sample-tracker-workbook/data/headings.csv`, which it reads by relative path. It needs the pinned `exceljs`, so the quickstart tells the client to run `npm ci` once in that tool's folder (a network step the client approves); `verify` skips its tests when `node_modules` is absent. The Master Workbook Updater, the Vendor Sample Workbook and the Sample Tracker Workbook are not packed in the first draft; `requirements.md` says what to add. Override by adding them to `payload.txt`.
+- **The secret scan runs strictly on non-test files and, in `test/` folders, tolerates the fake values the reconciler's own tests contain** (a `password=` value, a `ghp_` token, a private key header and an `AKIA` key), listed in `requirements.md`, because the tests need them. Override by dropping the tests with those values from the payload.
+- **The Review Decisions skill is packed** as the sixth skill folder and holds no copy of the contract, so the root copy test is unchanged.
 - **No hashes**, by the user's decision. Size, the zip's CRC and the byte comparison of `verify` stand in; hashes are a follow-on.
 - **Existing skills are replaced** by Copilot, which lists what it replaced, by the user's decision; other differing files are flagged first.
 - **One restored folder** holds the whole tree (tools, tests, docs) in its original layout, and Copilot also copies each skill folder to `.github/skills`. The root tests walk the tree, so the folder must hold only those files; run them there, not in the client's repository root.
@@ -149,6 +150,7 @@ Open questions (behavior or real ambiguity): none.
 - [Identity Access Discovery](../identity-access-discovery/README.md#purpose) — the identity and access skill that is packed.
 - [Workflow Recommender](../workflow-recommender/README.md#purpose) — the recommendation skill and its templates that are packed.
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#purpose) — the coordinating skill that is packed.
+- [Review Decisions](../lead-tracker-skills/review-decisions/README.md#planned-design) — the skill that records and revisits review decisions, packed as the sixth skill folder.
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the contract, schema, templates and layout guide that are packed.
 - [Tracker Tools](../tracker-tools/README.md#purpose) — the tools, with tests, that are packed.
 - [Job Behavior Template](../job-behavior-template/README.md#purpose) — the template and filling guide that are packed.
