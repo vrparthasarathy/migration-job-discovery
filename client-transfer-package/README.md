@@ -94,7 +94,7 @@ flowchart TB
 
 ### Planned Behavior
 
-Planned with the [Review Decisions](../lead-tracker-skills/README.md#planned-design) skill, and after the user confirmed on 2026-11-16 that scripts can run in the client environment, so the tools stay in the package. This replaces the current wording of `B02` when built; the other behaviors are unchanged.
+Planned with the [Review Decisions](../lead-tracker-skills/README.md#design) skill, and after the user confirmed on 2026-11-16 that scripts can run in the client environment, so the tools stay in the package. This replaces the current wording of `B02` when built; the other behaviors are unchanged.
 
 - **B02** When the payload list is read, then the package holds only the listed files: the six Copilot skill folders complete (the five existing and `record-review-decisions`), the tracker contract, schema and templates with the workbook layout guide, the process guide and usage guidance, the job behavior template with its filling guide and the reference specification, the tracker tools with tests and fictional fixtures (including the Vendor Workbook Updater with its `package.json` and lock file, and the sample's headings file it reads), and the root integration tests with the files they read; git history, secrets, `node_modules`, caches, generated client data, unrelated components and CRAFT metadata (unless runtime use needs it) are left out.
 
@@ -150,7 +150,7 @@ Open questions (behavior or real ambiguity): none.
 - [Identity Access Discovery](../identity-access-discovery/README.md#purpose) — the identity and access skill that is packed.
 - [Workflow Recommender](../workflow-recommender/README.md#purpose) — the recommendation skill and its templates that are packed.
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#purpose) — the coordinating skill that is packed.
-- [Review Decisions](../lead-tracker-skills/review-decisions/README.md#planned-design) — the skill that records and revisits review decisions, packed as the sixth skill folder.
+- [Review Decisions](../lead-tracker-skills/review-decisions/README.md#design) — the skill that records and revisits review decisions, packed as the sixth skill folder.
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the contract, schema, templates and layout guide that are packed.
 - [Tracker Tools](../tracker-tools/README.md#purpose) — the tools, with tests, that are packed.
 - [Job Behavior Template](../job-behavior-template/README.md#purpose) — the template and filling guide that are packed.

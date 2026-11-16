@@ -4,24 +4,26 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 
 ## Requirements
 
-- Goal: one flow per use-case folder, from the four discovery stages to the lead's decisions in the review CSVs, with no hand transposing and no duplicates across folders.
-- The skill invokes the four existing skills and the exporter; it does not change their outputs or copy their logic. It writes no proposal file of its own.
-- Plain Markdown skill for GitHub Copilot in VS Code agent mode. It needs the four skills installed beside it, Node 26 and the exporter's command line.
+- Goal: one flow per use-case folder, from the four discovery stages to the hand-over of the review CSVs to `record-review-decisions`, with no hand transposing and no duplicates across folders. Folders may sit at any depth under one repository root.
+- The skill invokes the four existing skills, the exporter and `record-review-decisions`; it does not change their outputs or copy their logic. It writes no proposal file and no review cell. Its only own write is one row per folder in `use-case-index.csv` at the repository root ([contract.md](contract.md#use-case-index-derived-proposal-id-and-fixed-recommendations-id)), never edited by hand.
+- Plain Markdown skill for GitHub Copilot in VS Code agent mode. It needs the five skills installed beside it, Node 26 and the exporter's command line.
 - Stage order: source screening, identity and access, behavior documentation, workflow recommendation. Behavior documentation is two invocations (drafting, then specification-update proposals).
 - A source status of `not-located` or `empty` skips behavior documentation and workflow recommendation for that use case; `uncertain-mapping` does not skip.
-- Workflow recommendation compares every specification processed so far; the lead confirms the list before the run. One recommendations proposal ID per session keeps repeat runs from duplicating mappings.
-- Review walk: pending rows (blank review status, or changed since review) in the exporter's order; the skill edits only the review cells of the row and only from the lead's own words; an unclear answer is asked again.
+- Workflow recommendation takes every index row as its list, shown once with the partial-list warning (a partial list drops the other use cases' mappings), and runs after the lead confirms, with the fixed proposal ID `recommendations`, never asked for.
+- The proposal ID of a folder is derived as `uc-<vendor-slug>-<use-case-slug>`, never asked for; a duplicate ID stops the run before any stage.
+- Review: after the export the skill hands the review folder, the lead's name and the date to `record-review-decisions`, which owns the walk, the accept-all step and every write to the review cells; accept-all requests are passed to it. The exporter command is unchanged.
 
 ## Must match the source
 
 - Each skill's own contract and mode, and the Tracker Data Contract's ownership classes: no skill writes forbidden or human-owned fields.
-- The exporter's command line, headings file and column keys.
+- The exporter's command line and the reconciler's slug rule and proposal file format (`update_id` composed as `<proposal_id>:<tab>:<record_key>:<field>`).
 
 ## Must not
 
 - Write to the tracker, release a question, record an acknowledgement or a decision on its own, or apply a change.
 - Record a decision, name or date the lead did not say; take the reviewer name or date from the environment.
-- Invent a proposal ID, vendor or source location.
+- Invent a vendor or source location, or ask for a proposal ID.
+- Change the Tracker Data Contract or its copies, or let any other skill write the index.
 - Include a Craft term, command or file in the skill folder.
 
 ## Need not match
@@ -34,20 +36,8 @@ As the root's: the behaviors are checked by the file review in the checklist and
 
 ## Follow-on work (recorded, not built)
 
-- An exporter `record-decision` subcommand, if hand-editing review cells breaks rows.
-- A small run log, if deriving "specifications processed so far" from the proposals proves insufficient.
+- None recorded.
 
 ## Acceptance
 
 See `task.acceptance` in [`craft.json`](craft.json).
-
-## Planned change: use case index
-
-Planned, not built; merged into the sections above when built.
-
-- Use-case folders may sit at any depth under one repository root. The skill keeps `use-case-index.csv` at that root (one row per use case; defined in [contract.md](contract.md#planned-use-case-index-derived-proposal-id-and-fixed-recommendations-id)), writes it for every folder it processes and never expects it to be hand-edited.
-- The proposal ID of a folder is derived as `uc-<vendor-slug>-<use-case-slug>`; the skill no longer asks for it, and a duplicate ID stops the run before any stage.
-- The recommendations proposal ID is the fixed value `recommendations`; the skill no longer asks for it. The list for workflow recommendation is every index row, shown to the lead once with the partial-list warning.
-- The export step keeps the Node exporter command, because scripts run in the client environment. After it the skill hands the review folder, the lead's name and the date to `record-review-decisions`, which owns the review walk, the accept-all step and every write to the review cells; the orchestrator writes no review cell and needs that skill installed beside it. The earlier plan to replace the exporter with Markdown skills is withdrawn.
-- Must match: the reconciler's slug rule and the proposal file format (`update_id` composed as `<proposal_id>:<tab>:<record_key>:<field>`).
-- Must not: change the Tracker Data Contract or its copies, write a proposal file itself, or let the index be written by any other skill.

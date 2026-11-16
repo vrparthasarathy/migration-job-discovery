@@ -9,14 +9,15 @@ In VS Code agent mode, the skill `run-discovery` with a use-case folder path.
 ### Inputs
 
 - The folder: the source, an optional `external_tools.md`, an optional `logic.md` and tagged documents.
-- Asked once and never invented: the proposal ID (one per folder, shared by stages 1 to 3), the vendor and source location when absent, a recommendations proposal ID (one per session), the tracker export folder, the proposals root, the exporter path, the lead's name and today's date.
+- Derived, never asked for: the proposal ID `uc-<vendor-slug>-<use-case-slug>` (shared by stages 1 to 3) and the fixed recommendations ID `recommendations`.
+- Asked once and never invented: the repository root, the vendor and source location when absent, the tracker export folder, the proposals root, the exporter path, the folder for the review CSVs, the lead's name and today's date.
 
 ### Stages, in order
 
 1. `propose-tracker-updates` in source-screening mode.
 2. `discover-identity-access`.
 3. `document-job-behavior`, then `propose-tracker-updates` in specification-update mode.
-4. `recommend-workflows` over every specification processed so far, taken from the Use Cases rows of the proposals under the proposals root; the lead confirms the list.
+4. `recommend-workflows` over every row of the use case index, with the fixed proposal ID `recommendations`; shown once with the partial-list warning, run after the lead confirms.
 
 Each stage rewrites only its own tabs in its own file. After stage 1 the skill reads the proposed `source_status`; `not-located` or `empty` skips stages 3 and 4 for the folder and says why.
 
@@ -24,27 +25,19 @@ Each stage rewrites only its own tabs in its own file. After stage 1 the skill r
 
 `node <exporter path>/src/main.ts export-review --export <dir> --proposals <root> --out <dir>`. On exit 1 the skill stops and shows the error. The report gives, per stage, what was proposed, skipped or blocked, then the exporter's counts including rejected proposal rows.
 
-### Review walk
+### Review hand-over
 
-- Pending rows: blank `review_status`, or `changed_since_review` = `yes`, taken in the `order` column; the review columns are found through the headings file.
-- Per row it shows the use case, the record, the kind, the current and proposed value per field with its state, the conflict, the suggestions, the evidence and the reason.
-- Answers: accept, reject or clarify, with an optional comment. The skill edits only `review_status`, `reviewer`, `review_note` and `reviewed_on` of that row, with the lead's name and the date the lead gave. It sets `applied_on` only when the lead gives a date after applying by hand. After recording it reruns the exporter, which stops if a hand edit broke a file.
-
-### Accept all
-
-On the lead's request it records `accepted` for every row of that one use case whose kind is `add`, with no conflict and no held change, in the lead's name, in one step, then lists the rows it recorded and the rows it left.
+After the export the skill invokes `record-review-decisions` with the review folder, the lead's name and the date, and states that the walk and every decision are recorded there. It reads and edits no review cell, does not rerun the exporter after a decision, and passes an accept-all request for one use case to that skill. The headings file is not read here.
 
 ### Prohibitions
 
-As B08: it never writes to the tracker, releases a question, records an acknowledgement or a decision on its own, applies a change, edits a proposal file itself or edits another skill's output.
+As B08: it never writes to the tracker, releases a question, records an acknowledgement or a decision on its own, applies a change, edits a proposal file or a review cell, or edits another skill's output. The index row is its only own write.
 
 ### Wording rules
 
 No Craft term. `use case` names the business unit; `job` or `script` only the vendor's script; plain language.
 
-### Planned: use case index, derived proposal ID and fixed recommendations ID
-
-Planned, not built. When built, this section replaces the proposal ID and recommendations ID wording in Inputs, the list wording in Stages (4) and is merged into the sections above.
+### Use case index, derived proposal ID and fixed recommendations ID
 
 - **File.** `use-case-index.csv` at the repository root. UTF-8 without a byte order mark, comma-separated, RFC 4180 quoting, LF line ends, one header row, exactly `use_case_name,slug,vendor,folder,spec`. Rows are sorted by `folder`.
 - **Columns.** `use_case_name`: the name exactly as the folder or specification writes it. `slug`: the use case slug. `vendor`: the vendor as read from the folder, not a slug. `folder`: the folder path relative to the repository root, `/` separators, no leading `./`, no trailing `/`. `spec`: the root-relative path of the specification file, blank until stage 3 has written it.
@@ -55,6 +48,5 @@ Planned, not built. When built, this section replaces the proposal ID and recomm
 - **When written.** After the duplicate check at the start of a folder (stage 1 needs the ID); `spec` after stage 3. A folder skipped for `not-located` or `empty` keeps a blank `spec`.
 - **Who writes.** Only this skill, only its own row, never by hand; no other skill writes the file.
 - **Repository root.** Asked once per session, never guessed; each folder must sit under it, otherwise the run stops.
-- **Export step.** Unchanged: the skill runs `node <exporter path>/src/main.ts export-review --export <dir> --proposals <root> --out <dir>` and stops on exit 1 as above. It still asks for the exporter path and needs Node 26.
-- **Review hand-over.** Replaces `Review walk` and `Accept all` above when built. After the export the skill invokes `record-review-decisions` with the review folder, the lead's name and the date, and states that the walk and every decision are recorded there. It reads and edits no review cell, does not rerun the exporter after a decision (the other skill reads its own edit back), and passes an accept-all request for one use case to that skill. The headings file is no longer read here.
 - **Fixed recommendations ID.** `recommendations`, so the recommender writes `tracker-updates/recommendations/tracker-updates.csv`. The skill never asks for it. Before stage 4 it shows the list (every index row) once with the warning that a partial list drops the other use cases' mappings, and runs only after the lead confirms.
+- **Export step.** Unchanged: the skill runs the exporter command above and stops on exit 1. It asks for the exporter path and needs Node 26.

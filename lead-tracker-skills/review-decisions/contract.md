@@ -2,7 +2,7 @@
 
 ## Contract
 
-Planned, not built.
+Built as `record-review-decisions/SKILL.md`.
 
 ### Invocation
 

@@ -5,7 +5,7 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 ## Requirements
 
 - Goal: a lead records and later revisits decisions on the review CSV rows in chat, and never has to edit the CSVs by hand.
-- One Markdown skill for GitHub Copilot in VS Code agent mode, folder `record-review-decisions`, holding `SKILL.md` and `review-checklist.md` only. It needs only Copilot, the review folder and the Review CSV Exporter's `review-headings.csv`.
+- One Markdown skill for GitHub Copilot in VS Code agent mode, folder `record-review-decisions`, holding `SKILL.md` only, with the internal `review-checklist.md` beside it. It needs only Copilot, the review folder and the Review CSV Exporter's `review-headings.csv`.
 - Pending rows are those with a blank `review_status` or `changed_since_review` = `yes`, taken in the `order` column, one use case at a time. Every column is found through the headings file keys, never assumed.
 - A decision is the lead's own words: accept, reject or clarify, with an optional comment. The skill writes `review_status`, `reviewer`, `review_note` and `reviewed_on` of that row and clears its `changed_since_review`; it asks again when an answer is unclear.
 - Accept all plain adds of one use case is one step over that use case's pending `add` rows with no conflict and no held change.
@@ -15,7 +15,7 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 ## Must match the source
 
 - The Review CSV Exporter's file names (`review-use-cases.csv`, `review-questions.csv`, `review-identity-access.csv`, `review-mappings.csv`), its headings file keys, its allowed statuses (`accepted`, `rejected`, `clarify`) and its rule that a review cell that looks like a secret stops the run.
-- The review walk and the accept-all text of the built Discovery Orchestrator, which this skill replaces there.
+- The review walk and the accept-all text of the built Discovery Orchestrator, which this skill takes over; the orchestrator's own copy is removed by separate work in that component.
 
 ## Must not
 

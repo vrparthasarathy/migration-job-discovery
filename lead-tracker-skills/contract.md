@@ -2,7 +2,7 @@
 
 ## Contract
 
-Planned, not built. The rules every skill folder in the group follows; each skill's own contract has the rest.
+The rules every skill folder in the group follows; each skill's own contract has the rest.
 
 - **Skill folders.** `<component>/<skill>/` holds `SKILL.md` (front matter `name` equal to the folder name, a description with trigger phrases, `user-invocable: true`) and the skill's own internal review checklist.
 - **Inputs.** Work only from the files the lead names; ask once for what is missing; never take the lead's name or a date from the environment.
