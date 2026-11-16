@@ -30,6 +30,7 @@ Two things for the vendor-to-platform migration: a job behavior pack (a blank te
 | [Discovery Orchestrator](discovery-orchestrator/README.md#purpose) | A GitHub Copilot agent skill that takes one use-case folder through the discovery stages in order, refreshes the consolidated review CSVs and walks a lead through the pending rows, so leads review and decide in one flow and each folder is processed without duplicates. |
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
 | [Client Transfer Package](client-transfer-package/README.md#purpose) | A Python tool that packs the completed Copilot skills, tracker contract, guides and lead tools into one text-only zip with a manifest, a restore script and a Copilot restore prompt, so the pack can be sent into the client environment and restored there by Copilot Agent mode. |
+| [Lead Tracker Skills](lead-tracker-skills/README.md#components) | The Markdown-only Copilot agent skills that do the lead tracker tools' jobs on CSV files (reconcile, review export, daily summary, vendor sheet update), for the client environment where executables are blocked. |
 
 ## Design
 
@@ -128,12 +129,15 @@ flowchart TB
 | [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) | A GitHub Copilot agent skill that takes one use-case folder through the discovery stages in order, refreshes the consolidated review CSVs and walks a lead through the pending rows, so leads review and decide in one flow and each folder is processed without duplicates. |
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
 | [Client Transfer Package](client-transfer-package/README.md#planned-design) | A Python tool that packs the completed Copilot skills, tracker contract, guides and lead tools into one text-only zip with a manifest, a restore script and a Copilot restore prompt. |
+| [Lead Tracker Skills](lead-tracker-skills/README.md#planned-design) | The Markdown-only Copilot agent skills that do the lead tracker tools' jobs on CSV files, for the client environment where executables are blocked. |
 
 ### Planned Design
 
 The root gains a tenth child, the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design), a Copilot skill that coordinates the four existing skills and runs the lead tools' new Review CSV Exporter (planned in [Tracker Tools](tracker-tools/README.md#plan)), so a lead takes one use-case folder through the discovery stages and reviews the pending rows in one flow. It writes no proposal file of its own and decides nothing for the lead. When the plan is built the root records change as proposed here, to be made by the root's owner (the root also gains an eleventh child, the [Client Transfer Package](client-transfer-package/README.md#planned-design), which reads the files of the skills, the contract, the guides and the tools to pack them and changes none of them, so its root test fixtures must not add copies of the contract or schema): the technology text counts five Copilot skills, root `B02` lists the new skill folder among the inspected pack files, the end-to-end handoffs note that steps 2, 4, 5 and 6 can run per folder through the orchestrator and the review CSVs with applying still by hand, and the review columns and their values are stated once in the contract.
 
 The use case index change adds no component. The [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) will write a `use-case-index.csv` at the repository root and derive each folder's proposal ID, and the [Workflow Recommender](workflow-recommender/README.md#planned-design) will read the index for its list with a fixed proposal ID, so use-case folders can sit at any depth (for example `<vendor>/<job>/`). When that plan is built the root records change as proposed here, to be made by the root's owner: the technology text names the index, and the end-to-end handoffs say in step 4 that the orchestrator derives each folder's proposal ID as `uc-<vendor-slug>-<use-case-slug>` and in step 6 that the recommender runs over every index row, both pointing to the [orchestrator's contract](discovery-orchestrator/contract.md#planned-use-case-index-derived-proposal-id-and-fixed-recommendations-id) rather than restating the columns. The Tracker Data Contract and its copies are not changed, so `B05` is unaffected. This root Plan is extended, not replaced, because it still carries the unbuilt plans for the Client Transfer Package and the earlier root record changes; override by asking for the root Plan to be replaced.
+
+The lead tool conversion adds one child, the [Lead Tracker Skills](lead-tracker-skills/README.md#planned-design) group of four Markdown-only skills (Proposal Reconciliation, Review Queue Export, Daily Call Briefing and Vendor Sheet Update), because executables are blocked in the client environment. The [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) runs the first two in place of the Node exporter, the [Client Transfer Package](client-transfer-package/README.md#planned-design) packs the skills and no longer the tools, and [Tracker Tools](tracker-tools/README.md#plan) stays unchanged as the reference implementation and the source of the skills' golden outputs. When that plan is built the root records change as proposed here, to be made by the root's owner: the technology text and `requirements.md` say the lead tools are Node tools for the team and Markdown skills for the client environment, the end-to-end handoffs name `reconcile-tracker`, `export-review`, `update-vendor-workbook` and `summarize-tracker` in steps 5, 7 and 8, root `B02` lists the new skill folders among the inspected pack files, root `B05` and its test cover the contract and schema copies in seven skill folders (the three existing and the four new) and a new test compares the four `tracker-table-rules.md` copies (golden fixtures must hold no file named like a contract copy), and the contract's pack table lists the group. The Tracker Data Contract is not changed.
 
 #### Planned Diagram
 
@@ -156,6 +160,7 @@ flowchart TB
   tools[["<a href='tracker-tools/README.md#diagram'>Tracker Tools</a>"]]
   orch["<a href='discovery-orchestrator/README.md#planned-diagram'>Discovery Orchestrator</a>"]:::planned
   transfer["<a href='client-transfer-package/README.md#planned-diagram'>Client Transfer Package</a>"]:::planned
+  skills[["<a href='lead-tracker-skills/README.md#planned-diagram'>Lead Tracker Skills</a>"]]:::planned
   root -->|delegates-to| check
   root -->|delegates-to| tmpl
   root -->|delegates-to| ref
@@ -167,6 +172,7 @@ flowchart TB
   root -->|delegates-to| tools
   root -->|delegates-to| orch
   root -->|delegates-to| transfer
+  root -->|delegates-to| skills
   ref -->|"uses the form of"| tmpl
   ref -->|"is written from"| check
   guide -->|"uses a copy of"| tmpl
@@ -192,6 +198,10 @@ flowchart TB
   transfer -->|"reads"| tools
   transfer -->|"reads"| tmpl
   transfer -->|"reads"| ref
+  transfer -->|"reads"| skills
+  skills -->|"follows"| contract
+  skills -->|"gets golden outputs from"| tools
+  orch -->|"uses"| skills
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
 

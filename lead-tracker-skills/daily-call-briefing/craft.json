@@ -1,0 +1,39 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 2,
+        "spent": 0,
+        "reserve": 0.2,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 3600,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "On the three-vendor golden export, each section of the summary matches the expected one. (B01, B02, B03, B04, B05, B06, B09)",
+      "Unowned items are flagged and never assigned. (B07)",
+      "A bad export stops with a named error and writes nothing. (B08)",
+      "A repeat run on the same inputs and date is identical, and every released question row is counted once. (B10)"
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 2,
+        "spent": 0,
+        "reserve": 0.2,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 3600,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "On the website proposal against an empty export it produces the additions, and rerun after they are applied it produces none, with the same rows in the same order. (B01, B03)",
+      "Conflicts, held rows, rejected rows and re-review suggestions match the golden cases. (B02, B04, B06, B07)",
+      "Link suggestions never link, merge or answer, and no input, reference, answer or status is changed. (B05, B10)",
+      "Vendor folders pass the vendor-safe self-check and hold only that vendor's released question rows. (B08)",
+      "A bad input or a tally mismatch stops with a named error and writes nothing. (B09)"
+    ]
+  }
+}

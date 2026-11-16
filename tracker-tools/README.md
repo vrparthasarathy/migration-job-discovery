@@ -95,6 +95,8 @@ flowchart TB
 
 The group gains a seventh member, the [Vendor Sample Workbook](vendor-sample-workbook/README.md#planned-design), a lead-side sample generator that imports the Tracker Tables library and the Sample Tracker Workbook's data and headings by relative path, reads the Vendor Workbook Updater's editable-column list and satisfies its input rules. The [Sample Tracker Workbook](sample-tracker-workbook/README.md#plan) is also planned to change: it builds its Review sheets by running the Review CSV Exporter, so the diagram gains that edge. The Vendor Sample Workbook adds the third pinned `exceljs` dependency in the group (with the sample and the updater); the group's owner reconciles the Technology text and the "no dependencies" rule when it is built, and until then neither the Technology section nor the requirements of this group change.
 
+The four lead tools the client environment cannot run (the [Tracker Reconciler](tracker-reconciler/README.md#purpose), the [Review CSV Exporter](review-csv-exporter/README.md#purpose), the [Tracker Summary](tracker-summary/README.md#purpose) and the [Vendor Workbook Updater](vendor-workbook-updater/README.md#purpose)) gain Markdown-only counterparts in the [Lead Tracker Skills](../lead-tracker-skills/README.md#planned-design) group, because executables are blocked there. They stay unchanged here as the reference implementation and the source of the skills' golden expected outputs, and are no longer shipped to the client. When that plan is built this README's Purpose, Design and Technology say so, a bounded request to this group's owner; no code, test or check here changes.
+
 #### Planned Diagram
 
 ```mermaid

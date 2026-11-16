@@ -60,6 +60,7 @@ Not built yet.
 
 - [Planned Design](#planned-design)
   - [Planned Diagram](#planned-diagram)
+- [Planned Behavior](#planned-behavior)
 - [Steps](#steps)
 - [Acceptance Mapping](#acceptance-mapping)
 - [Assumptions And Open Questions](#assumptions-and-open-questions)
@@ -91,17 +92,25 @@ flowchart TB
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
 
+### Planned Behavior
+
+Planned with the [Lead Tracker Skills](../lead-tracker-skills/README.md#planned-design), because executables are blocked in the client environment: the package no longer carries the Node tools, the Node tests or the Node 26 prerequisite. These replace the current wording of the named behaviors when built; the others are unchanged.
+
+- **B02** When the payload list is read, then the package holds only the listed files: the Copilot skill folders complete (the five existing and the four lead tracker skills with their golden fixtures), the tracker contract, schema and templates with the workbook layout guide, the process guide and usage guidance, the job behavior template with its filling guide and the reference specification; no tool, no Node test, git history, secret, `node_modules`, cache, generated client data, unrelated component or CRAFT metadata is packed.
+- **B09** When `verify` runs, then it restores into a clean temporary directory, compares every restored file byte for byte with its source file, and checks that the zip is intact and every member is `.txt`; it runs no packaged test.
+- **B10** When `VERIFICATION.txt` is written, then it lists only checks actually performed and the checks left for the client environment (including the golden comparisons of the lead tracker skills), and it never claims that Copilot skill discovery or client use cases are validated.
+
 ### Steps
 
 1. **Scaffold.** `.gitignore` (`dist/`, `__pycache__/`), `src/`, `test/`, `templates/`, `payload.txt` as in `requirements.md`.
 2. **`src/payload.py`** (B02, B03): reads and expands the list, applies the exclusion rules, scans for secret-like values, reports every finding.
 3. **`src/package.py`** (B01, B04, B05, B08): source revision, manifest, deterministic zip, `.txt` naming, rendering of the templates and the generated process guide, with the "Copilot" wording and the check that each command in the quickstart names a packaged file.
 4. **`src/restore.py`** (B06, B07): the standalone restore script, standard library only, as `contract.md` sets out.
-5. **`src/verify.py`** and **`src/build.py`** (B03, B09, B10): the two commands, the two-pass build, the clean-directory restore, the byte comparison, the zip and member-name checks, and the packaged tests through `node --test` when Node 26 is found.
+5. **`src/verify.py`** and **`src/build.py`** (B03, B09, B10): the two commands, the two-pass build, the clean-directory restore, the byte comparison, the zip and member-name checks, and no packaged tests (the Node tests are no longer shipped).
 6. **`templates/`**: `START-HERE.txt`, `COPILOT-RESTORE-PROMPT.txt`, `CLIENT-QUICKSTART.md.txt`, `VERIFICATION.txt` (with fixed wording for the client-environment checks).
 7. **Tests** in `test/`, tagged `[B01]` to `[B10]` in the test name and docstring: `test_build` (B01, B04, B08), `test_payload` (B02, B03), `test_texts` (B05, B10), `test_restore` (B06, B07), `test_verify` (B09). Unit tests build a small fixture tree in a temporary directory at test time; one run builds and verifies the real repository.
 8. **Docs:** the built `Design` and diagram in this README, kept in step with `requirements.md` and `contract.md`.
-9. **Validate:** the component's `test` check (`python3 -m unittest`), then `build` and `verify` on the real repository, then a restore of the built zip into a clean directory and the packaged tests from it.
+9. **Validate:** the component's `test` check (`python3 -m unittest`), then `build` and `verify` on the real repository, then a restore of the built zip into a clean directory and a byte comparison.
 
 ### Acceptance Mapping
 
@@ -119,6 +128,8 @@ Assumptions (override by telling the builder, or by editing the file named):
 
 - **Planner substitution.** The planner agent failed with an authentication error (HTTP 403) and was not retried. This plan was written from a direct read of the repository by the planning session. Re-run `/craft:plan` for this component later if an independent planner pass is wanted.
 - **Python 3.9 or later, standard library only**, for the generator and the shipped restore script. To use Node, see `requirements.md`.
+- **No tools are shipped** (planned with the Lead Tracker Skills): executables are blocked in the client environment, so the payload swaps the tools, their tests and the Node prerequisite for the four lead tracker skill folders with their golden fixtures. The root integration tests, which import the tools, are not shipped either; the byte comparison of `verify` replaces them. Override by restoring the tools where Node is allowed.
+- **`restore.py` may not run on the client** for the same reason. The Copilot restore prompt must work by Copilot copying each `.txt` member back to its original path with file operations, using the manifest's paths and sizes; `restore.py` stays an optional, standard-library helper. Override by dropping `restore.py`.
 - **No hashes**, by the user's decision. Size, the zip's CRC and the byte comparison of `verify` stand in; hashes are a follow-on.
 - **Existing skills are replaced** by Copilot, which lists what it replaced, by the user's decision; other differing files are flagged first.
 - **One restored folder** holds the whole tree (tools, tests, docs) in its original layout, and Copilot also copies each skill folder to `.github/skills`. The root tests walk the tree, so the folder must hold only those files; run them there, not in the client's repository root.
