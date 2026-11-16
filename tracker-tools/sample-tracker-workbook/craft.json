@@ -3,5 +3,39 @@
     "checks": {
       "install": "npm ci --prefix {path}"
     }
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T11:20:29Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 5,
+        "spent": 0,
+        "reserve": 1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 4500,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "`generate` writes the nine-sheet sample workbook with the Review sheets in the exporter's format in place of Proposed Changes, identically twice from fixed data and as-of date, and writes nothing on invalid data. (B1, B2, B5)",
+      "The sample data covers every listed scenario, and its Review rows show an add, an update, a suggestion and a conflict, with a pending, an accepted, a rejected, a clarify and a changed-since-review row, composed update IDs and `uc-<vendor-slug>-<use-case-slug>` proposal IDs. (B3, B4, B5, B7)",
+      "The workbook stays easy to review with proposed values apart from accepted values, proposal metadata outside the main tables, and internal sheets marked, with nothing hidden. (B6, B8, B9)",
+      "The walkthrough, feedback questions (now including the Review format and the vendor view), differences from the tracker contract and follow-on work exist and agree with the generated workbook. (B10)"
+    ]
   }
 }
