@@ -42,3 +42,12 @@ A list of use case pairs the leads already know to be the same or different, wit
 - No secret value appears in any output.
 - A value the evidence does not show is left blank or `unknown`, never guessed.
 - Output is a proposal for a lead to review; it is never written into the authoritative tracker.
+
+### Planned: input from the use case index and fixed proposal ID
+
+Planned, not built; merged into the skill input table above when built.
+
+- **Index.** `use-case-index.csv` at the repository root, written only by the [Discovery Orchestrator](../discovery-orchestrator/contract.md#planned-use-case-index-derived-proposal-id-and-fixed-recommendations-id) and read here without change. Columns, exactly `use_case_name,slug,vendor,folder,spec` (restated from that contract; they must stay equal). `folder` and `spec` are paths relative to the repository root.
+- **List.** Every index row is a use case to compare; each specification is read from its `spec` path. A blank `spec`, or a path that is not a file, lists the use case under `not compared` as `missing`. A use case in the index is never dropped. If the index is absent the skill stops and says to run `run-discovery` first.
+- **Proposal ID.** The fixed value `recommendations`; the skill never asks for it. Output: `tracker-updates/recommendations/tracker-updates.csv`, only its Mappings rows rewritten. A Mappings `source` uses the row's `spec` path.
+- **Confirmation.** The full list is shown once with the warning that the file is regenerated and a partial list drops the other use cases' Mappings rows, unless the caller has already confirmed the list this session.

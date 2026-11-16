@@ -29,3 +29,13 @@ See `task.acceptance` in [`craft.json`](craft.json).
 
 - **Output varies.** Copilot output differs between models and runs; the behaviors can be judged only on samples.
 - **Copies must stay in step.** The contract and schema copies in the skill folder must match the contract component's files; the root checks them.
+
+## Planned change: use case index
+
+Planned, not built; merged into the sections above when built.
+
+- The set of specifications to compare is the `use-case-index.csv` at the repository root (defined by the Discovery Orchestrator): every index row, each specification read from its `spec` path. A missing or blank spec is reported as `missing`.
+- The proposal ID is the fixed value `recommendations` and is never asked for.
+- The full list is confirmed once with a warning that a partial list drops the other use cases' Mappings rows, unless the caller already confirmed it.
+- Must match: the five index column names of the orchestrator's contract, the proposal file format and the contract copies in the folder (unchanged).
+- Must not: write or repair the index, or change the Tracker Data Contract or its copies.

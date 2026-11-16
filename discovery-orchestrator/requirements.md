@@ -40,3 +40,13 @@ As the root's: the behaviors are checked by the file review in the checklist and
 ## Acceptance
 
 See `task.acceptance` in [`craft.json`](craft.json).
+
+## Planned change: use case index
+
+Planned, not built; merged into the sections above when built.
+
+- Use-case folders may sit at any depth under one repository root. The skill keeps `use-case-index.csv` at that root (one row per use case; defined in [contract.md](contract.md#planned-use-case-index-derived-proposal-id-and-fixed-recommendations-id)), writes it for every folder it processes and never expects it to be hand-edited.
+- The proposal ID of a folder is derived as `uc-<vendor-slug>-<use-case-slug>`; the skill no longer asks for it, and a duplicate ID stops the run before any stage.
+- The recommendations proposal ID is the fixed value `recommendations`; the skill no longer asks for it. The list for workflow recommendation is every index row, shown to the lead once with the partial-list warning.
+- Must match: the reconciler's slug rule and the proposal file format (`update_id` composed as `<proposal_id>:<tab>:<record_key>:<field>`).
+- Must not: change the Tracker Data Contract or its copies, write a proposal file itself, or let the index be written by any other skill.

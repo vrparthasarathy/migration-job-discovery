@@ -1,5 +1,22 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T10:54:40Z",
+    "constraints": {
+      "cost": { "currency": "USD", "allocated": 1, "spent": 0, "reserve": 0.1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
+      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
+      "execution": { "wall-clock": { "allocated-seconds": 1800, "spent-seconds": 0, "reserve-seconds": 300, "source": "unavailable" } },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The default list is every row of `use-case-index.csv`, each specification read from the row's `spec` path, with no assembly from Use Cases rows and no use case silently dropped. (B10)",
+      "A listed spec file that does not exist, or a blank `spec`, is reported under `not compared` as `missing`. (B03)",
+      "The proposal ID is the fixed `recommendations`, never asked for, and the output path is `tracker-updates/recommendations/tracker-updates.csv` with the Mappings `source` using the index `spec` path. (B05, B10)",
+      "The skill, contract, README, requirements and review checklist agree, the five index column names equal the orchestrator contract's, and no Craft term appears in the skill folder. (B03, B05, B10)"
+    ]
   }
 }

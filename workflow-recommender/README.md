@@ -11,6 +11,16 @@ A GitHub Copilot agent skill that compares use case specifications by their beha
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+    - [Planned Diagram](#planned-diagram)
+  - [Planned Behavior](#planned-behavior)
+  - [Steps](#steps)
+  - [Acceptance Mapping](#acceptance-mapping)
+  - [Assumptions And Open Questions](#assumptions-and-open-questions)
+  - [Planned Relationships](#planned-relationships)
+  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -66,6 +76,95 @@ flowchart TB
 - **B08** When it emits tracker rows, then they are Mappings `add` or `suggest` rows only, with no human-owned or forbidden field. (untested: benchmark pending)
 - **B09** When it works, then it keeps no persistent per-use-case profile file, and any normalized summary is a temporary, uncommitted cache. (untested: benchmark pending)
 - **B10** When it runs again on a new or revised specification, then it compares it with the full set, states which specifications, earlier analyses and date it covered and what was not compared, and marks the output internal; the decisions file format has decision ID, status (accepted, rejected, pending-clarification), candidate, affected use cases, rationale, evidence and versions, date and decided-by name, is append-only, and a changed decision is a new row that refers to the earlier one. (untested: benchmark pending)
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Workflow Recommender**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Planned Behavior](#planned-behavior)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+The skill gets its list of use cases from the `use-case-index.csv` at the repository root that the [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) writes, instead of from the proposals' Use Cases rows, so use cases at any folder depth are found. By default it compares every index row and reads each specification from the row's root-relative `spec` path; a row whose spec file does not exist, or whose `spec` is blank, is listed under `not compared` as `missing` and never dropped silently. The proposal ID is the fixed value `recommendations`, so the skill never asks for it and writes `tracker-updates/recommendations/tracker-updates.csv`. A Mappings `source` uses the index `spec` path. The skill still compares the full set on every run, so it shows the full list once with the warning that a partial list drops the other use cases' Mappings rows, unless its caller (the orchestrator) has already confirmed the list this session. If the index is absent the skill stops and tells the developer to run `run-discovery` first. The skill restates the five index column names as a read-only consumer, because skills are installed standalone; the index is defined and written only by the orchestrator, and the Tracker Data Contract and the byte-identical copies in this folder are not changed.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  chk["review-checklist"]
+  skill["recommend-workflows (skill)"]
+  dec["use-case-to-workflow-decisions-template"]
+  val["validation-examples-template"]
+  copy["tracker-data-contract and tracker-schema (copies)"]
+  idx["use-case-index.csv (repository root)"]:::planned
+  copy -->|"defines the Mappings rows of"| skill
+  dec -->|"gives the decision format read by"| skill
+  val -->|"gives the pair format compared by"| skill
+  chk -->|"reviews B01 to B10 on"| skill
+  skill -->|"reads"| idx
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Planned Behavior
+
+These replace or extend the current wording of the named behaviors when built; the other behaviors (`B01`, `B02`, `B04`, `B06` to `B09`) are unchanged.
+
+- **B03** When a specification is missing, unread, unversioned or still a draft, then it is listed under `not compared` with its state, a use case without a specification is listed and never silently dropped, a listed spec file that does not exist or a blank `spec` is listed as `missing`, and a draft specification may still produce recommendations before any vendor acknowledgement. (untested: benchmark pending)
+- **B05** When it regenerates `use-case-to-workflow-recommendations.md`, then it rewrites only that file and the Mappings rows of `tracker-updates/recommendations/tracker-updates.csv`, reads `use-case-to-workflow-decisions.md` and never edits it, and shows each candidate's decision status. (untested: benchmark pending)
+- **B10** When it runs, then the default list is every use case in `use-case-index.csv`, with each specification read from the row's `spec` path, and it uses the fixed proposal ID `recommendations` without asking; it compares the full set, states which specifications, earlier analyses and date it covered and what was not compared, and marks the output internal; when its caller has not already confirmed the list this session it shows the list once with a warning that a partial list drops the other use cases' mappings; when the index is absent it stops and says to run `run-discovery` first; the decisions file format has decision ID, status (accepted, rejected, pending-clarification), candidate, affected use cases, rationale, evidence and versions, date and decided-by name, is append-only, and a changed decision is a new row that refers to the earlier one. (untested: benchmark pending)
+
+### Steps
+
+1. [recommend-workflows/SKILL.md](recommend-workflows/SKILL.md): `Inputs` (the index and the repository root replace the specification set; the proposal ID is fixed), the `missing` handling, the confirmation with the partial-list warning, and the Mappings path and `source` text.
+2. [contract.md](contract.md), [requirements.md](requirements.md) and this README: the input row, the full-set requirement, the Design text, and `B03`, `B05`, `B10`.
+3. [review-checklist.md](review-checklist.md): `B03`, `B05`, `B10` match the new wording; add an item that the five column names equal the orchestrator contract's. Add the task and `tasks.md` to [craft.json](craft.json) when built.
+
+Build after the [Discovery Orchestrator](../discovery-orchestrator/README.md#plan), which owns the index definition the five names are compared with.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| The default list is the index, with no assembly from Use Cases rows | B10 | 1, 2 | checklist `B10` |
+| A missing or blank spec is reported as `missing` and no use case is silently dropped | B03 | 1 | checklist `B03` |
+| The proposal ID is fixed and never asked, and the output path is `tracker-updates/recommendations/` | B05, B10 | 1, 2 | checklist `B05`, `B10` |
+| The five column names agree with the orchestrator contract and the Mappings `source` uses the index `spec` path | B03, B10 | 1, 3 | checklist column item, `B10` |
+
+Validation, narrowest first: the checklist items for the changed behaviors, the wording scan of the skill folder, a throwaway script outside the repository checking the example Mappings rows against the contract copy, then the root `test` check to confirm `B05` (contract copies) is still green. No Copilot run is claimed.
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. The recommender is a consumer only: it never writes or repairs the index. Override by letting a lead supply an explicit list when the index is missing.
+2. Standalone use asks the developer once for the repository root (or takes it from the caller) and once for the list confirmation; when the orchestrator calls it, the orchestrator's confirmation stands.
+3. The fixed ID `recommendations` regenerates the Mappings rows each run, so a use case left out of the list loses its rows from the proposal file (not from the tracker). The list confirmation with the warning is the safeguard.
+4. The Tracker Data Contract and its byte-identical copies here are not changed.
+
+Open questions: none.
+
+### Planned Relationships
+
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) — writes the `use-case-index.csv` this skill reads and defines its columns.
+
+### Planned Links
+
+- [requirements.md](requirements.md#planned-change-use-case-index) — the planned requirement changes.
+- [contract.md](contract.md#planned-input-from-the-use-case-index-and-fixed-proposal-id) — the planned input and ID.
 
 ## Relationships
 

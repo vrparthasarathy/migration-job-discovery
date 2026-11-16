@@ -1,5 +1,22 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T10:54:40Z",
+    "constraints": {
+      "cost": { "currency": "USD", "allocated": 1, "spent": 0, "reserve": 0.1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
+      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
+      "execution": { "wall-clock": { "allocated-seconds": 1800, "spent-seconds": 0, "reserve-seconds": 300, "source": "unavailable" } },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "`SKILL.md`, the contract and the README never ask for a proposal ID and derive `uc-<vendor-slug>-<use-case-slug>`, and a duplicate ID stops the run before any stage and writes nothing. (B03)",
+      "The skill creates or updates one `use-case-index.csv` row per processed folder with the five columns, a root-relative `folder`, and `spec` set after behavior documentation and blank for a folder skipped for no usable source. (B02, B03, B05)",
+      "Workflow recommendation takes every index row as its list, shows it once with the partial-list warning, runs only after the lead confirms and uses the fixed proposal ID `recommendations`, never asked for. (B05)",
+      "The review checklist, README, requirements and contract agree with the new wording of `B02`, `B03` and `B05`, and no Craft term appears in the skill folder. (B02, B03, B05)"
+    ]
   }
 }
