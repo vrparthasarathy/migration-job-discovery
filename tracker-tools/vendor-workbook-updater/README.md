@@ -12,6 +12,10 @@ A Node command line tool that applies the review rows a lead accepted to one ven
   - [Diagram](#diagram)
 - [Technology](#technology)
 - [Behavior](#behavior)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+  - [Planned Relationships](#planned-relationships)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -75,6 +79,23 @@ flowchart TB
 - **B8** When a new record is added, then it takes the exporter's suggested reference, and a collision stops the run.
 - **B9** When a run succeeds, then `applied_on` is set on the applied rows of the review files, written atomically, and when any step fails nothing is written.
 - **B10** When an input is invalid or a value looks like a secret, then the run stops naming the file and line and writes nothing, and the report lists what was applied, what was skipped and why, and the accepted internal-column values left for the internal tracker.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../../README.md#plan) / [Tracker Tools](../README.md#plan) / **Vendor Workbook Updater**
+
+- [Planned Design](#planned-design)
+- [Planned Relationships](#planned-relationships)
+
+### Planned Design
+
+No behavior changes. The planned [Master Workbook Updater](../master-workbook-updater/README.md#planned-design) reuses this tool's `columns`, `reviews`, `workbook_read`, `workbook_write`, `archive` and `files` by relative path and its `data/vendor-edited.csv`, and asks for two small changes when it is built, to be made by this component's owner with its tests rerun: `loadReviews` takes an optional tab list (default the three vendor tabs) so Mappings can be read, and `cellText` and `headerRow` are exported. Its "Out of scope" line then points to the Master Workbook Updater for the internal tracker apply. If the owner declines, the new tool carries about 80 lines of its own.
+
+### Planned Relationships
+
+- [Master Workbook Updater](../master-workbook-updater/README.md#planned-design) — reuses this tool's reader, writer, review loader and vendor-owned column list.
 
 ## Relationships
 

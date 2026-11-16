@@ -25,6 +25,7 @@ The lead-facing Node tools for the use case tracker: a shared CSV table library,
 | [Review CSV Exporter](review-csv-exporter/README.md#purpose) | A Node command line tool that turns tracker proposals and a tracker export into consolidated review CSVs, one wide row per record ordered by what needs a lead's judgment, so leads review adds, updates and suggestions without transposing proposal rows. |
 | [Vendor Workbook Updater](vendor-workbook-updater/README.md#purpose) | A Node command line tool that applies the review rows a lead accepted to one vendor's vendor-facing workbook, starting from the copy downloaded from SharePoint, and writes a new vendor-safe `.xlsx` for the lead to upload by hand. |
 | [Vendor Sample Workbook](vendor-sample-workbook/README.md#purpose) | A Node command line tool that writes a small, realistic vendor-only sample workbook for one vendor from the sample's fictional data, with only that vendor's rows and the vendor-visible columns, so the team can review what a vendor receives and the updater has a representative input. |
+| [Master Workbook Updater](master-workbook-updater/README.md#purpose) | A Node command line tool that produces the internal master tracker workbook from the copy downloaded from SharePoint: it applies the review rows a lead accepted, copies each vendor's own answers into the master by reference, and rebuilds each named vendor's vendor-safe workbook from the new master, so nothing is hand-copied and the workbooks cannot drift. |
 
 ## Design
 
@@ -90,12 +91,15 @@ flowchart TB
 | [Review CSV Exporter](review-csv-exporter/README.md#purpose) | A Node command line tool that turns tracker proposals and a tracker export into consolidated review CSVs, one wide row per record ordered by what needs a lead's judgment, so leads review adds, updates and suggestions without transposing proposal rows. |
 | [Vendor Workbook Updater](vendor-workbook-updater/README.md#purpose) | A Node command line tool that applies the review rows a lead accepted to one vendor's vendor-facing workbook, starting from the copy downloaded from SharePoint, and writes a new vendor-safe `.xlsx` for the lead to upload by hand. |
 | [Vendor Sample Workbook](vendor-sample-workbook/README.md#planned-design) | A Node command line tool that writes a small, realistic vendor-only sample workbook for one vendor from the sample's fictional data, with only that vendor's rows and the vendor-visible columns, so the team can review what a vendor receives and the updater has a representative input. |
+| [Master Workbook Updater](master-workbook-updater/README.md#planned-design) | A Node command line tool that produces the internal master tracker workbook from the copy downloaded from SharePoint: it applies the review rows a lead accepted, copies each vendor's own answers into the master by reference, and rebuilds each named vendor's vendor-safe workbook from the new master, so nothing is hand-copied and the workbooks cannot drift. |
 
 ### Planned Design
 
 The group gains a seventh member, the [Vendor Sample Workbook](vendor-sample-workbook/README.md#planned-design), a lead-side sample generator that imports the Tracker Tables library and the Sample Tracker Workbook's data and headings by relative path, reads the Vendor Workbook Updater's editable-column list and satisfies its input rules. The [Sample Tracker Workbook](sample-tracker-workbook/README.md#plan) is also planned to change: it builds its Review sheets by running the Review CSV Exporter, so the diagram gains that edge. The Vendor Sample Workbook adds the third pinned `exceljs` dependency in the group (with the sample and the updater); the group's owner reconciles the Technology text and the "no dependencies" rule when it is built, and until then neither the Technology section nor the requirements of this group change.
 
 The four lead tools the client environment cannot run (the [Tracker Reconciler](tracker-reconciler/README.md#purpose), the [Review CSV Exporter](review-csv-exporter/README.md#purpose), the [Tracker Summary](tracker-summary/README.md#purpose) and the [Vendor Workbook Updater](vendor-workbook-updater/README.md#purpose)) gain Markdown-only counterparts in the [Lead Tracker Skills](../lead-tracker-skills/README.md#planned-design) group, because executables are blocked there. They stay unchanged here as the reference implementation and the source of the skills' golden expected outputs, and are no longer shipped to the client. When that plan is built this README's Purpose, Design and Technology say so, a bounded request to this group's owner; no code, test or check here changes.
+
+The group also gains an eighth member, the [Master Workbook Updater](master-workbook-updater/README.md#planned-design), which applies accepted review rows to the internal master workbook, copies each vendor's own answers into it and rebuilds each named vendor's workbook from it (the backlog item `internal-tracker-apply`). It imports Tracker Tables, the Reconciler, the Exporter, the Sample Tracker Workbook and the [Vendor Workbook Updater](vendor-workbook-updater/README.md#plan) by relative path, adds the fourth pinned `exceljs` dependency, and asks the Updater for two small exports; the group's owner reconciles the Technology text, the "no dependencies" rule and the command table when it is built. The user said on 2026-11-16 that executables can now run in the client environment, so the paragraph above that moves the four lead tools to Markdown skills needs a later reconcile (proposed backlog item `lead-tracker-skills-premise`); this plan does not change it. This Plan is extended, not replaced, because it still carries the unbuilt Vendor Sample Workbook and skills plans; override by asking for the Plan to be replaced.
 
 #### Planned Diagram
 
@@ -127,6 +131,12 @@ flowchart TB
   vsample -->|"reads, validates and projects with"| tracker_tables
   vsample -->|"projects the data of"| sample
   vsample -->|"must satisfy the input rules of"| updater
+  master["<a href='master-workbook-updater/README.md#planned-diagram'>Master Workbook Updater</a>"]:::planned
+  master -->|"reads, validates and projects with"| tracker_tables
+  master -->|"loads the export and detects secrets with"| tracker_reconciler
+  master -->|"reads review files with"| exporter
+  master -->|"follows the layout of"| sample
+  master -->|"reuses the reader, writer and vendor-owned columns of"| updater
   sample -->|"builds its Review sheets with"| exporter
   tracker_tables -->|"loads columns and owner classes from"| schema
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
