@@ -39,3 +39,4 @@ Planned, not built; merged into the sections above when built.
 - The full list is confirmed once with a warning that a partial list drops the other use cases' Mappings rows, unless the caller already confirmed it.
 - Must match: the five index column names of the orchestrator's contract, the proposal file format and the contract copies in the folder (unchanged).
 - Must not: write or repair the index, or change the Tracker Data Contract or its copies.
+- Key rules: Mappings rows are keyed `<use-case-id>->>candidate-slug` and blocking questions linked as `<use-case-id>/Q<n>@v<version>`, with the use case ID `uc-<vendor-slug>-<use-case-slug>` derived from the index row's vendor and name; with no vendor known the skill asks once, invents none and writes no Mappings row for that use case. The "contract copies unchanged" statement above no longer holds: the skill's copy of the contract prose must equal the built file (the schema copy is unchanged).

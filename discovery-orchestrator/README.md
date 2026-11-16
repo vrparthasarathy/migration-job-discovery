@@ -12,6 +12,14 @@ A GitHub Copilot agent skill that takes one use-case folder through the discover
   - [Diagram](#diagram)
 - [Technology](#technology)
 - [Behavior](#behavior)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+  - [Steps](#steps)
+  - [Acceptance Mapping](#acceptance-mapping)
+  - [Assumptions And Open Questions](#assumptions-and-open-questions)
+  - [Planned Relationships](#planned-relationships)
+  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -76,3 +84,54 @@ flowchart TB
 - [review-checklist.md](review-checklist.md) — the file review of the skill against B01 to B10.
 - [requirements.md](requirements.md#requirements) — what the skill must do, must not do and need not match, and the follow-on work.
 - [contract.md](contract.md#contract) — the invocation, inputs, stages, exporter call, use case index, review hand-over and wording rules.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Discovery Orchestrator**
+
+- [Planned Design](#planned-design)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+A wording change only. The proposal ID the orchestrator derives, `uc-<vendor-slug>-<use-case-slug>`, is now defined in the [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) as the use case ID, the identity of a use case in every tracker local reference. The orchestrator's text gains one sentence saying so: the proposal ID is the use case ID defined in the Tracker Data Contract, and the stages derive their keys from the index row's name and vendor. Nothing else changes: the slug rule, the five index columns, the duplicate-ID stop, the moved-folder rule, the fixed ID `recommendations` and every behavior stay as they are, and `B03` is not reworded. The skill still holds no copy of the contract and does not define the ID's use in rows; each stage skill derives its own keys.
+
+### Steps
+
+1. [contract.md](contract.md), the `Proposal ID` bullet of the use case index section (and the matching `Inputs` bullet): add one sentence, "The proposal ID is the use case ID defined in the Tracker Data Contract; the stages derive their keys from the index row's name and vendor."
+2. [README.md](README.md), the Design paragraph that says the proposal ID is derived as `uc-<vendor-slug>-<use-case-slug>`: add the same sentence.
+3. [run-discovery/SKILL.md](run-discovery/SKILL.md), the bullet at line 36 ("The proposal ID of the folder is ..."): add the same sentence. A search shows no other line changed.
+4. Validate: the three files carry the sentence once each; the slug rule, the five column names, the duplicate rule, `B03` and the rest of the three files are unchanged (a diff shows only the added sentences); no Craft term in the skill folder.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| 1. contract.md, README.md and `run-discovery/SKILL.md` each say the proposal ID is the use case ID defined in the Tracker Data Contract and that the stages derive their keys from the index row's name and vendor. | B03 | 1 to 3 | the diff and checklist `[B03]` |
+| 2. Nothing else changes: the slug rule, index columns, duplicate stop and the behavior wording stay. | B03 | 4 | the diff |
+
+Validation: the commands in step 4.
+
+### Assumptions And Open Questions
+
+Assumptions (override by telling the builder, or by editing the file named):
+
+- **Wording only**, so no behavior is reworded (`B03` keeps its text) and no checklist item changes.
+- **No contract copy** is held here, so nothing is copied.
+- **Build order:** after the Tracker Data Contract and the skill components, whose rules it refers to; it does not depend on any of their files.
+
+Open questions: none.
+
+### Planned Relationships
+
+- [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) — defines the use case ID that is the proposal ID derived here.
+
+### Planned Links
+
+- [contract.md](contract.md#planned-proposal-id-is-the-use-case-id) — the exact planned sentence.

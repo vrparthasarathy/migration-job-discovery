@@ -12,6 +12,10 @@ The shared rules are in the [group requirements](../requirements.md#requirements
 - Additions carry source, specification version and MR link. Vendor outputs hold only that vendor's released question rows and vendor-visible columns; internal columns, groups, links, mappings and cross-vendor suggestions stay in the internal outputs.
 - Bad input (header, tab, field, unknown use case name, malformed CSV, secret-looking value) stops the run with exit status 1, names the file and line and writes no partial output.
 
+## Planned change
+
+- A use case is identified by its use case ID (`uc-<vendor-slug>-<use-case-slug>`), not its name: bad input includes an unknown use case ID (or a key in the name or slug form) and two export Use Cases rows that derive the same ID, and use cases of two vendors with one name are never merged. Replaces the "unknown use case name" wording above when built.
+
 ## Must match the source
 
 - The Tracker Data Contract's field classes, references, proposal and export formats.

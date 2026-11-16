@@ -47,6 +47,7 @@ Planned, not built; merged into the sections above when built.
 - Update IDs are composed `<proposal_id>:<tab>:<record_key>:<field>`; proposal IDs are `uc-<vendor-slug>-<use-case-slug>`; the review status list is the exporter's (blank, accepted, rejected, clarify).
 - Must match: the exporter's header and statuses (read from the exporter, not repeated) and the Tracker Data Contract's proposal format.
 - Must not: write a vendor file (that is the Vendor Sample Workbook), change the exporter, or keep fictional counter-style IDs.
+- Use case ID forms (extended): every sample reference to a use case in the fixtures and in `spec_refs` uses the derived use case ID and the local references of the Tracker Data Contract; the data check stops on any other form.
 
 ## Acceptance
 

@@ -5,18 +5,36 @@
   "task": {
     "status": "ready",
     "worker": "builder",
-    "updated": "2026-11-16T10:54:40Z",
+    "updated": "2026-11-16T17:28:40Z",
     "constraints": {
-      "cost": { "currency": "USD", "allocated": 1, "spent": 0, "reserve": 0.1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
-      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
-      "execution": { "wall-clock": { "allocated-seconds": 1800, "spent-seconds": 0, "reserve-seconds": 300, "source": "unavailable" } },
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
       "external-effects": "require-current-turn-user-approval"
     },
     "acceptance": [
-      "The default list is every row of `use-case-index.csv`, each specification read from the row's `spec` path, with no assembly from Use Cases rows and no use case silently dropped. (B10)",
-      "A listed spec file that does not exist, or a blank `spec`, is reported under `not compared` as `missing`. (B03)",
+      "The default list is every row of `use-case-index.csv`, each specification read from the row's `spec` path, with no assembly from Use Cases rows and no use case silently dropped; a listed spec file that does not exist, or a blank `spec`, is reported under `not compared` as `missing`. (B03, B10)",
       "The proposal ID is the fixed `recommendations`, never asked for, and the output path is `tracker-updates/recommendations/tracker-updates.csv` with the Mappings `source` using the index `spec` path. (B05, B10)",
-      "The skill, contract, README, requirements and review checklist agree, the five index column names equal the orchestrator contract's, and no Craft term appears in the skill folder. (B03, B05, B10)"
+      "The skill, contract, README, requirements and review checklist agree, the five index column names equal the orchestrator contract's, and no Craft term appears in the skill folder. (B03, B05, B07, B10)",
+      "Mappings rows are keyed `<use-case-id>->>candidate-slug` and blocking questions are linked as `<use-case-id>/Q<n>@v<version>`, with the use case ID derived from the index row's vendor and use case name; with no vendor known the skill asks once, invents none and writes no Mappings row for that use case; the illustration row uses the new form and no name or slug key form is left. (B05, B07)",
+      "The skill folder's tracker-data-contract.md equals the Tracker Data Contract component's file as built and tracker-schema.csv is unchanged. (B10)"
     ]
   }
 }

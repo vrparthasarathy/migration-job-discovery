@@ -3,5 +3,39 @@
     "checks": {
       "install": "npm ci --prefix {path}"
     }
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:30:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 3,
+        "spent": 0,
+        "reserve": 0.3,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 3600,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "A new question or access row finds its use case by the use case ID in its use_case cell, imported from the one tracker-tables useCaseId helper with no private copy, so two vendors' same-named use cases are never matched to each other's row. (B5, B8)",
+      "A new use case takes its use_case_name from the proposed field, and an ID that differs from its use_case cell or duplicates a workbook or earlier row stops the run. (B8)",
+      "An unknown use case ID, or a use_case cell in the name or slug-alone form, stops the run naming file and line, with nothing written. (B10)",
+      "contract.md holds the merged use case ID matching text, every test fixture uses IDs and the new local reference keys, and the component's tests, the coverage check and the repeat byte-identity test pass. (B5, B8, B10)"
+    ]
   }
 }

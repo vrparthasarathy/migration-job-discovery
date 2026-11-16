@@ -14,6 +14,15 @@ A small, realistic sample of the final Excel tracker, generated from fictional d
 - [Behavior](#behavior)
 - [Relationships](#relationships)
 - [Links](#links)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+  - [Planned Behavior](#planned-behavior)
+  - [Steps](#steps)
+  - [Acceptance Mapping](#acceptance-mapping)
+  - [Assumptions And Open Questions](#assumptions-and-open-questions)
+  - [Planned Relationships](#planned-relationships)
+  - [Planned Links](#planned-links)
 
 ## Design
 
@@ -76,6 +85,8 @@ Inherited from [Tracker Tools](../README.md#technology), with one departure: thi
 
 ### Planned Navigation
 
+This plan is extended on 2026-11-16 for the use case ID change: step 1, the B5 data check, the acceptance and the assumptions below carry it, and the existing text is otherwise kept. The task stays `blocked` (the administrator block on the builder agent's model, recorded in tasks.md); the use case ID extension does not lift it and someone must set it to `ready` before building.
+
 [Job Behavior Specifications](../../README.md#navigation) / [Tracker Tools](../README.md#plan) / **Sample Tracker Workbook**
 
 - [Planned Design](#planned-design)
@@ -89,7 +100,7 @@ Inherited from [Tracker Tools](../README.md#technology), with one departure: thi
 
 ### Planned Design
 
-The workbook keeps its Use Cases, Questions, Identity & Access, Workflow Mappings, Trace and Lists sheets and replaces Proposed Changes with three internal Review sheets (Review - Use Cases, Review - Questions and Review - Identity & Access) in the exact shape of the Review CSV Exporter's files. They are not typed in: a new `review_rows` module writes the sample tables to a temporary tracker export, runs the exporter's command over real-format proposal fixtures (`data/proposals/uc-<vendor-slug>-<use-case-slug>/tracker-updates.csv`, with composed update IDs), applies a small decisions fixture (`data/review-decisions.csv`: record, status, reviewer, note, date) and runs the exporter again, then once more over an edited copy of one proposal so one row is changed since review. The sheets load the resulting review CSVs with friendly headings from `data/review-headings.csv`, so the Review format cannot drift from the tool the leads will run. The old `data/proposed-changes.csv` goes; `trace.csv` stays and carries the proposal and update IDs. Pending-change pointers on the main sheets come from the Review rows that are not yet applied. The review status dropdown takes the exporter's list (blank, accepted, rejected, clarify). The vendor-only sample is a separate component, the [Vendor Sample Workbook](../vendor-sample-workbook/README.md#planned-design), so this component does not write a vendor file.
+The workbook keeps its Use Cases, Questions, Identity & Access, Workflow Mappings, Trace and Lists sheets and replaces Proposed Changes with three internal Review sheets (Review - Use Cases, Review - Questions and Review - Identity & Access) in the exact shape of the Review CSV Exporter's files. They are not typed in: a new `review_rows` module writes the sample tables to a temporary tracker export, runs the exporter's command over real-format proposal fixtures (`data/proposals/uc-<vendor-slug>-<use-case-slug>/tracker-updates.csv`, with composed update IDs), applies a small decisions fixture (`data/review-decisions.csv`: record, status, reviewer, note, date) and runs the exporter again, then once more over an edited copy of one proposal so one row is changed since review. The sheets load the resulting review CSVs with friendly headings from `data/review-headings.csv`, so the Review format cannot drift from the tool the leads will run. The old `data/proposed-changes.csv` goes; `trace.csv` stays and carries the proposal and update IDs. Pending-change pointers on the main sheets come from the Review rows that are not yet applied. The review status dropdown takes the exporter's list (blank, accepted, rejected, clarify). The use case ID forms (extended): every local reference in the fixtures and the sample data follows the [Tracker Data Contract](../../tracker-data-contract/contract.md#planned-use-case-id-and-local-references), derived with the `useCaseId(vendor, name)` helper of [Tracker Tables](../tracker-tables/README.md#purpose): the proposal fixture folders and `proposal_id` are the use case ID, `record_key` of a question is `<use-case-id>/Q<n>`, of an access row `<use-case-id>/<endpoint>/<environment>` and of a mapping `<use-case-id>->>candidate-slug`, and the `spec_refs` cell of `data/questions.csv` (a bare `Q1` today) holds `<use-case-id>/Q<n>@v<version>`, the version being the one in the row's `source_links` (`@v2` for the first two use cases, `@v1` for Shipment Tracking Export). Because the exporter writes the use case ID in the `use_case` cell, the Review sheets show IDs. Because this component runs the exporter, it builds after the Tracker Reconciler and the Review CSV Exporter, which are built after the Tracker Data Contract and Tracker Tables. The vendor-only sample is a separate component, the [Vendor Sample Workbook](../vendor-sample-workbook/README.md#planned-design), so this component does not write a vendor file.
 
 #### Planned Diagram
 
@@ -119,18 +130,18 @@ Behaviors changed in place (the count stays 10; the other behaviors are unchange
 
 - **B1** When `generate --out <file> --as-of <date>` runs, then it writes one `.xlsx` with the sheets Read Me, Use Cases, Questions, Identity & Access, Workflow Mappings, Review - Use Cases, Review - Questions, Review - Identity & Access, Trace and Lists.
 - **B4** When the question, review, acknowledgement, mapping and Review data is read, then the Review sheets show one wide row per record in the exporter's format covering an add, an update, a suggestion and a conflict, and a pending row, an accepted row, a rejected row, a clarify row and a row changed since review, together with unanswered, partially answered and complete-awaiting-review question rows, a lead-requested clarification, an acknowledgement at a specific version and a workflow candidate awaiting a lead decision.
-- **B5** When a reference dangles, a value is outside the schema's allowed list, a value looks like a secret, an update ID is not `<proposal_id>:<tab>:<record_key>:<field>` or a proposal ID is not `uc-<vendor-slug>-<use-case-slug>`, then generation stops with an error naming it and writes no file.
+- **B5** When a reference dangles, a value is outside the schema's allowed list, a value looks like a secret, an update ID is not `<proposal_id>:<tab>:<record_key>:<field>` or a proposal ID is not `uc-<vendor-slug>-<use-case-slug>` derived from its use case's vendor and name, or a `record_key` or `spec_refs` entry is not in the use case ID form, or names an ID that no use case of the sample has, then generation stops with an error naming it and writes no file.
 - **B9** When proposed and accepted values are compared, then main sheets hold accepted values only, proposals appear only as Review rows with a pending-change pointer on the affected row, and proposal metadata (proposal and update IDs, sources, base values) is on Trace and the Review sheets.
 - **B10** When the walkthrough, feedback questions and differences from the contract are checked against the workbook, then every sheet and column they name exists, including the questions about the Review format and the vendor view.
 
 ### Steps
 
-1. **Data.** Add `data/proposals/<proposal-id>/tracker-updates.csv` fixtures for the five use cases (proposal IDs `uc-<vendor-slug>-<use-case-slug>`, update IDs composed) covering an add, an update, a suggestion and a conflict across Use Cases, Questions and Identity & Access; add `data/review-decisions.csv` and `data/review-headings.csv`; remove `data/proposed-changes.csv`; update `trace.csv` for the new IDs.
+1. **Data.** Add `data/proposals/<proposal-id>/tracker-updates.csv` fixtures for the five use cases (proposal IDs `uc-<vendor-slug>-<use-case-slug>`, update IDs composed) covering an add, an update, a suggestion and a conflict across Use Cases, Questions and Identity & Access; add `data/review-decisions.csv` and `data/review-headings.csv`; remove `data/proposed-changes.csv`; update `trace.csv` for the new IDs. **Use case ID forms (extended):** in every fixture `record_key` is the new local reference (`<use-case-id>/Q<n>` for a question, `<use-case-id>/<endpoint>/<environment>` for an access row, `<use-case-id>->>candidate-slug` for a mapping) and `proposal_id` equals the use case ID, built from the vendor and name of the sample's own use case rows (for example `uc-harborline-analytics-daily-invoice-status-report`), with no use case name or slug-alone reference; in `data/questions.csv` change the `spec_refs` cell of all seven questions from `Q1`, `Q2` to `<use-case-id>/Q<n>@v<version>` (QN-0001 `uc-harborline-analytics-daily-invoice-status-report/Q1@v2`, QN-0002 and QN-0003 `uc-harborline-analytics-customer-address-refresh/Q1@v2` and `/Q2@v2`, QN-0004 `uc-harborline-analytics-shipment-tracking-export/Q1@v1`, QN-0005 and QN-0007 `uc-meridian-freight-systems-carrier-rate-sync/Q1@v1` and `/Q2@v1`, QN-0006 `uc-meridian-freight-systems-rate-exception-alert/Q1@v1`; the versions come from each row's `source_links`, so read them there before writing). The `data/headings.csv` and `data/review-headings.csv` need no new column, and the schema is not changed.
 2. **`src/review_rows.ts`** (B4, B9): writes a temporary tracker export from the sample tables, runs the exporter's `run` three times as described, and returns the review rows per tab.
-3. **`src/sample_data.ts`** (B5): validates the fixtures (composed update IDs, proposal ID form, references, secret-like values, the decisions file against the exporter's status list) and reports every finding in one error.
+3. **`src/sample_data.ts`** (B5): validates the fixtures (composed update IDs, proposal ID form, references, secret-like values, the decisions file against the exporter's status list) and reports every finding in one error. **Extended:** the data check also derives each use case's ID with the Tracker Tables `useCaseId` helper, requires each proposal ID and each `record_key` to equal or start with a known ID, requires each `spec_refs` entry to match `<known-id>/Q<n>@v<version>` with `<known-id>/Q<n>` naming a question row of that use case, and names the file and line of any name-form or slug-alone reference.
 4. **`src/layout.ts` and `src/workbook.ts`** (B1, B6, B8, B9): the three Review sheets (internal, red tabs, frozen headers, filters, the status dropdown from the exporter's list, readable widths), pending-change pointers from unapplied Review rows, and Trace and Read Me updated; Proposed Changes removed.
 5. **`src/readback.ts`**: reads the Review sheets back for the tests.
-6. **Tests** in `test/`, tagged `[B#]`: update `generate`, `sample_data`, `layout` and `docs`; add `review_rows` for B4 and B5.
+6. **Tests** in `test/`, tagged `[B#]`: update `generate`, `sample_data`, `layout` and `docs`; add `review_rows` for B4 and B5. **Extended:** `sample_data.test.ts` `[B5]` adds a bare `Q1` `spec_refs`, a use case name used as a proposal ID, a slug-alone `record_key` and an unknown ID, each exiting 1 with the file and line and no file written; `review_rows.test.ts` `[B4]` checks that the Review sheets' `use_case` cells are the derived IDs; `generate.test.ts` fixtures follow the new `spec_refs`.
 7. **Generate** `sample-tracker-workbook.xlsx` at the as-of date.
 8. **Docs:** update `walkthrough.md` (a Review section with feedback questions, a vendor view section pointing to the Vendor Sample Workbook, the sheet list) and this README's `Design` and diagram when built; the requirements and contract planned-change sections merge in.
 9. **Validate:** `npm ci --prefix tracker-tools/sample-tracker-workbook`, then `node --test "tracker-tools/sample-tracker-workbook/test/*.test.ts"`, the coverage check, and the Review CSV Exporter's and the Vendor Workbook Updater's tests to confirm nothing they read has changed.
@@ -140,7 +151,7 @@ Behaviors changed in place (the count stays 10; the other behaviors are unchange
 | Acceptance | Behaviors | Step | Test |
 | --- | --- | --- | --- |
 | 1. Nine-sheet workbook with Review sheets, identical twice, nothing on invalid data | B1, B2, B5 | 2, 3, 4 | `generate.test.ts`: `[B1]` sheets in order; `[B2]` two runs read back cell for cell; `[B5]` dangling reference, off-list value, secret-like value, a counter-style update ID and a malformed proposal ID each exit 1 and leave no file |
-| 2. Data covers the scenarios and Review states with composed IDs | B3, B4, B5, B7 | 1, 2, 3 | `sample_data.test.ts` `[B3]` `[B5]`; `review_rows.test.ts` `[B4]` (every kind and state present, headers equal the exporter's); `review_columns.test.ts` `[B7]` as before |
+| 2. Data covers the scenarios and Review states with composed IDs and use case ID references (`spec_refs`, `record_key`, proposal IDs) | B3, B4, B5, B7 | 1, 2, 3 | `sample_data.test.ts` `[B3]` `[B5]`; `review_rows.test.ts` `[B4]` (every kind and state present, headers equal the exporter's); `review_columns.test.ts` `[B7]` as before |
 | 3. Easy to review, proposals apart from accepted values | B6, B8, B9 | 4, 5 | `layout.test.ts`: `[B6]` the status dropdown equals the exporter's list; `[B8]` freeze, filter, widths, colours, nothing hidden; `[B9]` main sheets hold accepted values only, pointers on rows, metadata on Trace and Review |
 | 4. Docs agree with the workbook | B10 | 8 | `docs.test.ts` `[B10]`: every `` `Sheet > Heading` `` named exists, the new feedback questions exist |
 
@@ -150,6 +161,8 @@ Validation: the commands in step 9, narrowest first.
 
 Assumptions (override by telling the builder, or by editing the file named):
 
+- **Use case ID change (extended).** The fixtures and `spec_refs` use the use case ID forms of the Tracker Data Contract's planned section; no schema change, no migration, the old `Q1` form is replaced. The `@v` number of each `spec_refs` entry is taken from the row's `source_links`; override by naming other versions. The build waits for the Tracker Data Contract, Tracker Tables, Tracker Reconciler and Review CSV Exporter, because this component runs the exporter and calls the shared helper.
+- **Task stays blocked.** The task's `blocked` status (the administrator block on the builder agent's model) is not changed by this extension; someone sets it to `ready` after the other components are built.
 - **Planner substitution.** The planner agent is blocked in this session by an administrator's 403 error, so this plan was written from a direct read of the repository by the planning session. Nothing was renamed or reworded to work around it. Re-run `/craft:plan` for an independent pass later.
 - **Review sheets replace Proposed Changes**, one per tab the vendor workbook uses (Use Cases, Questions, Identity & Access). No Review sheet for Workflow Mappings, because the sample has no mapping proposals and the vendor updater ignores that tab. Ask for one to add it.
 - **The Review rows are generated by the real exporter** from fixtures, with the sample's own friendly `data/review-headings.csv`, so the format cannot drift. The cost is a relative import of the exporter and a few fixtures. To type the rows into CSV by hand instead, say so.
@@ -168,6 +181,8 @@ Open questions (behavior or real ambiguity): none. The team may prefer one combi
 - [Review CSV Exporter](../review-csv-exporter/README.md#purpose) — the tool whose command and format generate the Review rows.
 
 ### Planned Links
+
+- [data/questions.csv](data/questions.csv) — the `spec_refs` cells this plan changes.
 
 - [requirements.md](requirements.md#planned-change-review-sheets-and-composed-ids) — the planned change to the requirements.
 - [contract.md](contract.md#planned-review-sheets-and-composed-ids) — the planned change to the data files and sheets.

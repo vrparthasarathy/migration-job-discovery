@@ -58,3 +58,13 @@
 ### Input validation and secrets
 
 The reconciler's findings for a bad header, tab, field, operation, `update_id`, unknown use case name or CSV shape are reported as `file: line N: message`, plus a bad headings file, a bad review file, a secret-looking value anywhere and a bad `--out`.
+
+### Planned: use case ID in the review CSVs
+
+These replace the matching text above when built; the columns, headings and files do not change.
+
+- **Wide row layout, item 2.** `use_case`: the use case ID (`uc-<vendor-slug>-<use-case-slug>`, derived from the `vendor` and `use_case_name` columns and never stored), not the use case name. The readable name is in the `use_case_name` column of the Use Cases and Questions tabs.
+- **Wide row layout, item 5.** `record_key`: the local reference built from the use case ID (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>->>candidate-slug` or `<use-case-id>/<endpoint>/<environment>`).
+- **Identity, merge and ordering.** Within a tier the order is the use case ID, so grouped by vendor and then by use case name, then tab order (Use Cases, Questions, Identity & Access, Mappings), then record. Use cases of two vendors with the same name are two records with two IDs and are never merged.
+- **Input validation.** The reconciler's findings include a key whose leading use case ID is unknown (or is written as a name or a slug) and two export Use Cases rows that derive the same ID.
+- The headings file gains the row `Use Cases,use_case_name,use_case_name,,` after the `Use Cases,vendor` row, so a new use case's review row has `use_case_name_current`, `use_case_name_proposed` and `use_case_name_state` cells; the workbook updaters take the readable name from the proposed cell.

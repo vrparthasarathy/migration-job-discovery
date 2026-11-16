@@ -1,1 +1,36 @@
-{}
+{
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:40:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 3,
+        "spent": 0,
+        "reserve": 0.3,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 3600,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "A use case key's leading ID resolves against export Use Cases rows (useCaseId of vendor and name) and Use Cases adds in all four tabs, Change.useCase holds the ID, the name and slug forms are not accepted, and matchesNaturalKey and the report's mr_link lookup use the ID. (B01, B03)",
+      "An unknown use case ID, a name or slug key, a Questions use_case_name value that does not belong to the key's ID, and two export Use Cases rows that derive the same ID each exit 1 naming the file, line and expected form and write nothing. (B09)",
+      "Two same-named use cases of different vendors reconcile as separate additions and updates under their own IDs, never merged or matched to each other's row. (B11)",
+      "The reconcile, repeat, vendor, input, support and fixture tests are rewritten to ID keys and pass with outputs unchanged apart from the key strings, vendor outputs stay vendor-safe, and README and contract.md carry the new wording. (B02, B04 to B08, B10)"
+    ]
+  }
+}

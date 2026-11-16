@@ -29,3 +29,10 @@ See `task.acceptance` in [`craft.json`](craft.json).
 
 - **Output varies.** Copilot output differs between models and runs; the behaviors can be judged only on samples.
 - **Copies must stay in step.** The contract and schema copies in the skill folder must match the contract component's files; the root checks them.
+
+## Planned change: use case ID key
+
+Planned, not built; merged into the sections above when built.
+
+- A record is keyed `<use-case-id>/<endpoint>/<environment>` with the use case ID `uc-<vendor-slug>-<use-case-slug>`, not the use case name; with no vendor known the skill asks once, invents none and writes no keyed row.
+- Must match: the Tracker Data Contract as built (the skill's copy of its prose equals the built file; the schema copy is unchanged). Must not: invent a vendor, keep a name-form key, or migrate old references.

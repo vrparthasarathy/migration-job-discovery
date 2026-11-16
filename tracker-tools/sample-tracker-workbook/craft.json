@@ -7,7 +7,7 @@
   "task": {
     "status": "blocked",
     "worker": "builder",
-    "updated": "2026-11-16T15:30:00Z",
+    "updated": "2026-11-16T17:40:00Z",
     "constraints": {
       "cost": {
         "currency": "USD",
@@ -32,8 +32,8 @@
       "external-effects": "require-current-turn-user-approval"
     },
     "acceptance": [
-      "`generate` writes the nine-sheet sample workbook with the Review sheets in the exporter's format in place of Proposed Changes, identically twice from fixed data and as-of date, and writes nothing on invalid data. (B1, B2, B5)",
-      "The sample data covers every listed scenario, and its Review rows show an add, an update, a suggestion and a conflict, with a pending, an accepted, a rejected, a clarify and a changed-since-review row, composed update IDs and `uc-<vendor-slug>-<use-case-slug>` proposal IDs. (B3, B4, B5, B7)",
+      "`generate` writes the nine-sheet sample workbook with the Review sheets in the exporter's format in place of Proposed Changes, identically twice from fixed data and as-of date, and writes nothing on invalid data, including a name-form or bare `Q1` reference. (B1, B2, B5)",
+      "The sample data covers every listed scenario, and its Review rows show an add, an update, a suggestion and a conflict, with a pending, an accepted, a rejected, a clarify and a changed-since-review row, composed update IDs, `uc-<vendor-slug>-<use-case-slug>` proposal IDs and use case ID `record_key` and `spec_refs` references (`<use-case-id>/Q<n>@v<version>`), and the data check stops on any other form. (B3, B4, B5, B7)",
       "The workbook stays easy to review with proposed values apart from accepted values, proposal metadata outside the main tables, and internal sheets marked, with nothing hidden. (B6, B8, B9)",
       "The walkthrough, feedback questions (now including the Review format and the vendor view), differences from the tracker contract and follow-on work exist and agree with the generated workbook. (B10)"
     ]

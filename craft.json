@@ -11,5 +11,39 @@
       "test": "node --test \"{path}/test/*.test.ts\"",
       "testGlob": "**/test/**/*.test.ts"
     }
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:30:36Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 34,
+        "spent": 0,
+        "reserve": 3.4,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 3,
+        "maximum-children": 14
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 41400,
+          "spent-seconds": 0,
+          "reserve-seconds": 4140,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Two vendors' same-named use cases and their question 1 reconcile and export as two use case additions and two question additions under two use case IDs, never merged or matched to each other's row, in a root pipeline test tagged [B09]. (B09)",
+      "A proposal reference naming an unknown use case ID, or written in the old use case name or slug-alone form, stops the run naming file and line and writes nothing, in a root test tagged [B10]. (B10)",
+      "The root test fixtures and support use ID keys, the vendor-safety test still shows no other vendor's row, ID or name with the same-named pair added, and the contract copies stay identical. (B05, B07)",
+      "requirements.md carries the vendor-with-name identity bullet, and a search finds no use case name or slug-alone local reference form left in the pack. (B09, B10)"
+    ]
   }
 }

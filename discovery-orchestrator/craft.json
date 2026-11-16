@@ -1,5 +1,37 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:29:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "contract.md, README.md and run-discovery/SKILL.md each say once that the proposal ID is the use case ID defined in the Tracker Data Contract and that the stages derive their keys from the index row's name and vendor. (B03)",
+      "The slug rule, the five index columns, the duplicate-ID stop, the moved-folder rule and the wording of every behavior (B03 included) are unchanged, and no Craft term is added to the skill folder. (B03)"
+    ]
   }
 }

@@ -96,8 +96,10 @@ flowchart TB
 - **B06** When the example `tracker-updates.csv` for the website use case is validated and reconciled against an empty export fixture, the additions are applied by test code, and it is reconciled again, then the first run produces additions and the second produces none.
 - **B07** When the reconciler and the summary run on a three-vendor fixture, then vendor-safe outputs hold no internal column, question group, link, mapping, unreleased question row or other vendor's row, and the summary is the only place the three tracks appear together.
 - **B08** When a revised specification's proposal is reconciled against an export that holds a vendor's answer to a question row, an owner and a decided mapping, then the existing question row, its answer and its owner are preserved with no duplicate record, a wording edit gives a text-review suggestion and no withdrawal, a change that could affect grouping suggests re-review of the decided mapping, a behavior change with no grouping impact suggests none, an unknown impact is listed as unknown, a version-only change suggests none, and nothing is released or applied.
+- **B09** When two vendors each have a use case of the same name and their proposals add each use case and its question 1, then the reconciler and the exporter list two use case additions and two question additions under two different use case IDs, and neither is merged, held or matched to the other's row.
+- **B10** When a proposal's local reference names a use case ID that no export row and no added use case has, then the run stops naming the file and line and writes nothing, and a reference in the old use case name or slug-alone form is not accepted.
 
-`B01`, `B05` to `B08` are checked by the root tests in [test](test/) (file comparisons for `B01` and `B05`, the built tools for `B06` to `B08`), each test titled with its tag. `B02` to `B04` are checked by the file review and the scans in [review-checklist.md](review-checklist.md), and the Copilot skills are tested manually by the user in the client environment on real use cases; no Copilot or client-environment result is claimed here.
+`B09` and `B10` are planned for the root tests (see the Plan). `B01`, `B05` to `B08` are checked by the root tests in [test](test/) (file comparisons for `B01` and `B05`, the built tools for `B06` to `B08`), each test titled with its tag. `B02` to `B04` are checked by the file review and the scans in [review-checklist.md](review-checklist.md), and the Copilot skills are tested manually by the user in the client environment on real use cases; no Copilot or client-environment result is claimed here.
 
 ## Links
 
@@ -147,7 +149,7 @@ The lead tool conversion plan is withdrawn and replaced: the user confirmed on 2
 
 The master workbook update adds no root child; it is the eighth member of [Tracker Tools](tracker-tools/README.md#plan), the [Master Workbook Updater](tracker-tools/master-workbook-updater/README.md#planned-design), which applies accepted review rows to the internal master workbook, copies vendor answers into it and rebuilds each named vendor's workbook (the backlog item `internal-tracker-apply`, now planned). When it is built the root records change as proposed here, to be made by the root's owner: the contract's end-to-end handoff steps 5, 9 and 12 gain "or run `update-master-workbook`", the pack table's `tracker-tools/` row is extended, and an optional root test runs the tool on the example data. Root `B07` keeps its confirmed wording and the Tracker Data Contract is unchanged. This Plan is extended, not replaced.
 
-The batch agent adds one root child, the [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design), a Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, and hands the review to `record-review-decisions` in the main conversation. It writes only use case index rows and changes no existing component. The [Subagent Smoke Test](subagent-smoke-test/README.md#design) child, two prompts that show whether the client's Copilot supports subagents, is listed with it, and the agent's claims are gated on it. When the agent is built the root records change as proposed here, to be made by the root's owner: the technology text names the custom agent file beside the Copilot skills; root `B02` adds `discovery-batch.agent.md` and the two smoke test prompt files to the inspected pack files, in one edit with the skill-folder additions already planned above; and the end-to-end handoffs note that steps 2, 4, 5 and 6 can also run for several folders through the batch agent, with the review still through `record-review-decisions` and applying still by hand. The index lines planned above stay as they are and are made when the [Workflow Recommender](workflow-recommender/README.md#planned-design) is built, which the batch agent is built after; the Tracker Data Contract and root `B05` are unchanged. The reference form of a question row's local reference and the vendor in tracker keys (backlog items `local-reference-form-decision` and `cross-vendor-use-case-name-collision`) are not planned here. This Plan is extended, not replaced.
+The batch agent adds one root child, the [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design), a Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, and hands the review to `record-review-decisions` in the main conversation. It writes only use case index rows and changes no existing component. The [Subagent Smoke Test](subagent-smoke-test/README.md#design) child, two prompts that show whether the client's Copilot supports subagents, is listed with it, and the agent's claims are gated on it. When the agent is built the root records change as proposed here, to be made by the root's owner: the technology text names the custom agent file beside the Copilot skills; root `B02` adds `discovery-batch.agent.md` and the two smoke test prompt files to the inspected pack files, in one edit with the skill-folder additions already planned above; and the end-to-end handoffs note that steps 2, 4, 5 and 6 can also run for several folders through the batch agent, with the review still through `record-review-decisions` and applying still by hand. The index lines planned above stay as they are and are made when the [Workflow Recommender](workflow-recommender/README.md#planned-design) is built, which the batch agent is built after; the Tracker Data Contract and root `B05` are unchanged. The use case ID change replaces the use case name as the identity in every tracker local reference. The ID is `uc-<vendor-slug>-<use-case-slug>`, derived from `vendor` and `use_case_name` and never stored, so two vendors' same-named use cases no longer collide; it also settles the form of a question row's local reference (`<use-case-id>/Q<n>`). It is planned once for the backlog items `local-reference-form-decision` and `cross-vendor-use-case-name-collision`, whose rows are removed with this plan, and it supersedes the earlier decision not to put the vendor in the keys. It changes eleven components, each with its own bounded Plan: the [Tracker Data Contract](tracker-data-contract/README.md#planned-design) defines the ID once and builds every local reference from it; the three skill components that hold its byte-identical copy carry their key rules and examples ([Tracker Update Proposer](tracker-update-proposer/README.md#planned-design), [Identity Access Discovery](identity-access-discovery/README.md#planned-design) and [Workflow Recommender](workflow-recommender/README.md#planned-design)); the [Tracker Tools](tracker-tools/README.md#plan) gain one shared helper in the table library and match by ID in the reconciler, the review exporter and both workbook updaters, with the Sample Tracker Workbook's fixtures; and the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) says its proposal ID is that same ID. The root's own part, built last, is the root test fixtures and support rewritten to ID keys with a pair of same-named use cases under two vendors, the behaviors `B09` and `B10`, and one `requirements.md` bullet (the vocabulary line that makes the name the identity becomes the vendor with the name); the end-to-end handoffs in `contract.md` and the review checklist change only if a search finds a key form, and none was found. Nothing in the Tracker Data Contract's schema changes, so `B05` stays unaffected once the three copies match. The [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design) and the [Client Transfer Package](client-transfer-package/README.md#planned-design) need no change, but the package builds last so its zip carries the new keys. This Plan is extended, not replaced.
 
 #### Planned Diagram
 
@@ -227,6 +229,42 @@ flowchart TB
   transfer -->|"reads"| smoke
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
+
+### Steps
+
+For the use case ID change. The root's own task is the last step; each other step is the named component's own task.
+
+1. [Workflow Recommender](workflow-recommender/README.md#planned-design) (existing task, now carrying the key rules): after the Tracker Data Contract.
+2. [Tracker Data Contract](tracker-data-contract/README.md#planned-design): the ID definition and the References table.
+3. [Tracker Update Proposer](tracker-update-proposer/README.md#planned-design), [Identity Access Discovery](identity-access-discovery/README.md#planned-design) and the Workflow Recommender (step 1): straight after step 2, so the root copy test is red only until the last of them lands.
+4. The table library, then the reconciler, the review exporter, the vendor workbook updater and the master workbook updater, in [Tracker Tools](tracker-tools/README.md#plan).
+5. [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design): wording.
+6. The Sample Tracker Workbook (its task is blocked on an unrelated model block and is set ready by the user), then the Vendor Sample Workbook, which needs no plan.
+7. Root task: `requirements.md` bullet, `test/fixtures.ts` and `test/support.ts` to ID keys with a same-named pair under two vendors, the `B09` and `B10` tests (tagged in their titles) in `test/pipeline.test.ts` and `test/vendor-safety.test.ts`, and a search that finds no `<use-case-name>/` or `<use-case-slug>/` key form in the pack.
+8. [Client Transfer Package](client-transfer-package/README.md#planned-design) last, so the zip carries the new keys.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Test |
+| --- | --- | --- | --- |
+| 1. Two vendors' same-named use cases and their question 1 reconcile and export as two use case additions and two question additions under two IDs. | B09 | 4, 7 | `[B09]` root pipeline test |
+| 2. An unknown ID, or a reference in the old name or slug-alone form, stops the run naming file and line and writes nothing. | B10 | 4, 7 | `[B10]` root test |
+| 3. The three contract copies are identical and the vendor-safety test still shows no other vendor's row, ID or name. | B05, B07 | 2, 3, 7 | `[B05]` in `test/documents.test.ts`; `test/vendor-safety.test.ts` extended with the same-named pair |
+
+Validation: each component's own check, then the root `test` check once steps 1 to 6 are built.
+
+### Assumptions And Open Questions
+
+Assumptions (override by telling the planner, or by editing the file named):
+
+- **Behavior confirmed** by the user on 2026-11-16: the key forms, the use case ID for both local references, the use case ID in the review CSV's `use_case` cell, and an unknown vendor means the skill asks once and writes no keyed row.
+- **No live data** exists (the user confirmed), so there is no migration, no fallback and no transitional match; old-form references fail.
+- **The Workflow Recommender's task carries the key rules** in the same build as its index change, instead of a second pass over the same file. Override by asking for it to be built first as written and the key rules planned after.
+- **The Tracker Update Proposer's wording-only task is folded** into its key change, because its acceptance (key form unchanged) contradicts this change.
+- **Each component owns its own change.** A child never edits another component's files, and the contract copies are carried by each skill component's task: its acceptance says its copy equals the contract component's file as built.
+- **A root task, not a composite one.** The root's task builds only its own files after its children.
+
+Open questions: none.
 
 ### Planned Relationships
 

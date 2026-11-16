@@ -25,3 +25,11 @@
 - No secret value appears in any output.
 - A value the evidence does not show is left blank or `unknown`, never guessed.
 - Output is a proposal for a lead to review; it is never written into the authoritative tracker.
+
+### Planned: use case ID key
+
+Planned, not built; merged into the handling rules above when built. The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Data Contract](../tracker-data-contract/contract.md#planned-use-case-id-and-local-references).
+
+- An Identity & Access row is keyed `<use-case-id>/<endpoint>/<environment>`, in the `record_key`, the row order, `shared_with` and the repeat-run match. The use case name is not part of the key and a key in the old name form is not valid.
+- The ID needs the vendor. When it is not known, the skill asks the lead once, never invents one, and writes no keyed row for that use case until it is known.
+- The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built.

@@ -1,1 +1,35 @@
-{}
+{
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:30:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "useCaseId(vendor, name) in the library returns uc-<vendor-slug>-<use-case-slug> by the slug rule (lower case, each run outside a-z and 0-9 one '-', ends trimmed), is stable for the same inputs and differs for two vendors with one name. (B11)",
+      "A vendor or a name whose slug is empty gives no ID (undefined), never a partial one. (B11)",
+      "No existing module, the schema or existing test changes, and the component's test and coverage checks pass. (B01 to B10)"
+    ]
+  }
+}

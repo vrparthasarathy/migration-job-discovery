@@ -50,3 +50,11 @@ No Craft term. `use case` names the business unit; `job` or `script` only the ve
 - **Repository root.** Asked once per session, never guessed; each folder must sit under it, otherwise the run stops.
 - **Fixed recommendations ID.** `recommendations`, so the recommender writes `tracker-updates/recommendations/tracker-updates.csv`. The skill never asks for it. Before stage 4 it shows the list (every index row) once with the warning that a partial list drops the other use cases' mappings, and runs only after the lead confirms.
 - **Export step.** Unchanged: the skill runs the exporter command above and stops on exit 1. It asks for the exporter path and needs Node 26.
+
+### Planned: proposal ID is the use case ID
+
+Planned, not built; merged into the `Proposal ID` bullet above when built (wording only). Add this sentence there, to the `Inputs` bullet, and to the matching text in the README and `run-discovery/SKILL.md`:
+
+"The proposal ID is the use case ID defined in the Tracker Data Contract; the stages derive their keys from the index row's name and vendor."
+
+The slug rule, the five index columns, the duplicate rule and every behavior stay as they are.

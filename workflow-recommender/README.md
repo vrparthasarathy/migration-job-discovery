@@ -94,7 +94,11 @@ flowchart TB
 
 ### Planned Design
 
-The skill gets its list of use cases from the `use-case-index.csv` at the repository root that the [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) writes, instead of from the proposals' Use Cases rows, so use cases at any folder depth are found. By default it compares every index row and reads each specification from the row's root-relative `spec` path; a row whose spec file does not exist, or whose `spec` is blank, is listed under `not compared` as `missing` and never dropped silently. The proposal ID is the fixed value `recommendations`, so the skill never asks for it and writes `tracker-updates/recommendations/tracker-updates.csv`. A Mappings `source` uses the index `spec` path. The skill still compares the full set on every run, so it shows the full list once with the warning that a partial list drops the other use cases' Mappings rows, unless its caller (the orchestrator) has already confirmed the list this session. If the index is absent the skill stops and tells the developer to run `run-discovery` first. The skill restates the five index column names as a read-only consumer, because skills are installed standalone; the index is defined and written only by the orchestrator, and the Tracker Data Contract and the byte-identical copies in this folder are not changed.
+This plan is extended, not replaced: it keeps the use case index change below and adds the use case ID key rules (confirmed by the user on 2026-11-16).
+
+The skill gets its list of use cases from the `use-case-index.csv` at the repository root that the [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) writes, instead of from the proposals' Use Cases rows, so use cases at any folder depth are found. By default it compares every index row and reads each specification from the row's root-relative `spec` path; a row whose spec file does not exist, or whose `spec` is blank, is listed under `not compared` as `missing` and never dropped silently. The proposal ID is the fixed value `recommendations`, so the skill never asks for it and writes `tracker-updates/recommendations/tracker-updates.csv`. A Mappings `source` uses the index `spec` path. The skill still compares the full set on every run, so it shows the full list once with the warning that a partial list drops the other use cases' Mappings rows, unless its caller (the orchestrator) has already confirmed the list this session. If the index is absent the skill stops and tells the developer to run `run-discovery` first. The skill restates the five index column names as a read-only consumer, because skills are installed standalone; the index is defined and written only by the orchestrator.
+
+A use case is also identified by its use case ID `uc-<vendor-slug>-<use-case-slug>`, defined once in the [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) and derived from the index row's `vendor` and `use_case_name` (never stored, and the same string the orchestrator uses as the proposal ID). A Mappings row is keyed `<use-case-id>->>candidate-slug`, replacing `<use-case-name>->>candidate-slug`, and a blocking question is linked by its local reference `<use-case-id>/Q<n>@v<version>`, replacing `<use-case-slug>/Q<n>@v<version>`. The ID needs a vendor: for an index row with a blank vendor the skill asks the lead once, never invents one, and writes no Mappings row for that use case until it is known; the use case is still compared and is listed in the report. An old name form or slug-alone form is not valid. The skill folder's `tracker-data-contract.md` is replaced by the contract component's file as built, so the earlier statement that the contract copies are not changed no longer holds; `tracker-schema.csv` stays byte-identical. The component now builds after the Tracker Data Contract.
 
 #### Planned Diagram
 
@@ -121,19 +125,23 @@ flowchart TB
 
 ### Planned Behavior
 
-These replace or extend the current wording of the named behaviors when built; the other behaviors (`B01`, `B02`, `B04`, `B06` to `B09`) are unchanged.
+These replace or extend the current wording of the named behaviors when built; the other behaviors (`B01`, `B02`, `B04`, `B06`, `B08` and `B09`) are unchanged in wording. The `B08` wording stays as it is for the backlog item `recommender-b08-wording`, which aligns it with the ownership table separately.
 
 - **B03** When a specification is missing, unread, unversioned or still a draft, then it is listed under `not compared` with its state, a use case without a specification is listed and never silently dropped, a listed spec file that does not exist or a blank `spec` is listed as `missing`, and a draft specification may still produce recommendations before any vendor acknowledgement. (untested: benchmark pending)
-- **B05** When it regenerates `use-case-to-workflow-recommendations.md`, then it rewrites only that file and the Mappings rows of `tracker-updates/recommendations/tracker-updates.csv`, reads `use-case-to-workflow-decisions.md` and never edits it, and shows each candidate's decision status. (untested: benchmark pending)
+- **B05** When it regenerates `use-case-to-workflow-recommendations.md`, then it rewrites only that file and the Mappings rows of `tracker-updates/recommendations/tracker-updates.csv`, each keyed `<use-case-id>->>candidate-slug` with no row for a use case whose vendor is not known (it asks the lead once and never invents one), reads `use-case-to-workflow-decisions.md` and never edits it, and shows each candidate's decision status. (untested: benchmark pending)
+- **B07** When unknowns could change a mapping, then only those grouping-relevant unknowns are listed as blocking with their existing specification questions linked by their local reference `<use-case-id>/Q<n>@v<version>`, other open questions are non-blocking, and a missing question is reported as a specification gap and never as a new question. (untested: benchmark pending)
 - **B10** When it runs, then the default list is every use case in `use-case-index.csv`, with each specification read from the row's `spec` path, and it uses the fixed proposal ID `recommendations` without asking; it compares the full set, states which specifications, earlier analyses and date it covered and what was not compared, and marks the output internal; when its caller has not already confirmed the list this session it shows the list once with a warning that a partial list drops the other use cases' mappings; when the index is absent it stops and says to run `run-discovery` first; the decisions file format has decision ID, status (accepted, rejected, pending-clarification), candidate, affected use cases, rationale, evidence and versions, date and decided-by name, is append-only, and a changed decision is a new row that refers to the earlier one. (untested: benchmark pending)
 
 ### Steps
 
 1. [recommend-workflows/SKILL.md](recommend-workflows/SKILL.md): `Inputs` (the index and the repository root replace the specification set; the proposal ID is fixed), the `missing` handling, the confirmation with the partial-list warning, and the Mappings path and `source` text.
-2. [contract.md](contract.md), [requirements.md](requirements.md) and this README: the input row, the full-set requirement, the Design text, and `B03`, `B05`, `B10`.
-3. [review-checklist.md](review-checklist.md): `B03`, `B05`, `B10` match the new wording; add an item that the five column names equal the orchestrator contract's. Add the task and `tasks.md` to [craft.json](craft.json) when built.
+   Key rules (new in this extension), in the same file: line 77, the blocking question link becomes `<use-case-id>/Q<n>@v<version>`; line 113, the `record_key` bullet becomes `<use-case-id>->><candidate-slug>` with the ID built from the index row's vendor and use case name (the contract's slug rule), no longer the use case name, and the vendor-unknown rule (ask once, no Mappings row until known, the use case still compared and listed); line 127, the invented-name illustration shows `uc-example-vendor-example-use-case->>example-candidate`; line 49, a `missing` member keeps its handling, unchanged. A search for `<use-case-name>->>` and `<use-case-slug>/Q` finds nothing left. The `spec_versions_considered` folder examples and `source` paths are file paths and stay.
+2. [contract.md](contract.md), [requirements.md](requirements.md) and this README: the input row, the full-set requirement, the Design text, and `B03`, `B05`, `B07`, `B10`; contract.md also gains the key rules (a second planned section below the first).
+3. [review-checklist.md](review-checklist.md): `B03`, `B05`, `B10` match the new wording; add an item that the five column names equal the orchestrator contract's. The task and `tasks.md` already exist and are not created again.
 
-Build after the [Discovery Orchestrator](../discovery-orchestrator/README.md#plan), which owns the index definition the five names are compared with.
+4. [recommend-workflows/tracker-data-contract.md](recommend-workflows/tracker-data-contract.md): replace with the Tracker Data Contract component's file as built and check with `cmp`; leave [tracker-schema.csv](recommend-workflows/tracker-schema.csv) untouched.
+
+Build after the [Tracker Data Contract](../tracker-data-contract/README.md#plan), whose built file is copied in step 4, and straight after it, because root `B05` is red until the three skill copies match. The index change in this plan still needs the [Discovery Orchestrator](../discovery-orchestrator/README.md#plan) contract, which already holds the index definition the five names are compared with.
 
 ### Acceptance Mapping
 
@@ -143,8 +151,10 @@ Build after the [Discovery Orchestrator](../discovery-orchestrator/README.md#pla
 | A missing or blank spec is reported as `missing` and no use case is silently dropped | B03 | 1 | checklist `B03` |
 | The proposal ID is fixed and never asked, and the output path is `tracker-updates/recommendations/` | B05, B10 | 1, 2 | checklist `B05`, `B10` |
 | The five column names agree with the orchestrator contract and the Mappings `source` uses the index `spec` path | B03, B10 | 1, 3 | checklist column item, `B10` |
+| Mappings rows are keyed `<use-case-id>->>candidate-slug`, blocking questions are linked as `<use-case-id>/Q<n>@v<version>`, and a blank vendor gives no Mappings row (asked once, never invented), with no name or slug key form left | B05, B07 | 1 | checklist `B05`, `B07` and the search in step 1 |
+| The contract copy equals the contract component's file as built and the schema copy is unchanged | B10 | 4 | `cmp`, checklist folder item, the root `test` check |
 
-Validation, narrowest first: the checklist items for the changed behaviors, the wording scan of the skill folder, a throwaway script outside the repository checking the example Mappings rows against the contract copy, then the root `test` check to confirm `B05` (contract copies) is still green. No Copilot run is claimed.
+Validation, narrowest first: the checklist items for the changed behaviors, the wording scan of the skill folder, `cmp` of both copies with the contract component's files, a throwaway script outside the repository checking the illustration Mappings row against the contract copy, then the root `test` check (its contract-copy test, root `B05`, passes once all three skill copies have landed). No Copilot run is claimed.
 
 ### Assumptions And Open Questions
 
@@ -153,18 +163,23 @@ Assumptions (override any in chat):
 1. The recommender is a consumer only: it never writes or repairs the index. Override by letting a lead supply an explicit list when the index is missing.
 2. Standalone use asks the developer once for the repository root (or takes it from the caller) and once for the list confirmation; when the orchestrator calls it, the orchestrator's confirmation stands.
 3. The fixed ID `recommendations` regenerates the Mappings rows each run, so a use case left out of the list loses its rows from the proposal file (not from the tracker). The list confirmation with the warning is the safeguard.
-4. The Tracker Data Contract and its byte-identical copies here are not changed.
+4. **The use case ID key change is confirmed behavior** (user, 2026-11-16): the use case ID derives from the index row's vendor and name, is never stored, and an old name or slug-alone form is not valid, with no migration. The schema copy is unchanged; the contract copy is replaced (this replaces the earlier assumption that the copies are not changed).
+5. **The recommender derives the ID itself** from the index row's `vendor` and `use_case_name` with the contract's slug rule, and does not use the index `slug` column alone. Override by reading the ID from a stored column, which changes the schema.
+6. **`B08` is not reworded here**; its wording is the backlog item `recommender-b08-wording`. The key form does not change what it says.
+7. **A blank index vendor** is not expected, because the orchestrator asks for the vendor when absent; if it happens the skill asks once and writes no Mappings row for that use case until known.
 
 Open questions: none.
 
 ### Planned Relationships
 
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#planned-design) — writes the `use-case-index.csv` this skill reads and defines its columns.
+- [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) — defines the use case ID and the Mappings and question references; its built `tracker-data-contract.md` is copied here, so it is built first.
 
 ### Planned Links
 
 - [requirements.md](requirements.md#planned-change-use-case-index) — the planned requirement changes.
 - [contract.md](contract.md#planned-input-from-the-use-case-index-and-fixed-proposal-id) — the planned input and ID.
+- [contract.md](contract.md#planned-use-case-id-keys) — the planned key rules.
 
 ## Relationships
 

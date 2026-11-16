@@ -14,6 +14,7 @@ A GitHub Copilot agent skill that turns a use case specification into proposed u
 - [Plan](#plan)
   - [Planned Navigation](#planned-navigation)
   - [Planned Design](#planned-design)
+  - [Planned Behavior](#planned-behavior)
   - [Steps](#steps)
   - [Acceptance Mapping](#acceptance-mapping)
   - [Assumptions And Open Questions](#assumptions-and-open-questions)
@@ -97,11 +98,14 @@ flowchart TB
 
 ## Plan
 
+This plan was a wording-only change about the slug. It is extended, not replaced: the wording change is kept inside a larger change, the use case ID as the key of every row this skill writes (confirmed by the user on 2026-11-16).
+
 ### Planned Navigation
 
 [Job Behavior Specifications](../README.md#plan) / **Tracker Update Proposer**
 
 - [Planned Design](#planned-design)
+- [Planned Behavior](#planned-behavior)
 - [Steps](#steps)
 - [Acceptance Mapping](#acceptance-mapping)
 - [Assumptions And Open Questions](#assumptions-and-open-questions)
@@ -110,37 +114,64 @@ flowchart TB
 
 ### Planned Design
 
-One wording change and no behavior change. The skill's `record_key` rule for a question row says the use case slug is "the same slug the specification folder and `spec_refs` use", which is no longer literally true now that use case folders sit at any depth under a vendor folder and the [Discovery Orchestrator](../discovery-orchestrator/README.md#design) keeps the folder in the use case index. The build rewords that sentence to say the slug is the use case name in lower case with hyphens and that the specification's location comes from the index, so no wording ties the slug to a folder name. The slug rule, the `<use-case-slug>/Q<n>` form, `spec_refs`, the example proposal and the byte-identical copies of the contract and schema do not change.
+Every row the skill writes is keyed by the use case ID `uc-<vendor-slug>-<use-case-slug>`, defined once in the [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) (the vendor and the use case name, each as a slug, derived and never stored). A use case record's `record_key` is the use case ID, a Questions row's is `<use-case-id>/Q<n>`, and its `spec_refs` entry is `<use-case-id>/Q<n>@v<version>`. The readable name stays in the `use_case_name` column. The use case name or the slug alone is no longer a key. Source-screening `suggest` rows are keyed by the use case ID as well.
+
+The ID needs a vendor. The skill takes the vendor from the inventory row, the input or the specification. When none shows it, the skill asks the lead once for the vendor, never invents one, and writes no keyed row for that use case until it is known; it names the use case in the report. This replaces today's rule that a blank vendor row is written and explained, because a row with no key cannot be written.
+
+The earlier wording fix is kept. The `record_key` sentence no longer says the use case slug is "the same slug the specification folder and `spec_refs` use". The slug is the use case name in lower case with hyphens, and the specification's location comes from the use case index, not from the slug, so no wording ties the slug to a folder name. The slug rule is the contract's and the orchestrator's: lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed.
+
+The example proposal is regenerated for the website use case under a fictional vendor (`Example Vendor`, so the ID is `uc-example-vendor-website-availability-check`), so every `record_key`, `spec_refs` entry and composed `update_id` shows the new form; its `proposal_id` stays `website-check-example`, a branch-style proposal ID. The specification path in each `source` is a file path and does not change. The skill's copy of `tracker-data-contract.md` is replaced by the contract component's file as built; `tracker-schema.csv` is unchanged. No diagram: the structure of the component does not change.
+
+### Planned Behavior
+
+These replace the current wording of the named behaviors when built; the other behaviors (`B02` and `B04` to `B09`) are unchanged in wording.
+
+- **B01** When a use case is first listed or its specification is first drafted, then the skill proposes an `add` for the use case, keyed by its use case ID, with name, vendor, link, version and revision, and never a central reference; when the vendor is not known it asks the lead once, never invents one, and writes no keyed row for that use case until the vendor is known. (untested: benchmark pending)
+- **B03** When a specification has open questions, then each open question becomes one Questions `add` per use case, keyed `<use-case-id>/Q<n>`, with `spec_refs` `<use-case-id>/Q<n>@v<version>`, the exact text as the latest specification wording and a source anchor with version, and never a shared answer, and it writes no link or group rows, because similarity checking belongs to the reconciler. (untested: benchmark pending)
+- **B10** When its folder is read, then it contains no Craft term, needs nothing installed in VS Code agent mode, and holds a copy of the contract that equals the Tracker Data Contract component's file as built, a byte-identical copy of the schema, and an example `tracker-updates.csv` for the website use case under a fictional vendor whose keys, `spec_refs` and `update_id` values use the use case ID. (untested: benchmark pending)
 
 ### Steps
 
-1. [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md), the `record_key` bullet in the proposal rules: replace "the same slug the specification folder and `spec_refs` use" with "the use case name in lower case with hyphens; the specification's location comes from the use case index, not from the slug".
-2. Check [review-checklist.md](review-checklist.md), the Design above and [contract.md](contract.md#contract) for any wording that ties the slug to a folder name (a search found none), and change only what the search finds.
-3. Validate: a search of the skill folder, the README and the checklist shows no wording that ties the slug to a folder name, then the root `test` check shows the contract copies unchanged.
+1. [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md), the `record_key` bullet (line 43): a use case's key is the use case ID; a question row's is `<use-case-id>/Q<n>`; say how the ID is built (vendor and use case name as slugs, the contract's slug rule, `uc-` prefix), that the name stays in `use_case_name`, that the specification's location comes from the use case index and not from the slug, and that the old "same slug the specification folder and `spec_refs` use" is removed. Add the vendor-unknown rule once, near the proposal file rules: ask the lead once, never invent a vendor, write no keyed row until it is known, and list the use case in the report.
+2. Same file, the other places that name a key: line 76 (screening `suggest` rows are keyed by the use case ID, from the inventory's vendor), line 88 (the invented-name illustration shows `uc-example-vendor-example-use-case` as the key), line 100 (the first-run vendor rule: replace "leave `value` blank and say so" with the vendor-unknown rule), lines 101 and 103 (the Questions add rule: record key `<use-case-id>/Q<n>`, `spec_refs` `<use-case-id>/Q<n>@v<version>`), and the `Use Cases` rows of the Inputs section if a search finds a name key there. A search for `use-case-slug`, `use case name, exactly` and `record key is the use case name` finds nothing left.
+3. [propose-tracker-updates/tracker-updates.csv](propose-tracker-updates/tracker-updates.csv) (48 rows): regenerate with the fictional vendor `Example Vendor`. The use case rows and the six question records use the ID as key and in `update_id`; the `vendor` rows of the use case and of each question carry `Example Vendor` with a reason that it is a fictional vendor given for the example; `spec_refs` values are `uc-example-vendor-website-availability-check/Q<n>@v1`. Everything else (fields, order, sources, dates) stays, and the file is checked with a throwaway script outside the repository (header, schema fields, composed unique `update_id`, source on every row).
+4. [propose-tracker-updates/tracker-data-contract.md](propose-tracker-updates/tracker-data-contract.md): replace with the contract component's file as built; check with `cmp`. Do not touch [tracker-schema.csv](propose-tracker-updates/tracker-schema.csv) (the copy stays byte-identical).
+5. This README: the Design paragraphs that describe the key, the vendor, the example and the Tracker Data Contract copy; `B01`, `B03` and `B10` as above. [review-checklist.md](review-checklist.md): `[B01]` (vendor never blank, keyed by the ID, ask once), `[B03]` (`<use-case-id>/Q<n>` and `spec_refs`) and `[B10]` (the contract copy equals the built file, the example under a fictional vendor). [contract.md](contract.md): move the planned section below into the update rules. [requirements.md](requirements.md): move the planned bullet in.
+6. Validate: search the skill folder, README and checklist for `use-case-slug`, a name-only key and wording that ties the slug to a folder name (none left); `cmp` of the contract copy with the contract component's file and of the schema copy with its file; the example check in step 3; the file hygiene scan; then the root `test` check, whose contract-copy test (root `B05`) passes only once the other two skill copies have landed.
 
 ### Acceptance Mapping
 
 | Acceptance | Behaviors | Step | Check |
 | --- | --- | --- | --- |
-| 1. The skill says the slug is the use case name in lower case with hyphens and that the specification's location comes from the index, and no wording in the skill, README, contract or checklist ties the slug to a folder name. | B03, B10 | 1, 2 | checklist `[B03]`, `[B10]` and the search in step 3 |
-| 2. The contract and schema copies, the slug rule and `spec_refs` are unchanged. | B10 | 3 | the root `test` check, root `B05` |
+| 1. The skill keys a use case by its use case ID and a question row by `<use-case-id>/Q<n>` with `spec_refs` `<use-case-id>/Q<n>@v<version>`, says how the ID is built, and no wording ties the slug to a folder name. | B01, B03 | 1, 2 | checklist `[B01]`, `[B03]` and the search in step 6 |
+| 2. With no vendor known the skill asks once, invents none and writes no keyed row. | B01 | 1, 2 | checklist `[B01]` |
+| 3. Source-screening rows and the illustration use the use case ID as key (rule text unchanged). | B02 | 2 | checklist `[B02]` |
+| 4. The example proposal is regenerated under a fictional vendor with every key, `spec_refs` and `update_id` in the new form. | B03, B10 | 3 | checklist `[B10]` and the throwaway check |
+| 5. The contract copy equals the contract component's file as built, the schema copy is unchanged, and the README, contract, requirements and checklist agree. | B10 | 4, 5, 6 | `cmp`, checklist `[B10]`, the root `test` check |
 
-Validation: the commands in step 3.
+Validation: the commands in step 6.
 
 ### Assumptions And Open Questions
 
 Assumptions (override by telling the builder, or by editing the file named):
 
-- **A wording change only**, so no behavior is added or reworded and the behaviors stay as they are. Override by asking for a behavior change.
-- **The backlog item `proposer-spec-folder-wording` is removed** in the commit that records this plan, as the backlog rules say.
-- **The local reference form is not decided here.** Which form the contract names for a question row's local reference (the exact name, the slug, or the derived use case ID `uc-<vendor-slug>-<use-case-slug>` that the proposal ID already uses) is the separate backlog item `local-reference-form-decision`; this wording keeps today's slug form. Override by deciding that item first.
+- **The key change is confirmed behavior** (user, 2026-11-16): the use case ID is the key; an old name form or slug-alone form is not valid, with no migration and no fallback. It replaces the earlier assumption that the key form is decided later; the backlog items `local-reference-form-decision` and `cross-vendor-use-case-name-collision` are planned in the Tracker Data Contract plan, and `proposer-spec-folder-wording` is already removed.
+- **The ID is derived, never stored**, so no column and no schema change (the schema copy stays byte-identical). Override by adding a stored ID column, which changes every consumer.
+- **The vendor comes from the inventory row, the input or the specification.** Through the orchestrator it comes from `use-case-index.csv`. A vendor correction changes the ID; rows already proposed still trace through their `update_id`.
+- **B01 is reworded as well as B03 and B10**, because today's rule writes a blank-vendor row, which cannot be keyed. Override by keeping a blank-vendor row, which needs a key that does not use the vendor.
+- **B02's wording is unchanged**; only the key shown in its rows changes.
+- **The example keeps `proposal_id` `website-check-example`.** Override by using the use case ID as the proposal ID, as the orchestrator does.
+- **Build order:** after the Tracker Data Contract component is built, before the root test for the contract copies is run; the copy is this component's acceptance.
 
 Open questions: none.
 
 ### Planned Relationships
 
-- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — keeps the use case index that holds each specification's folder, which the reworded sentence points to.
+- [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) — defines the use case ID and the local references; its built `tracker-data-contract.md` is copied here, so it must be built first.
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — keeps the use case index that holds each specification's folder and vendor, and derives the same string as its proposal ID.
 
 ### Planned Links
 
-- [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md) — the skill whose sentence changes.
+- [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md) — the skill whose key rules change.
+- [propose-tracker-updates/tracker-updates.csv](propose-tracker-updates/tracker-updates.csv) — the example to regenerate.
+- [contract.md](contract.md#planned-use-case-id-keys) — the planned wording.

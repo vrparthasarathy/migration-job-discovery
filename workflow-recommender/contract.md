@@ -51,3 +51,11 @@ Planned, not built; merged into the skill input table above when built.
 - **List.** Every index row is a use case to compare; each specification is read from its `spec` path. A blank `spec`, or a path that is not a file, lists the use case under `not compared` as `missing`. A use case in the index is never dropped. If the index is absent the skill stops and says to run `run-discovery` first.
 - **Proposal ID.** The fixed value `recommendations`; the skill never asks for it. Output: `tracker-updates/recommendations/tracker-updates.csv`, only its Mappings rows rewritten. A Mappings `source` uses the row's `spec` path.
 - **Confirmation.** The full list is shown once with the warning that the file is regenerated and a partial list drops the other use cases' Mappings rows, unless the caller has already confirmed the list this session.
+
+### Planned: use case ID keys
+
+Planned, not built; merged into the Mappings handling when built. The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Data Contract](../tracker-data-contract/contract.md#planned-use-case-id-and-local-references) and is derived here from the index row's `vendor` and `use_case_name`, never stored.
+
+- A Mappings row is keyed `<use-case-id>->>candidate-slug`, where the candidate slug is the candidate name in lower case with hyphens. A blocking question is linked by its local reference `<use-case-id>/Q<n>@v<version>`. The name form and the slug-alone form are not valid.
+- The ID needs the vendor. For an index row with a blank vendor the skill asks the lead once, never invents one, and writes no Mappings row for that use case until it is known; the use case is still compared and listed in the report.
+- The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built; `tracker-schema.csv` is unchanged.

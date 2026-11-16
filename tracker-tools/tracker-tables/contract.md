@@ -16,3 +16,12 @@
 - Dates are `YYYY-MM-DD`; multi-value fields are `;`-separated and keep their order.
 - Unknown tab names are an error that lists the known tabs.
 - The schema is read from the Tracker Data Contract component's `tracker-schema.csv`; no column list is repeated in code.
+
+### Planned: use case ID helper
+
+This adds to the module table and the data rules above when built; nothing else changes.
+
+| Module | Provides |
+| --- | --- |
+| `use_case_id` | `useCaseId(vendor, name)` returns `uc-<vendor-slug>-<use-case-slug>`, each part lower case with each run of characters outside `a-z` and `0-9` replaced by one `-` and leading and trailing `-` trimmed; it returns `undefined` when either slug is empty. It is the one implementation of the use case ID the tools import; the ID is derived from the `vendor` and `use_case_name` columns and never stored or validated against the schema. |
+

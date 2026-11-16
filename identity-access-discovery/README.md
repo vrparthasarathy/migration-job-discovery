@@ -11,6 +11,15 @@ A GitHub Copilot agent skill that reads a use case's source and configuration an
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+  - [Planned Behavior](#planned-behavior)
+  - [Steps](#steps)
+  - [Acceptance Mapping](#acceptance-mapping)
+  - [Assumptions And Open Questions](#assumptions-and-open-questions)
+  - [Planned Relationships](#planned-relationships)
+  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -81,3 +90,75 @@ flowchart TB
 - [review-checklist.md](review-checklist.md) — the internal review items tagged B01 to B10.
 - [discover-identity-access/SKILL.md](discover-identity-access/SKILL.md) — the skill instructions.
 - [discover-identity-access/tracker-updates.csv](discover-identity-access/tracker-updates.csv) — the example proposal for the website use case.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Identity Access Discovery**
+
+- [Planned Design](#planned-design)
+- [Planned Behavior](#planned-behavior)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+An Identity & Access record is keyed `<use-case-id>/<endpoint>/<environment>`, where the use case ID `uc-<vendor-slug>-<use-case-slug>` is defined once in the [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) (the vendor and the use case name as slugs, derived and never stored). This replaces the use case name as the first part of the key, so two vendors' same-named use cases no longer share a key. The tab has no use case name column, so the use case is still identified by the key alone. A reference in the old name form is not valid. Rows are ordered by the use case ID, then endpoint, then environment; repeat runs match rows by the new key; `shared_with` lists other rows by the new key.
+
+The ID needs the vendor. The skill takes it from the inventory row (which already carries the vendor) or the developer. When it is not known, the skill asks the lead once, never invents one, and writes no keyed row for that use case until it is known, and names the use case in the report. A row's `vendor` field then always carries a value.
+
+The example proposal (one record, 14 rows) is regenerated for the website use case under a fictional vendor, `Example Vendor`, so its key is `uc-example-vendor-website-availability-check/CHECK_URL/unknown` and its `vendor` row carries the vendor with a reason that it is fictional and given for the example. The `source` pointers into the real source files do not change. The skill folder's copy of `tracker-data-contract.md` is replaced by the contract component's file as built; `tracker-schema.csv` is unchanged. No diagram: the structure of the component does not change.
+
+### Planned Behavior
+
+This replaces the current wording of `B04` when built; the other behaviors are unchanged in wording (`B10` stays true because the copy is byte-identical to the built contract file).
+
+- **B04** When it records access, then there is one record per use case and endpoint and environment, keyed `<use-case-id>/<endpoint>/<environment>`, with observed access and proposed access in separate columns, and the permissions to confirm, the unknowns and who resolves each unknown are listed; when the vendor is not known it asks the lead once, never invents one, and writes no keyed row until it is known. (untested: benchmark pending)
+
+### Steps
+
+1. [discover-identity-access/SKILL.md](discover-identity-access/SKILL.md), `record_key` bullet (line 48): the key is `<use-case-id>/<endpoint>/<environment>`; say how the ID is built (vendor and use case name as slugs, the contract's slug rule, `uc-` prefix), that the use case name is no longer part of the key, and that a name-form key is not valid. Add the vendor-unknown rule once (ask once, never invent, no keyed row until known, named in the report).
+2. Same file: line 56 (order by use case ID, then endpoint, then environment), line 138 (`shared_with` lists local references `<use-case-id>/<endpoint>/<environment>`), line 142 (rows are matched by the local reference `<use-case-id>/<endpoint>/<environment>`), and line 23 (the inventory supplies the vendor for the ID). A search for `<use-case-name>` finds nothing left.
+3. [discover-identity-access/tracker-updates.csv](discover-identity-access/tracker-updates.csv) (14 rows): regenerate with the fictional vendor. Every `update_id` and `record_key` uses `uc-example-vendor-website-availability-check/CHECK_URL/unknown`; the `vendor` row carries `Example Vendor` and its reason says it is a fictional vendor given for the example; the `source` pointers, other values, `proposal_id` (`website-access-example`) and order are unchanged. Check the file with a throwaway script outside the repository (header, schema fields, composed unique `update_id`, source on every row).
+4. [discover-identity-access/tracker-data-contract.md](discover-identity-access/tracker-data-contract.md): replace with the contract component's file as built; check with `cmp`. Leave [tracker-schema.csv](discover-identity-access/tracker-schema.csv) untouched.
+5. This README: the Design paragraph (line 21, the local reference) and the example paragraph (it no longer has no vendor), and `B04`. [review-checklist.md](review-checklist.md): `[B04]` (key form, vendor-unknown rule, the example's key). [contract.md](contract.md): move the planned section below into the handling rules. [requirements.md](requirements.md): move the planned bullet in.
+6. Validate: search the skill folder, README and checklist for `<use-case-name>` and a name-form key (none left); `cmp` of the contract copy and the schema copy with the contract component's files; the example check in step 3; the file hygiene scan; the root `test` check (its contract-copy test passes once all three skill copies have landed).
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| 1. The key is `<use-case-id>/<endpoint>/<environment>` in the skill's record key, order, shared-with list and rerun match, with the ID built as the contract says, and no use case name key form is left. | B04 | 1, 2 | checklist `[B04]` and the search in step 6 |
+| 2. With no vendor known the skill asks once, invents none and writes no keyed row. | B04 | 1 | checklist `[B04]` |
+| 3. The 14-row example is regenerated under a fictional vendor with the key and every `update_id` in the new form. | B04 | 3 | checklist `[B04]`, the throwaway check |
+| 4. The contract copy equals the contract component's file as built, the schema copy is unchanged, and no Craft term is in the folder. | B10 | 4, 6 | `cmp`, checklist `[B10]`, the root `test` check |
+| 5. The README, contract, requirements and checklist agree. | B04 | 5 | checklist |
+
+Validation: the commands in step 6.
+
+### Assumptions And Open Questions
+
+Assumptions (override by telling the builder, or by editing the file named):
+
+- **The key change is confirmed behavior** (user, 2026-11-16): the use case ID replaces the use case name; no migration and no fallback for the old form.
+- **The ID is derived, never stored**, so no schema change (the schema copy stays byte-identical).
+- **The vendor comes from the inventory or the developer**; through the orchestrator from `use-case-index.csv`. A vendor correction changes the ID; rows already proposed still trace through their `update_id`.
+- **The example keeps its `proposal_id`** `website-access-example`. Override by using the use case ID.
+- **Only `B04` is reworded**; the other behaviors do not name a key form.
+- **Build order:** after the Tracker Data Contract component is built (its file is copied), straight after it, because root `B05` is red until the three skill copies match.
+
+Open questions: none.
+
+### Planned Relationships
+
+- [Tracker Data Contract](../tracker-data-contract/README.md#planned-design) — defines the use case ID and the access request reference; its built `tracker-data-contract.md` is copied here, so it must be built first.
+
+### Planned Links
+
+- [discover-identity-access/SKILL.md](discover-identity-access/SKILL.md) — the skill whose key rules change.
+- [discover-identity-access/tracker-updates.csv](discover-identity-access/tracker-updates.csv) — the example to regenerate.
+- [contract.md](contract.md#planned-use-case-id-key) — the planned wording.

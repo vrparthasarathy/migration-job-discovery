@@ -2,7 +2,7 @@
 
 ## Requirement
 
-Reword the record_key sentence in propose-tracker-updates so it no longer says the use case slug is "the same slug the specification folder and spec_refs use". Say the slug is the use case name in lower case with hyphens and that the specification's location comes from the use case index. Wording only: no behavior, slug rule, key form, spec_refs, contract copy or example changes.
+Make every row of propose-tracker-updates keyed by the use case ID `uc-<vendor-slug>-<use-case-slug>` (derived from vendor and use_case_name, never stored): the use case record key, the Questions record key `<use-case-id>/Q<n>` and `spec_refs` `<use-case-id>/Q<n>@v<version>`. Add the vendor-unknown rule (ask once, no keyed row), keep the reworded record_key sentence that no longer ties the slug to a folder name, regenerate the example proposal under a fictional vendor, and replace the contract copy with the Tracker Data Contract component's file as built. See the planned section of contract.md. Build after tracker-data-contract.
 
 ## Plan
 

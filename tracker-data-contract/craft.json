@@ -1,5 +1,38 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:23:26Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The contract and its prose define the use case ID uc-<vendor-slug>-<use-case-slug> once, derived from vendor and use_case_name and never stored, and build the use case, question row, question link, mapping and access request local references and the spec_refs entries from it; a name-only or slug-only reference is not valid and a missing vendor gives no ID. (B02)",
+      "tracker-schema.csv and every file other than contract.md, tracker-data-contract.md, workbook-layout-guide.md, README.md, requirements.md and review-checklist.md are unchanged, and the inventory guide says the vendor value is required. (B02)",
+      "The contract, its prose, README, requirements and checklist agree, with no use case name or slug-alone reference form left. (B02)"
+    ]
   }
 }

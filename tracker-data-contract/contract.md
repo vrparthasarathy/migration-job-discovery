@@ -117,3 +117,27 @@ One CSV per tab named as above, with the schema's column names (extra lead colum
 ### Workbook layout (for `workbook-layout-guide.md`)
 
 Separate vendor access is a deployment prerequisite, not an implementation blocker: each vendor workbook is a separate file shared only with that vendor, and no internal analysis (mappings, recommendations, decisions, proposals, exports, groups and links) is stored where a vendor can read it. Hidden tabs or folders do not count as separation. The vendor storage and repository choice is deferred to the client's confirmation and is settled before the first release to a vendor. One internal master workbook on SharePoint is authoritative for everything. Each vendor gets a workbook with only its own rows and its vendor-visible columns, including one simple Questions sheet of its own released rows. The vendor edits only `answer`, `answer_status`, `answered_on` and `answered_by` on a question row, the acknowledgement fields on its use case and the vendor-side access fields. After each vendor edit a lead copies those fields row for row into the master, matching on `question_ref`, `use_case_ref` or `access_ref`, then reviews each row for completeness and sets `status` (`accepted` or `clarification-requested`) and, for a cannot-answer row, a `resolver` or a `closed_reason`. A response that is partial or cannot-answer stays open. The guide gives each tab's columns, drop-down lists for the status fields, the due-date formula (release plus two working days), the vendor-view rule, the manual apply steps for the reconciler's output, and the use case inventory template (`use_case_name,vendor,source_ref`, where an empty `source_ref` means the source is not located), which the lead pastes into the Use Cases tab. The inventory is a list and not a prerequisite analysis.
+
+### Planned: use case ID and local references
+
+These replace the matching text above when built (the `Vocabulary` line, the `References` table, the `spec_refs` example in the Questions row and the `record_key` bullet of the proposal file). The schema is not changed.
+
+The **use case ID** is `uc-<vendor-slug>-<use-case-slug>`: the vendor and the use case name, each reduced to a slug (lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed). It is derived from the `vendor` and `use_case_name` columns and never stored in a column. It needs a non-empty vendor and a non-empty slug for both parts; with either missing there is no ID, so a skill asks for the vendor once and writes no keyed row until it is known. The use case ID is also the proposal ID the discovery orchestrator derives for a folder, which points here for the definition. The use case name stays the readable name in the `use_case_name` column of Use Cases and Questions and is still the vendor's own name for the use case.
+
+Vocabulary line: "A **use case** is what the business needs done. It carries the vendor's own name, and the vendor with that name is its identity, written as its use case ID."
+
+| Entity | Central reference | Local reference used in proposals |
+| --- | --- | --- |
+| Use case | `UC-###`, created up front from the inventory | the use case ID |
+| Question row (one use case, one question) | `QN-####` | `<use-case-id>/Q<n>`; specification question IDs are never renumbered and an answered row is kept |
+| Question group | `QG-###` | none (created by leads) |
+| Question link | `QL-####` | `<use-case-id>/Q<n>` plus the group reference or the `similar_to` row |
+| Mapping | `MP-###` | `<use-case-id>->>candidate-slug` |
+| Access request (one use case and endpoint) | `AX-###` | `<use-case-id>/<endpoint>/<environment>` |
+| Batch | `BT-###` | none (never proposed) |
+| Decision | `WD-###` | assigned by the lead in the decisions file |
+
+- `spec_refs` entries are `<use-case-id>/Q<n>@v<version>`, for example `uc-example-vendor-website-availability-check/Q3@v1`; a tool matches a Questions row by the entry without its `@v` suffix, which equals the question's local reference.
+- `record_key` is the local reference from the table; a proposal never carries a central reference for a new row, and a reference in the use case name form or in the slug-alone form is not valid.
+- `use-case-inventory-template.csv` keeps its columns, and its `vendor` value is required, because the use case ID is derived from it.
+
