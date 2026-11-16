@@ -16,8 +16,10 @@ See ## Plan in README.md.
 
 ## Blockers And Escalations
 
+The builder agent stopped before its first edit: the model request was refused with HTTP 403 "Your IT Admin has blocked this request" (error type authentication_failed). No file changed. The same administrator block stopped the planner agent in an earlier session.
+
 ## Recovery
 
 ## Next Action
 
-Run `/craft:build tracker-tools/sample-tracker-workbook`.
+After the administrator block on the builder agent's model is lifted, set the task back to `ready`, then run `/craft:build tracker-tools/sample-tracker-workbook`.

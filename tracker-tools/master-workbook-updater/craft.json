@@ -3,23 +3,5 @@
     "checks": {
       "install": "npm ci --prefix {path}"
     }
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-16T14:00:00Z",
-    "constraints": {
-      "cost": { "currency": "USD", "allocated": 6, "spent": 0, "reserve": 1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
-      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
-      "execution": { "wall-clock": { "allocated-seconds": 7200, "spent-seconds": 0, "reserve-seconds": 900, "source": "unavailable" } },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "Accepted review rows for all four tabs, with internal columns and readable `other_changes`, reach the master; conflicts and unaccepted rows are left alone and listed. (B1, B2, B3, B9)",
-      "Vendor-owned columns are copied by reference into the master; conflicts and orphan rows are reported and lead-owned columns are untouched. (B4, B5, B6)",
-      "Each named vendor's workbook is rebuilt from the new master, vendor-safe, accepted by the Vendor Workbook Updater's reader, and a re-sync gives no change. (B6, B7)",
-      "The same inputs and run date give identical bytes, no input is overwritten, and any input problem writes nothing. (B1, B8, B9)",
-      "The report accounts for every review row, vendor value, held workbook and file written. (B10)"
-    ]
   }
 }

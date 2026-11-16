@@ -5,9 +5,9 @@
     }
   },
   "task": {
-    "status": "ready",
+    "status": "blocked",
     "worker": "builder",
-    "updated": "2026-11-16T11:20:29Z",
+    "updated": "2026-11-16T15:30:00Z",
     "constraints": {
       "cost": {
         "currency": "USD",

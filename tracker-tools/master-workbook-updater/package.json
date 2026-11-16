@@ -1,0 +1,13 @@
+{
+  "name": "master-workbook-updater",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=26" },
+  "scripts": {
+    "update-master-workbook": "node src/main.ts update-master-workbook",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0"
+  }
+}

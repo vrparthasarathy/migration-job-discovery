@@ -22,7 +22,7 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 ## Technology and departures from the group
 
 - Node 26 with native TypeScript and `node:test`, as the siblings, plus one exact-pinned `exceljs` 4.4.0 (component-local `package.json` and lockfile; `npm ci` is the `install` check), the same version as the Sample Tracker Workbook and the Vendor Workbook Updater. The group's owner reconciles the dependency count and the "no dependencies" rule; this component does not edit them. The client environment needs a reachable npm registry, as the Updater already does.
-- Reuse by relative import, never copies: Tracker Tables (`csv`, `schema`, `vendor_view`, `working_days`), the Reconciler (`inputs`, `secrets`), the Exporter (`headings`, `rows`, `review`), the sample (`layout`, `review_columns`, `headings.csv`) and the Updater (`columns`, `reviews`, `workbook_read`, `workbook_write`, `archive`, `files`). The Updater is asked for two small exports (see its Plan); if its owner declines, this tool carries its own copies of about 80 lines.
+- Reuse by relative import, never copies: Tracker Tables (`csv`, `schema`, `vendor_view`, `working_days`), the Reconciler (`inputs`, `secrets`), the Exporter (`headings`, `rows`, `review`), the sample (`layout`, `review_columns`, `headings.csv`) and the Updater (`columns`, `reviews`, `workbook_read`, `workbook_write`, `archive`, `files`). The Updater's `loadReviews` (fixed to its three tabs), `cellText` and `headerRow` (private) are not exported, so this tool carries its own copies of about 80 lines; if the Updater's owner later exports them, the copies go.
 
 ## Risks
 

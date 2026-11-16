@@ -23,7 +23,7 @@ node src/main.ts update-master-workbook
 
 ### Inputs
 
-- **Master workbook.** Sheets read: Use Cases, Questions, Identity & Access, Workflow Mappings, Question Groups, Question Links, Batches and Holidays. The header is in row 1 or 2, by the sample heading or the schema column name. Columns outside the schema and headings are extra lead columns, kept as values at the right. A formula cell gives its result; an extra column of formulas is dropped and listed. `review_state`, `days_past_original_due` and `age_awaiting_review` are ignored and recomputed. A secret-looking value, a duplicate or blank key, an error cell or a schema error stops the run.
+- **Master workbook.** Sheets read: Use Cases, Questions, Identity & Access, Workflow Mappings, Question Groups, Question Links, Batches and Holidays. The header is in row 1 or 2, by the sample heading or the schema column name. Columns outside the schema and headings are extra lead columns, kept as values at the right. A formula cell gives its result; an extra column of formulas is dropped and listed. `review_state`, `days_past_original_due` and `age_awaiting_review` are ignored and recomputed, and `pending_change` is ignored and not kept. The Holidays sheet is one column headed `holiday`, one ISO date per row. A secret-looking value, a duplicate or blank key, an error cell or a schema error stops the run.
 - **Review CSVs.** Read as the Vendor Workbook Updater does: exact exporter header, digest recomputed, statuses checked, secrets stop the run.
 - **Vendor workbooks.** Read with the Updater's strict reader. A `--vendor` name must appear in the master's Use Cases `vendor` column and in every row of its file.
 
