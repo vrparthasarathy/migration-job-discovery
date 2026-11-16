@@ -36,3 +36,9 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - **Verification gap.** The framework's benchmark verification for documents is not built, so each behavior is marked "untested: benchmark pending". The stand-in is `review-checklist.md` plus a manual dry-run review by someone who has not seen the finished document. No tool runs it and it does not satisfy the test-tag rule. A first dry run of the earlier skill was exploratory and ticked nothing.
 - **Document files versus records.** The `README.md`, `craft.json`, `tasks.md`, `requirements.md`, `contract.md` and `review-checklist.md` beside the deliverables are internal and are never sent to the vendor. Copying the finished files out is a manual step.
 - **Two kinds of diagram.** The diagram in a component's README shows components. The one-box diagram inside a job document is deliverable content and follows its own rule.
+
+## Planned revision (use case wording)
+
+Planned on 2026-11-15 after the user's alignment; the lines and the reasons are in this component's README `## Plan` and the [root requirements](../requirements.md#requirements). `use case` names the business unit, `job` or `script` names only the vendor's script, the question rule reads `what the migrated use case must do`, the heading reads `Use Case Behavior`, and no vendor-readable text mentions workflows or grouping. Structure, IDs and anchors do not change.
+
+Further planned wording (2026-11-15, the user's component review): the outcome-evidence rule, requests, responses and data transfers in either direction, retry and failure handling as current behaviors with scenarios, answers updating the section they belong to, and the acknowledgement statement. They are described in this component's README `## Plan` and in the [contract](contract.md#contract). Version 1 of the reference specification has never been issued, so it is edited in place.

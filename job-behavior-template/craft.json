@@ -1,1 +1,38 @@
-{}
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-15T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "B01 to B10 pass the file review with the revised wording, and the form, its filling guide and the review checklist agree with the reworded lines (B01 to B10).",
+      "The form carries the heading `Use Case Behavior`, defines vendor, our team, tracker and black box and adds a `use case` line, and contains no `workflow` or grouping text (B02, B07, B10).",
+      "The form records the outcome evidence proves (request success, reported status and actual delivery kept apart), allows requests, responses and data transfers in either direction, puts explicit retry or failure handling in current behaviors and scenarios, updates the right section when an answer arrives and states what an acknowledgement does and does not confirm (B03, B04, B05, B06, B08, B09)."
+    ]
+  }
+}

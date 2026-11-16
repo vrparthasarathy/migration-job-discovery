@@ -1,0 +1,35 @@
+{
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-15T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1.5,
+        "spent": 0,
+        "reserve": 0.2,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 3600,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Parsing, writing, round trips and multi-value fields pass their tests (B01, B02, B08).",
+      "Schema, status, reference, date and tab validation report precisely, including the question, answer, source and authentication statuses (B03, B04, B05, B09, B10).",
+      "The vendor projection (released own question rows only, with no group or link information) and the working-day arithmetic, including clarification-requested and awaiting-review rows, are correct (B06, B07)."
+    ]
+  }
+}

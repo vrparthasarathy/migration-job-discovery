@@ -48,3 +48,7 @@ ID scheme: current behaviors `B1`, `B2`, ...; questions `Q1`, `Q2`, ...; accepta
 ### Companion file
 
 `filling-guide.md` explains in plain language how to fill in the template without Copilot. It is not part of the finished document.
+
+### Planned revision
+
+The document heading becomes `Use Case Behavior: {use case name}`; the glossary gains a `use case` line; the "About this document" sentence says nothing about how the use case will be migrated (the word `grouped` is dropped); and the question rule reads "what the migrated use case must do". Parts, IDs, anchors and the acknowledgement log's columns are unchanged. Further planned wording (2026-11-15): a current behavior records only the outcome its evidence proves (request success, reported status and actual delivery kept separate) and is marked as source-observed or document-described by its evidence pointer; the diagram and the dependency table allow requests, responses and data transfers in either direction; an explicit retry or failure-handling action in the source is a current behavior with an acceptance scenario, which operational context may point to; an answer updates the section it belongs to and creates a behavior only when it establishes behavior (the "resolved" note names the behavior or section); the acknowledgement statement says it confirms the named script and revision as the current production script and the documented behavior as current for that version, and approves no future implementation.

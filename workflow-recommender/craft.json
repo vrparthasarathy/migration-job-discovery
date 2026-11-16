@@ -1,0 +1,39 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-15T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Candidates rest on behaviors, tagged earlier analyses only supplement them, and the output exposes unread, draft and missing specifications (B01, B02, B03).",
+      "The method is marked not validated and the validation procedure is present (B04).",
+      "Decisions are read and never edited, re-review is flagged for changes that could affect grouping or whose impact is unknown (never silently none), rejected pairings return only with new evidence, and the decisions format is as stated (B05, B06, B10).",
+      "Only grouping-relevant unknowns block, tracker rows are mapping rows only, and no profile file is written (B07, B08, B09)."
+    ]
+  }
+}

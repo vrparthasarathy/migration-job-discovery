@@ -1,0 +1,37 @@
+{
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-15T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 3,
+        "spent": 0,
+        "reserve": 0.2,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 7200,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Human-owned fields, per-row answers, released text and existing references are preserved and forbidden fields are rejected (B02, B06, B10).",
+      "A repeated run is identical and creates no duplicates (B03).",
+      "Conflicts hold the affected record and the rows that refer to it while unrelated safe changes are still reported, and re-review follows the grouping impact with unknown kept visible and lead overrides respected (B04, B07).",
+      "Vendor-safe outputs are separated with no group, link or unreleased row, and bad input stops the run with nothing written (B08, B09).",
+      "Similar rows are suggested and never linked, merged or given an inherited answer, and additions carry traceability (B01, B05)."
+    ]
+  }
+}

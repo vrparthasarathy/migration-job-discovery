@@ -1,0 +1,39 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-15T12:00:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1.5,
+        "spent": 0,
+        "reserve": 0.2,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 3600,
+          "spent-seconds": 0,
+          "reserve-seconds": 600,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "On the website specification the skill's output equals the example file, field for field, with one question row per use case per question and a source anchor with version on every row (B01, B03, B04, B07, B08).",
+      "Screening runs on the whole inventory before any specification, suggests source status, blocker, owner or `unassigned` from inventory or source-screening evidence, and never marks a source confirmed unavailable (B02).",
+      "A revised specification updates existing records without duplicates and suggests grouping impact separately from the change class with unknown kept visible, a wording edit keeps the row and its answer, a meaning change is flagged for a lead, and nothing forbidden or human-owned is written (B04, B05, B06).",
+      "The folder passes the hygiene check, its contract copies match, and the report exposes unrowed content, unassigned source owners and behavior changes with their grouping impact (B09, B10)."
+    ]
+  }
+}

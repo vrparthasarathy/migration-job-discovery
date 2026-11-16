@@ -31,3 +31,9 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - **Document files versus records.** The `README.md`, `craft.json`, `tasks.md`, `requirements.md`, `contract.md` and `review-checklist.md` beside the deliverables are internal and are never sent to the vendor. Copying the finished files out is a manual step.
 - **Two kinds of diagram.** The diagram in a component's README shows components. The one-box diagram inside a job document is deliverable content and follows its own rule.
 - **Evidence must survive.** The sibling Website Availability Check holds code that no document behavior needs. It stays in place as read-only evidence, and a build of this component must not delete or edit it.
+
+## Planned revision (use case wording)
+
+Planned on 2026-11-15 after the user's alignment; the lines and the reasons are in this component's README `## Plan` and the [root requirements](../requirements.md#requirements). `use case` names the business unit, `job` or `script` names only the vendor's script, the question rule reads `what the migrated use case must do`, the heading reads `Use Case Behavior`, and no vendor-readable text mentions workflows or grouping. Structure, IDs and anchors do not change.
+
+Further planned (2026-11-15, the user's component review): the diagram shows the printed alert and no real notification system, and `sent` is explained as not meaning delivery. The example is not to be expanded, the source stays unchanged, version 1 is edited in place because it has never been issued, and the later proposed rewording of the repeated-outage question is not decided.

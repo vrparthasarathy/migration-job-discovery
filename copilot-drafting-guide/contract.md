@@ -19,3 +19,7 @@
 | Model advice | Task categories and the team-reported models, marked team-reported and environment-dependent, with a valid-as-of date, a re-check step and a reminder to use the model picker. |
 | Review reminder | Copilot output is a draft for human checking. |
 | Fallback prompt | The same instructions as the skill, to paste into Copilot Chat on a surface without skills. |
+
+### Planned revision
+
+The skill, the guidance and the fallback prompt accept the core files `external_tools.md` and `logic.md`, manually tagged documents and supplied findings, questions, corrections and dependency observations as they are; separate source-observed, document-described, team-analysis and recommendation statements; check that evidence supports each claim and flag conflicts; update an answered question's own section and create a behavior only when the answer establishes one; and, after drafting or updating, tell the developer to run the companion skill `propose-tracker-updates` (see [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose)). The skill's template copy is replaced by a byte-identical copy of the revised template. No Craft term is added.
