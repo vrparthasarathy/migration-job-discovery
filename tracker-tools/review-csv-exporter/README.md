@@ -9,13 +9,46 @@ A Node command line tool that turns reviewed-pending tracker proposals and a tra
 [Job Behavior Specifications](../../README.md#navigation) / [Tracker Tools](../README.md#navigation) / **Review CSV Exporter**
 
 - [Design](#design)
+  - [Diagram](#diagram)
 - [Behavior](#behavior)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-Not built yet.
+One command, `export-review --export <dir> --proposals <dir> [--scope <slug>] [--headings <file>] --out <dir>`, behind a thin adapter. [main](src/main.ts) only connects the process to [cli](src/cli.ts), which parses the arguments, collects every input problem, runs the modules and returns the exit status (0 done, 1 input problem, 2 bad usage). [headings](src/headings.ts) loads and checks the headings data file ([review-headings.csv](data/review-headings.csv), provisional, headings equal keys) against `tracker-schema.csv` and builds the column headers. [rows](src/rows.ts) turns the Tracker Reconciler's classification into one record per (tab, identity), joins its field proposals, assigns the tier and the global order and renders the content cells with their digest. [review](src/review.ts) reads the earlier `review-*.csv` files and merges the lead's five review cells. [files](src/files.ts) checks the output folder, renders the four files and writes them through temporary names. Reading, validating and secret detection (`inputs`, `reconcile`, `secrets` of [Tracker Reconciler](../tracker-reconciler/README.md#design); CSV and schema of [Tracker Tables](../tracker-tables/README.md#design)) are imported by relative path and not changed. No column list is repeated in code; shown fields and headings are data.
+
+How a run goes: the headings, the export, the proposals, the output folder and any earlier review files are all read and validated first; any problem stops the run with exit 1 and one `file: line N: message` per problem before anything is written. Then the reconciler classifies, rows are built and ranked, review cells are merged, and the four files are written to temporary names and renamed only after all are written.
+
+Decisions (record of the build; override in chat):
+
+- **Identity.** The central reference when the record is in the export, else `new:<local_key>`; a link suggestion made on an addition's suggested reference is mapped back to its `new:` identity. The same record across proposals and folders is one row; the same field with the same value merges its proposal IDs, different values are joined with ` | `.
+- **Field state** is the strongest of `add`, `update`, `suggest`, `held`, `conflict`. A conflicting or held field shows the export value as current and the proposed value as written in the proposal, not the reconciler's merged list.
+- **Kind and tier.** Tier 1: any conflict or held change (kind `conflict`). Tier 2: a suggestion entry or a suggested human field. Else tier 3. Kind is `suggestion` when no field is an add or update, else `add` for a new record and `update` otherwise. Sorting is tier, use case name, tab (Use Cases, Questions, Identity & Access, Mappings), identity, by plain string comparison, so it does not depend on the locale.
+- **Review merge.** Rows match by (tab, identity). `changed_since_review` is `yes` when a reviewed row's stored digest differs from the new one, and stays `yes` on later refreshes until the lead clears it, so a repeat on the same inputs is identical. A review file whose headings no longer match the headings file stops the run rather than losing decisions.
+- **Headings file.** Rows of a schema tab that is not proposable (for example Batches) are ignored; the required `Review` keys are `record`, `record_key`, `kind`, `content_digest`, `review_status` and the three suffix keys; two headings that produce the same column header in a tab stop the run.
+- **Row and order shape.** One global `order` column ranks rows across the four files and each file is sorted by it; review state is one set of review columns per record row, so a lead who finds one field wrong marks the row `clarify` or `rejected` and names the field in `review_note`. There is no `--keep-applied` mode (a row that now matches the export is dropped with its review cells), and `--proposals` takes a single root.
+- **Output folder** may be new or hold earlier review files and anything else, which is left alone; one that is, contains or sits inside an input, or is a file, is refused. The reconciler's rejected proposal rows are printed on standard output only.
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  main["<a href='src/main.ts'>main</a>"] -->|runs| cli["<a href='src/cli.ts'>cli</a>"]
+  cli -->|loads-headings-with| headings["<a href='src/headings.ts'>headings</a>"]
+  cli -->|builds-records-with| rows["<a href='src/rows.ts'>rows</a>"]
+  cli -->|merges-decisions-with| review["<a href='src/review.ts'>review</a>"]
+  cli -->|writes-with| files["<a href='src/files.ts'>files</a>"]
+  headings -->|reads| hdata["<a href='data/review-headings.csv'>review-headings.csv</a>"]
+  review -->|reads| out["review-*.csv (marker)"]
+  files -->|writes| out
+  tests["<a href='test/export.test.ts'>test</a>"] -->|validates| cli
+```
 
 ## Behavior
 
@@ -41,92 +74,3 @@ Not built yet.
 
 - [requirements.md](requirements.md#requirements) — what the exporter must do, what must match the source and what need not, and the follow-on work.
 - [contract.md](contract.md#contract) — the command, output files, headings file, wide row layout, ordering and preservation rules.
-
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../../README.md#plan) / [Tracker Tools](../README.md#plan) / **Review CSV Exporter**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-`export-review` is a thin adapter (`src/main.ts`) over `cli`, which loads the headings file, reads the proposals and the tracker export through the Tracker Reconciler's loaders, classifies them with its `reconcile`, builds one wide record per (tab, identity) in `rows`, merges earlier review cells in `review` and writes the four `review-*.csv` files in `files`, writing nothing when any check fails. The shown fields and headings are data (`data/review-headings.csv`), so the format agreed from the sample workbook is a data change. Rows are ordered conflicts and held changes first, suggestions second and plain adds and updates last, grouped by use case.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  main["main"]:::planned -->|"runs"| cli["cli"]:::planned
-  cli -->|"loads"| headings["headings"]:::planned
-  cli -->|"builds records with"| rows["rows"]:::planned
-  cli -->|"merges decisions with"| review["review"]:::planned
-  cli -->|"writes with"| files["files"]:::planned
-  headings -->|"reads"| hdata["review-headings.csv (marker)"]:::planned
-  review -->|"reads"| out["review-*.csv (marker)"]:::planned
-  files -->|"writes"| out
-  tests["tests"]:::planned -->|"validates"| cli
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. **Scaffold.** `package.json` (private, ES module, `engines node >=26`, script `test`, as `tracker-reconciler/package.json`).
-2. **Headings data.** `data/review-headings.csv` with the shape and keys in `contract.md`; provisional headings equal to the keys.
-3. **`src/headings.ts`** (B01, B08): loads and validates the headings file against `tracker-schema.csv` and the required keys.
-4. **`src/rows.ts`** (B02, B03, B04, B06, B10): turns the reconciler result into review records by (tab, identity), merges proposals, maps link suggestions made on an addition back to its `new:` identity, assigns tier and global `order`.
-5. **`src/review.ts`** (B05, B08): reads existing `review-*.csv`, validates `review_status`, copies the five review cells by (tab, identity) and sets `changed_since_review`.
-6. **`src/files.ts`** (B01, B07, B09): renders the wide rows with the headings and writes the files through temporary names, header-only for an empty tab.
-7. **`src/cli.ts`** (all): the command, input collection, counts and exit codes.
-8. **`src/main.ts`**: the adapter, as the reconciler's.
-9. **Tests** in `test/`, real temporary directories, tagged `[B01]` to `[B10]`: `export`, `merge`, `conflict`, `order`, `review`, `repeat`, `input` and `headings`.
-10. **Docs:** the built `Design` and diagram in this README, kept in step with `requirements.md` and `contract.md`.
-11. **Validate:** the group's `test`, then `coverage` checks, narrowest first.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Test |
-| --- | --- | --- | --- |
-| 1. One review CSV per tab, wide rows, joined proposals, once across folders, matching records omitted, ordered | B01, B02, B03, B04, B10 | 2 to 7 | `export.test.ts` `[B01]` `[B02]` `[B04]`; `headings.test.ts` `[B01]` (a changed headings file changes the output with no code change); `merge.test.ts` `[B03]`; `order.test.ts` `[B10]` |
-| 2. Refresh keeps review columns; a differing base value is a flagged conflict, nothing overwritten | B05, B06 | 4, 5 | `review.test.ts` `[B05]`; `conflict.test.ts` `[B06]` |
-| 3. Identical files on repeat; invalid input stops with the item named and writes nothing; no input changed | B07, B08, B09 | 6, 7, 9 | `repeat.test.ts` `[B07]`; `input.test.ts` `[B08]`; `export.test.ts` `[B09]` |
-
-### Assumptions And Open Questions
-
-Assumptions (override by telling the builder, or by editing the file named):
-
-- Command name `export-review`. Rename in `cli.ts` and `contract.md`.
-- A global `order` column carries the cross-tab order and each file is sorted by it. For one combined file, ask for `review-all.csv`.
-- Review state is one set of review columns per record row, so a lead who finds one field wrong marks the row `clarify` or `rejected` and says which field in `review_note`. For per-field decisions, say so; every row would widen.
-- Plain specification updates on existing records share tier 3 with plain adds. Ask for a fourth tier, or tier 2, to change that.
-- The headings file has the shape of the sample workbook's `headings.csv`; the first version is provisional.
-- A row that vanishes after a hand-apply takes its review cells with it. A `--keep-applied` mode is not planned.
-- A single `--proposals` root. Say so to allow the option to repeat.
-- The reconciler and the library are imported by relative path and not changed.
-- The budget (USD 6, 5,400 s) is workable but thin for six modules and eight test files; keep tests compact.
-
-Open questions (behavior or real ambiguity): none. The planner recommended keeping one row per record with one review state, as assumed; confirm it when the team reviews the sample.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the schema, owner classes and proposal format the exporter reads.
-- [Sample Tracker Workbook](../sample-tracker-workbook/README.md#plan) — the reviewed format the headings file follows.
-- [Tracker Tables](../tracker-tables/README.md#purpose) — CSV reading and writing and schema validation.
-- [Tracker Reconciler](../tracker-reconciler/README.md#purpose) — the loaders and classification the exporter reuses.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — requirements, dependencies and follow-on work.
-- [contract.md](contract.md#contract) — command, headings file, row layout, ordering and preservation.

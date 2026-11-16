@@ -1,18 +1,1 @@
-{
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-16T08:10:40Z",
-    "constraints": {
-      "cost": { "currency": "USD", "allocated": 6, "spent": 0, "reserve": 1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
-      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
-      "execution": { "wall-clock": { "allocated-seconds": 5400, "spent-seconds": 0, "reserve-seconds": 900, "source": "unavailable" } },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "The exporter writes one review CSV per tab with one wide row per record, joins a record's field proposals, lists a record once across proposals and folders, omits records that already match the export, and orders rows by what they need from the lead. (B01, B02, B03, B04, B10)",
-      "A refresh preserves the lead's review columns, and a base value that differs from the export gives a flagged conflict with nothing overwritten. (B05, B06)",
-      "The same inputs give identical files, an invalid input or secret-like value stops with an error naming it and writes nothing, and no input or tracker is changed. (B07, B08, B09)"
-    ]
-  }
-}
+{}
