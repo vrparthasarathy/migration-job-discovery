@@ -19,7 +19,7 @@
 
 Audience: **vendor** files are read by the vendor (its own specifications and its own vendor workbook). **team** files are used by our developers. **lead** files are internal to leads. Recommendations, decisions, mappings, workflow candidates and cross-vendor comparisons are never vendor-visible.
 
-The template, the specification and the drafting skill's template copy share the same part headings and the same ID scheme (`B`, `Q`, `AC`), and the template copy inside the skill folder is identical to the template. The part list is set by the template build and recorded in the [template contract](job-behavior-template/contract.md#contract). The contract and schema files are copied byte for byte into each skill folder that uses them, and the tools read the schema from the data contract component.
+The template, the specification and the drafting skill's template copy share the same part headings and the same ID scheme (`B`, `Q`, `AC`), and the template copy inside the skill folder is identical to the template. The part list is set by the template build and recorded in the [template contract](job-behavior-template/contract.md#contract). The contract and schema files are copied byte for byte into each skill folder that uses them, and the tools read the schema from the data contract component. The root tests compare these copies and the template copy as plain files, and the root `review-checklist.md` lists the wording scans.
 
 ### Inputs to the skills
 

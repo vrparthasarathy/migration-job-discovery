@@ -11,38 +11,5 @@
       "test": "node --test \"{path}/test/*.test.ts\"",
       "testGlob": "**/test/**/*.test.ts"
     }
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-15T12:00:00Z",
-    "constraints": {
-      "cost": {
-        "currency": "USD",
-        "allocated": 16,
-        "spent": 0,
-        "reserve": 0.1,
-        "source": "unavailable",
-        "fallback-metric": "wall-clock seconds"
-      },
-      "delegation": {
-        "maximum-depth": 2,
-        "maximum-children": 10
-      },
-      "execution": {
-        "wall-clock": {
-          "allocated-seconds": 34200,
-          "spent-seconds": 0,
-          "reserve-seconds": 300,
-          "source": "unavailable"
-        }
-      },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "The documents and skills agree and need no Craft: the template, the reference specification and the drafting skill's template copy share headings and IDs, no pack or skill file contains a Craft term, `use case`, `script` and `workflow` are used as the contract defines, and every copy of the tracker contract and schema is identical (B01, B02, B04, B05).",
-      "The drafting skill's instructions say it never ticks or records an acknowledgement on its own and accept the core files, tagged documents and supplied findings as they are (B03); no Copilot dry run on the website source is required, and the user's manual client-environment results are recorded as user-reported evidence when reported.",
-      "The root integration test passes: the example proposal reconciles to additions once and to none on a second run, vendor-safe outputs hold no internal column, group, link, unreleased row, mapping or other vendor's row, and a revised specification updates existing records with answers, owners and decided mappings preserved, a wording edit not withdrawing a question, and re-review suggested only for a change that could affect grouping with an unknown impact listed (B06, B07, B08)."
-    ]
   }
 }

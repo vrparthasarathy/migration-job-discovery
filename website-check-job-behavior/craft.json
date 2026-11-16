@@ -1,38 +1,5 @@
 {
   "configuration": {
     "checks": {}
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-15T12:00:00Z",
-    "constraints": {
-      "cost": {
-        "currency": "USD",
-        "allocated": 1,
-        "spent": 0,
-        "reserve": 0.1,
-        "source": "unavailable",
-        "fallback-metric": "wall-clock seconds"
-      },
-      "delegation": {
-        "maximum-depth": 0,
-        "maximum-children": 0
-      },
-      "execution": {
-        "wall-clock": {
-          "allocated-seconds": 1800,
-          "spent-seconds": 0,
-          "reserve-seconds": 300,
-          "source": "unavailable"
-        }
-      },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "The specification matches the revised template part for part and B01 to B09 stay passing (B01 to B09).",
-      "`job` appears only for the script and `use case` elsewhere, the question rule text reads `migrated use case`, and the specification mentions no workflow or grouping (B03, B05, B09).",
-      "The diagram shows the actual printed alert and no real notification system, the reported status `sent` is literal and explained as not meaning delivery, and the production notifier stays the open question Q1 (B01, B02)."
-    ]
   }
 }

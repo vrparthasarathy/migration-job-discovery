@@ -9,14 +9,52 @@ A GitHub Copilot agent skill that reads a use case's source and configuration an
 [Job Behavior Specifications](../README.md#navigation) / **Identity Access Discovery**
 
 - [Design](#design)
+  - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-Not built yet.
+The component delivers one skill folder, [discover-identity-access](discover-identity-access/SKILL.md), and one internal checklist. The folder holds the instructions written once ([SKILL.md](discover-identity-access/SKILL.md)), byte-identical copies of the contract ([tracker-data-contract.md](discover-identity-access/tracker-data-contract.md)) and the schema ([tracker-schema.csv](discover-identity-access/tracker-schema.csv)) from the built Tracker Data Contract, and an example proposal for the website use case ([tracker-updates.csv](discover-identity-access/tracker-updates.csv)). The folder name and the skill `name` stay `discover-identity-access`.
+
+The skill runs from the first day as a lightweight sweep across all known use cases, in parallel with source screening and before any specification exists, and it does not wait for an acknowledgement. Its inputs are the source and configuration, the two files `external_tools.md` and `logic.md` (a missing one is reported, never invented), tagged supporting documents and dependency observations that a developer supplies. It writes only Identity & Access rows to `tracker-updates/<proposal-id>/tracker-updates.csv`, one record per use case and endpoint and environment, with the local reference `<use-case-name>/<endpoint>/<environment>`.
+
+Each record gives the service, endpoint and environment, the observed operations, the exact identity or variable reference names with runtime values `unknown`, observed and proposed access in separate columns, the permissions to confirm, the unknowns with who resolves each, and evidence pointers that begin `source:`, `document:` or `dependency:`. A row that rests only on a document or an observation is marked as not confirmed in source. A literal credential is reported as its location and `value withheld`; no secret reaches any output. The proposed request follows the observed authentication: a website sign-in asks for an approved identity or account, application permissions and a supported automated authentication or SSO where it applies; an API source asks for approved API identity or credential provisioning and the permissions or scopes the source supports, with no blanket SSO question; an unknown authentication gets a conditional request and stays `proposed`. Existing CI identity reuse is always `unconfirmed`.
+
+A record is suggested `ready-to-raise` only when its endpoint, environment, authentication type, identity reference and permission are all known, whatever the state of any specification and of the other unknowns; otherwise it is `proposed`. Identical endpoints are only flagged through `shared_request_flag` and `shared_with`, never merged; a lead sets `consolidated_request_ref`. The skill never writes the coordinator, the vendor action owner, a ticket, a raised date, an expected availability or a verification, and never marks anything approved, provisioned or verified. Repeat runs refresh the same records by their local reference, with `set` and `base_value` for a changed spec field and no overwrite of a human field. The skill ends with a report of unread files, use cases with no source to sweep, endpoints with no evidence and rows with no pointer, and says that approval or provisioning is separate from verified working access and from behavior acknowledgement.
+
+The example file is written from the real source in `website-availability-check/src/`: one record for the one configured endpoint, `CHECK_URL`, whose runtime value is unknown. The source sends no credential, so the authentication type is `unknown`, there is no identity reference or permission to name, the proposed request is conditional on the website owner's answer, and the record is `proposed`, not `ready-to-raise`. The notifier of that source only prints an alert and sends nothing, so it has no endpoint and no row. The example has no vendor, because the source shows none, and uses the revision `unrevised`, because the sample has no recorded revision. [review-checklist.md](review-checklist.md) is internal, with one item per behavior; the skill folder never mentions the internal records.
+
+Testing policy: the behaviors are checked by the file review and by the user's manual client-environment testing on real use cases, and are marked `untested: benchmark pending`. No Copilot run has been made for this skill. The example's format was checked mechanically with a throwaway script (header, schema fields, field classes and operations, composed unique `update_id` values, a source on every row, and pointer line ranges inside the real files).
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  chk["review-checklist"]
+  skill["discover-identity-access (skill)"]
+  copy["tracker-data-contract and tracker-schema (copies)"]
+  ex["tracker-updates (example)"]
+  contract["tracker-data-contract (built component)"]
+  site["website-availability-check (source of the example)"]
+  click chk "review-checklist.md"
+  click skill "discover-identity-access/SKILL.md"
+  click copy "discover-identity-access/tracker-data-contract.md"
+  click ex "discover-identity-access/tracker-updates.csv"
+  click contract "../tracker-data-contract/README.md"
+  click site "../website-availability-check/README.md"
+  contract -->|"copied byte for byte into"| copy
+  copy -->|"defines the rows of"| skill
+  skill -->|"shows the format with"| ex
+  site -->|"is the source of the example"| ex
+  chk -->|"reviews B01 to B10 on"| skill
+```
 
 ## Behavior
 
@@ -31,84 +69,6 @@ Not built yet.
 - **B09** When it finishes, then it reports unread files, use cases whose source was not available to sweep, endpoints with no evidence and rows with no pointer, and says approval or provisioning is separate from verified working access and from behavior acknowledgement, and the developer or platform team verifies access. (untested: benchmark pending)
 - **B10** When its folder is read, then it contains no Craft term, needs nothing installed in VS Code agent mode, and holds byte-identical copies of the contract and schema. (untested: benchmark pending)
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Identity Access Discovery**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The component delivers one skill folder, `discover-identity-access/`, holding `SKILL.md`, byte-identical copies of the contract and schema and an example set of access rows for the website use case, plus an internal checklist. It runs from the first day as a lightweight sweep across all known use cases, on source, configuration and the two supplied files `external_tools.md` and `logic.md` (with any tagged documents), and does not wait for a specification or an acknowledgement. Repeat runs refresh the same rows, so a later finding or correction updates the existing row by its reference and leaves lead-entered fields alone. Dependency observations that a developer supplies become rows with their evidence reference.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  skill["discover-identity-access/SKILL.md"]:::planned
-  copy["contract and schema copies"]:::planned
-  ex["example access rows"]:::planned
-  chk["review-checklist.md"]:::planned
-  copy -->|"provides"| skill
-  ex -->|"provides"| skill
-  chk -->|"validates"| skill
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. Write `discover-identity-access/SKILL.md` (evidence rules, one row per use case and endpoint, authentication-specific requests, secret handling, shared-request flag, ready-to-raise rule, repeat runs, report).
-2. Copy the contract and schema byte for byte into the skill folder and write the example rows from the website job source (one use case, one endpoint per row).
-3. Write `review-checklist.md` with one item per behavior and run the file review, the secret scan and the hygiene scan.
-
-### Acceptance Mapping
-
-| Acceptance condition | Behaviors | Step | Validation |
-| --- | --- | --- | --- |
-| Given a source sample it produces one row per use case and endpoint with evidence, `unknown` runtime values, and separate observed and proposed access, and it can run across the whole inventory early (B01, B02, B04). | B01, B02, B04 | 2 | [B01], [B02], [B04], file review; the user's manual test results recorded when reported |
-| No secret value appears and no request, approval, availability or verification fact is invented (B03, B08). | B03, B08 | 1 | [B03], [B08], secret scan and rules read |
-| The request wording matches the observed authentication, with no blanket SSO question for an API source (B05). | B05 | 1 | [B05], rules read; the user's manual test results recorded when reported |
-| It flags shared endpoints without consolidating them, marks `ready-to-raise` rows correctly, keeps approval separate from verification and the folder passes the hygiene check (B06, B07, B09, B10). | B06, B07, B09, B10 | 3 | [B06], [B07], [B09], [B10], file review and scan; the user's manual test results recorded when reported |
-
-Checks: none declared; verification is the component's `review-checklist.md` file review, plus the record validators at the end of each plan and build.
-
-### Assumptions And Open Questions
-
-Assumptions (override any of them in chat before `/craft:build`):
-
-1. The platform's own service identity names (NPADR and service IDs) are never invented; the skill proposes the need and the lead or the coordinator raises the request.
-2. A leader or Vasanth coordinates; the skill leaves `our_coordinator` and the vendor action owner blank, and `our_coordinator` is free text in the contract. Override: name a default coordinator.
-3. Behaviors are checked by file review and by the user's manual client-environment testing on real use cases (testing policy in the [root requirements](../requirements.md#requirements)), and marked `untested: benchmark pending`.
-4. Access rows are one per use case and endpoint (and environment), as the user decided; the earlier one-row-per-service shape is replaced. A lead may consolidate identical endpoints by naming one row that carries the ticket (`consolidated_request_ref`); the other rows stay.
-5. Broader network connectivity, environment setup and router availability are an open, deferred scope pending a developer sample sheet. They are not in this skill's behaviors or in the contract, and are not authorized scope.
-6. `external_tools.md` and `logic.md` are read when present; a missing one is reported, never invented.
-7. Roles and sequence (confirmed): this skill independently produces proposed access rows per use case and endpoint from source and supporting evidence, with no prior behavior specification. It may run in parallel with source screening before any specification is drafted; leads then review and consolidate the rows and raise ready requests while drafting proceeds. Supporting documents allow preliminary findings without pretending the source is verified. Access requests do not wait for acknowledgement.
-
-Open questions: none about behavior; the infrastructure scope is open as described above.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../tracker-data-contract/README.md#plan) — the Identity & Access columns and the proposal format this skill follows, copied into its folder.
-- [Website Availability Check](../website-availability-check/README.md#purpose) — the read-only source the example rows are derived from.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
-- [contract.md](contract.md#contract) — the shapes, formats and wording rules.
-
 ## Relationships
 
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the Identity & Access columns and the proposal format this skill follows, copied into its folder.
@@ -118,3 +78,6 @@ Open questions: none about behavior; the infrastructure scope is open as describ
 
 - [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
 - [contract.md](contract.md#contract) — the shapes, formats and wording rules.
+- [review-checklist.md](review-checklist.md) — the internal review items tagged B01 to B10.
+- [discover-identity-access/SKILL.md](discover-identity-access/SKILL.md) — the skill instructions.
+- [discover-identity-access/tracker-updates.csv](discover-identity-access/tracker-updates.csv) — the example proposal for the website use case.

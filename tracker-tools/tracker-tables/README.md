@@ -9,14 +9,49 @@ A Node library that reads and writes the tracker's CSV tables, validates them ag
 [Job Behavior Specifications](../../README.md#navigation) / [Tracker Tools](../README.md#navigation) / **Tracker Tables**
 
 - [Design](#design)
+  - [Diagram](#diagram)
+- [Technology](#technology)
 - [Behavior](#behavior)
-- [Plan](#plan)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-Not built yet.
+A library of four small modules with no entry point; the reconciler and the summary import it by relative path. [csv](src/csv.ts) parses and formats RFC 4180 text: it strips a byte order mark, accepts CRLF, LF or a bare CR as a line end, skips blank lines, pads a short row, rejects a long row, an unterminated quote and a duplicate column (each naming the file), and writes UTF-8 with LF, quoting only a value that holds a comma, a quote or a line break. It also splits and joins the `;` multi-value fields, trimming items and keeping their order. [schema](src/schema.ts) loads `tracker-schema.csv` into tabs and columns (key, owner, vendor or internal visibility, type, allowed values), orders a header in schema order with unknown columns after it, derives the kebab-case tab file name, and validates a table. [vendor_view](src/vendor_view.ts) projects the tables for one vendor. [working_days](src/working_days.ts) validates `YYYY-MM-DD` dates, adds working days, computes `due_on`, decides overdue and reads a holidays file.
+
+Decisions (record of the build; override in chat):
+
+- A required column is a schema key column. A missing one is an error naming the file and column; a column outside the schema is a warning and is kept.
+- Statuses and enumerations are never listed in code: a value is checked against the schema column's `allowed_values`, so question status, vendor answer status, source status and authentication type all come from the file. A date column also accepts its own listed literal (`unknown` for `expected_availability`).
+- A reference is checked by format only (two capital letters, a hyphen, three or more digits); the schema has no per-column prefix. Whether a referenced row exists is not checked.
+- A finding is `{ severity, file, row?, field, message }`. `row` counts the header as row 1, as a spreadsheet does.
+- The vendor view keeps the tabs that have vendor columns (so no Question Groups, Question Links or Mappings tab), the rows whose `vendor` equals the vendor name exactly (surrounding spaces of the row value are ignored; an empty vendor name is an error, so unassigned rows are never released), and, for a tab with `released_on` (Questions and Batches), only rows with it set. Its columns are the tab's vendor columns in schema order. A `ref` value or a reference inside a `list` value that does not name a row kept in the view is blanked or dropped, so no unreleased row, group, link or other vendor's row is referenced; `due_on` and the answer fields pass through untouched.
+- A working day is Monday to Friday minus the holidays; the release day is day 0 even on a weekend. `isOverdue` is true when today is after `due_on`, the status is `released` or `clarification-requested`, and either the status is `clarification-requested` or the answer status is not `answered`; the due date comes only from the release day, so a response never moves it.
+- The holidays file is one `YYYY-MM-DD` date per line; blank lines are ignored and nothing is built in.
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  view["<a href='src/vendor_view.ts'>vendor_view</a>"] -->|reads-with| schema["<a href='src/schema.ts'>schema</a>"]
+  schema -->|parses-with| csv["<a href='src/csv.ts'>csv</a>"]
+  schema -->|checks-dates-with| days["<a href='src/working_days.ts'>working_days</a>"]
+  view -->|splits-lists-with| csv
+  tests["<a href='test/csv.test.ts'>test</a>"] -->|validates| view
+  tests -->|validates| schema
+  tests -->|validates| csv
+  tests -->|validates| days
+  schema -->|loads| contract(["tracker-schema.csv (Tracker Data Contract)"])
+```
+
+## Technology
+
+Inherited from [Tracker Tools](../README.md#technology): Node 26 with native TypeScript (erasable syntax, `.ts` import extensions), no dependencies, `node:test`, ES modules. The declared checks are `test` and `coverage`; no typecheck, lint or boundaries check exists because each would need a dev dependency. Tests use real temporary directories and read the real `tracker-data-contract/tracker-schema.csv` by relative path.
 
 ## Behavior
 
@@ -31,81 +66,6 @@ Not built yet.
 - **B09** When a date is not `YYYY-MM-DD`, then it errors with the field name.
 - **B10** When an unknown tab name is given, then it errors and lists the known tabs.
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../../README.md#plan) / [Tracker Tools](../README.md#plan) / **Tracker Tables**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The library has four small modules and its tests: CSV parsing and writing, schema loading and validation, the vendor projection, and working-day arithmetic. It has no entry point of its own, because the reconciler and the summary import it.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  csv["csv"]:::planned
-  schema["schema"]:::planned
-  view["vendor_view"]:::planned
-  days["working_days"]:::planned
-  tests["test/*.test.ts"]:::planned
-  schema -->|"uses"| csv
-  view -->|"uses"| schema
-  tests -->|"validates"| csv
-  tests -->|"validates"| view
-  tests -->|"validates"| days
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. Write `src/csv.ts`, `src/schema.ts`, `src/vendor_view.ts` and `src/working_days.ts`.
-2. Write `test/*.test.ts` with each test titled with its behavior tag, using real temporary directories and the contract's schema file.
-3. Run the declared `test` and `coverage` checks and the record validators.
-
-### Acceptance Mapping
-
-| Acceptance condition | Behaviors | Step | Validation |
-| --- | --- | --- | --- |
-| Parsing, writing, round trips and multi-value fields pass their tests (B01, B02, B08). | B01, B02, B08 | 2 | `[B01]`, `[B02]`, `[B08]` tests |
-| Schema, status, reference, date and tab validation report precisely, including the question, answer, source and authentication statuses (B03, B04, B05, B09, B10). | B03, B04, B05, B09, B10 | 2 | `[B03]`, `[B04]`, `[B05]`, `[B09]`, `[B10]` tests |
-| The vendor projection holds no group, link or unreleased row, and the working-day arithmetic is per question row and covers clarification-requested and awaiting-review rows (B06, B07). | B06, B07 | 2 | `[B06]`, `[B07]` tests |
-
-Checks: the declared `test` and `coverage` checks apply (inherited from Tracker Tools).
-
-### Assumptions And Open Questions
-
-Assumptions (override any of them in chat before `/craft:build`):
-
-1. The holidays file is a plain list of `YYYY-MM-DD` dates, one per line; no holiday is built in. Override: another format.
-2. A working day is Monday to Friday. The release day is day 0, `due_on` is day 2 and a question is overdue from day 3.
-3. The library is not a published package; siblings import it by relative path, which the Relationships record.
-
-Open questions: none about behavior.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../../tracker-data-contract/README.md#plan) — the `tracker-schema.csv` file the library loads, and the CSV encoding and status lists it validates.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
-- [contract.md](contract.md#contract) — the shapes, formats and wording rules.
-
 ## Relationships
 
 - [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the `tracker-schema.csv` file the library loads, and the CSV encoding and status lists it validates.
@@ -114,3 +74,8 @@ Open questions: none about behavior.
 
 - [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
 - [contract.md](contract.md#contract) — the shapes, formats and wording rules.
+- [src/csv.ts](src/csv.ts) — CSV read, write and multi-value fields.
+- [src/schema.ts](src/schema.ts) — schema loading and table validation.
+- [src/vendor_view.ts](src/vendor_view.ts) — the vendor projection.
+- [src/working_days.ts](src/working_days.ts) — dates, due dates, overdue and the holidays file.
+- [test/vendor_view.test.ts](test/vendor_view.test.ts) — tests for B06; `csv.test.ts` covers B01, B02 and B08, `schema.test.ts` B02 to B05, B09 and B10, and `working_days.test.ts` B07 and B09.

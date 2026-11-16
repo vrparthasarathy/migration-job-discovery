@@ -1,38 +1,5 @@
 {
   "configuration": {
     "checks": {}
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-15T12:00:00Z",
-    "constraints": {
-      "cost": {
-        "currency": "USD",
-        "allocated": 1,
-        "spent": 0,
-        "reserve": 0.1,
-        "source": "unavailable",
-        "fallback-metric": "wall-clock seconds"
-      },
-      "delegation": {
-        "maximum-depth": 0,
-        "maximum-children": 0
-      },
-      "execution": {
-        "wall-clock": {
-          "allocated-seconds": 1800,
-          "spent-seconds": 0,
-          "reserve-seconds": 300,
-          "source": "unavailable"
-        }
-      },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "B07 to B10 and the wording rules pass the file review of the revised folder; B01 to B06 stay unticked and are recorded with the earlier-version user-reported evidence, labelled as such; no fresh Copilot dry run on the website reference is required (B01 to B10).",
-      "`SKILL.md`, the fallback prompt and the guidance accept `external_tools.md`, `logic.md`, tagged documents and supplied findings as they are, separate the four evidence kinds, check that evidence supports claims, tell the developer to run `propose-tracker-updates` next, use `use case` wording, and contain no Craft term (B01, B02, B05, B07, B08, B10).",
-      "An update from answers, corrections or further findings keeps IDs and history, makes no duplicate, updates the right section and creates a behavior only when the answer establishes one (B06)."
-    ]
   }
 }

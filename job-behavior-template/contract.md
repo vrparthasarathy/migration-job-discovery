@@ -8,17 +8,17 @@ The builder arranges these into parts and records the part list here after the b
 
 | Element | Content |
 | --- | --- |
-| Header | Use case name, version number (1, 2, 3), date, status (`draft` or `acknowledged`), source revision and script link. No job ID. |
-| About this document | Purpose; says it records current behavior and lists questions; says nothing about how the job will be built or grouped on the migration platform; approves no inferred behavior. |
+| Header | Document heading `Use Case Behavior: {use case name}`; use case name, version number (1, 2, 3), date, status (`draft` or `acknowledged`), source revision and script link. No job ID. |
+| About this document | Purpose; says it records current behavior and lists questions; says nothing about how the use case will be migrated; approves no inferred behavior; defines vendor, our team, use case, script, tracker and black box. |
 | Contents | A short list of links to each part. |
 | Change log | One entry per version, in the same file: number, date, what changed in plain words, and why (source change or answered question). |
-| Current behaviors | `B<n>`: a when/then statement in business language and an evidence pointer (source file and place, or vendor document and place). Each row has an anchor so other parts can link to it. |
-| Questions | `Q<n>`: one question per item for the vendor, asked only when the source cannot show the answer and the answer would change what the migrated workflow must do; status; "resolved: now B<n>" once answered. |
-| Contracts | Tables for inputs, outputs, parameters (name and this job's value) and external dependencies (role, direction of each call). |
-| Diagram | One black box, external systems, outgoing calls and incoming responses only; `flowchart TB` with the project's component-record front matter and settings; behavior IDs as plain text in edge labels; a plain-text description beside it that links the IDs. |
-| Acceptance scenarios | `AC<n>`: given/when/then, each with a "covers" line linking the behavior rows; every current behavior covered. |
-| Operational context | Schedule and trigger, logging, monitoring and alerts, owner, failure handling; each cites a vendor document or configuration in the source, otherwise `unknown`. Never a current behavior. |
-| Acknowledgement log | One row per version: company name, date acknowledged, version reviewed, script link and revision, production-script tick box, one overall confirmation of the current behaviors, tracker entry or reply reference. No person name or role. Earlier rows never edited. Plus the plain statement of what acknowledgement does and does not claim. |
+| Current behaviors | `B<n>`: a when/then statement in business language that records only the outcome the evidence proves (a request that succeeded, a status the use case reports and an actual delivery kept apart) and an evidence pointer (source file and place, or vendor document and place) that keeps source-observed and document-described behavior distinguishable. An explicit retry or failure-handling action in the source is a current behavior. Each row has an anchor so other parts can link to it. |
+| Questions | `Q<n>`: one question per item for the vendor, asked only when the source cannot show the answer and the answer would change what the migrated use case must do; status; once answered, a "resolved" note that names the behavior or section the answer updated. |
+| Contracts | Tables for inputs, outputs, parameters (name and this use case's value) and external dependencies (role, direction of each request, response and data transfer). |
+| Diagram | One black box, external systems and the requests, responses and data transfers the evidence supports, in either direction; `flowchart TB` with the project's component-record front matter and settings; behavior IDs as plain text in edge labels; a plain-text description beside it that links the IDs. |
+| Acceptance scenarios | `AC<n>`: given/when/then, each with a "covers" line linking the behavior rows; every current behavior, including an explicit retry or failure-handling action, covered. |
+| Operational context | Schedule and trigger, logging, monitoring and alerts, owner, failure handling; each cites a vendor document or configuration in the source, otherwise `unknown`. Never a current behavior, though a row may point to the current behavior that records an explicit retry or failure-handling action. |
+| Acknowledgement log | One row per version: company name, date acknowledged, version reviewed, script link and revision, production-script tick box, one overall confirmation of the current behaviors, tracker entry or reply reference. No person name or role. Earlier rows never edited. Plus the plain statement that the acknowledgement confirms the named script and revision as the current production script and the documented behavior as current for that version, and does not approve any future implementation or claim the behavior is error-free. |
 
 ### Part list
 
@@ -43,12 +43,11 @@ ID scheme: current behaviors `B1`, `B2`, ...; questions `Q1`, `Q2`, ...; accepta
 - Never state an inferred behavior as a current behavior; never state a reason the evidence does not show.
 - Never fill in the acknowledgement log from the template; our team records it from the tracker entry or the vendor's reply.
 - Say "version", not "baseline".
+- Say "use case" for what the business needs done; "job" or "script" names only the vendor's script. No vendor-readable text mentions workflows or grouping.
+- Never record more than the evidence proves: a request that succeeded, a status the use case reports and an actual delivery are separate facts.
+- An answer updates the section it belongs to and creates a current behavior only when it establishes behavior.
 - IDs: `B`, `Q`, `AC`.
 
 ### Companion file
 
 `filling-guide.md` explains in plain language how to fill in the template without Copilot. It is not part of the finished document.
-
-### Planned revision
-
-The document heading becomes `Use Case Behavior: {use case name}`; the glossary gains a `use case` line; the "About this document" sentence says nothing about how the use case will be migrated (the word `grouped` is dropped); and the question rule reads "what the migrated use case must do". Parts, IDs, anchors and the acknowledgement log's columns are unchanged. Further planned wording (2026-11-15): a current behavior records only the outcome its evidence proves (request success, reported status and actual delivery kept separate) and is marked as source-observed or document-described by its evidence pointer; the diagram and the dependency table allow requests, responses and data transfers in either direction; an explicit retry or failure-handling action in the source is a current behavior with an acceptance scenario, which operational context may point to; an answer updates the section it belongs to and creates a behavior only when it establishes behavior (the "resolved" note names the behavior or section); the acknowledgement statement says it confirms the named script and revision as the current production script and the documented behavior as current for that version, and approves no future implementation.

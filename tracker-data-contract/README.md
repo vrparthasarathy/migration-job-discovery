@@ -9,14 +9,60 @@ The one shared data contract for the use case tracker: tabs, columns, references
 [Job Behavior Specifications](../README.md#navigation) / **Tracker Data Contract**
 
 - [Design](#design)
+  - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-Not built yet.
+The component is five shared files and one internal checklist, all plain Markdown and CSV with no code: [tracker-data-contract](tracker-data-contract.md) (the contract prose), [tracker-schema](tracker-schema.csv) (one row per column: tab, column, key, owner, visibility, type, allowed values), [workbook-layout-guide](workbook-layout-guide.md), the header-only [tracker-updates-template](tracker-updates-template.csv) and [use-case-inventory-template](use-case-inventory-template.csv), and [review-checklist](review-checklist.md) (one item per behavior). [contract.md](contract.md#contract) is the specification they were written from. The contract and the schema are copied byte for byte into every skill folder that uses them, and the lead tools read the schema from this component's file, so the shapes live in one place.
+
+Questions are one row per use case per question with separate answers; grouping is internal in two extra tabs (Question Groups, Question Links). Use cases carry a source status so missing source is visible from the start, and access requests are one row per use case and endpoint.
+
+Assumptions (override any of them in chat):
+
+1. This is its own component, not part of the root, because every skill and tool consumes it.
+2. Central references `UC-###`, `QN-####`, `QG-###`, `QL-####`, `MP-###`, `AX-###`, `BT-###` and `WD-###` are the proposal; a lead names other prefixes if wanted. `QN-####` names a row for one use case and one question.
+3. The contract is a design record, not a runtime. No workbook is built here; a lead builds the SharePoint workbooks by hand from the guide.
+4. The vendor's `answer_status` values (`not-answered`, `answered`, `partially-answered`, `cannot-answer`) record only the response. The question `status` is one lifecycle set by leads (`clarification-requested` and `closed` exist; there is no `responded` status or `answer_review` column), and `resolver` and `closed_reason` record how a cannot-answer row is resolved. A complete answer awaiting review is not vendor-overdue.
+5. The `source_status`, `source_owner`, `source_note`, `supporting_documents`, `last_change_class`, `grouping_impact`, `grouping_impact_lead`, `resolver`, `closed_reason`, `unknown_owner` and `consolidated_request_ref` columns carry the missing-source, access, resolution and grouping-impact rules. The grouping impact is separate from the change class and `unknown` stays visible.
+6. Open and not in the contract: the optional `same as` shortcut, any lead prefill of a reviewed answer, the real inventory counts and repository layout, and broader network connectivity and environment setup (deferred until the user decides after the developer sample sheet).
+7. `request_status` is human (a skill may only suggest `proposed` or `ready-to-raise`) and `expected_availability` is forbidden (a skill leaves it blank and the workbook shows `unknown`).
+8. No skill writes Question Links, Question Groups or Batches; leads create them and copy the reconciler's link suggestions by hand.
+9. Separate vendor access is a deployment prerequisite, not an implementation blocker; the vendor storage choice is deferred to the client and settled before the first release.
+10. Build decisions: the `link` proposal operation means adding a reference to a list field of an existing record and never targets Question Links; the vendor-side access fields a vendor edits are `vendor_action_owner` and `additional_requirements` (the contract names them only as "vendor-side access fields"); the vendor workbook holds Use Cases, Questions and Identity & Access only, with no Batches tab (the Batches columns keep their `V` marks); a lead sets `acknowledgement_requested_on` and the vendor edits only the other three acknowledgement fields; the schema `visibility` values are `V` and `I`, as the contract's Tabs table writes them; the overdue, follow-up, awaiting-review and age rules are given as helper columns in the guide, outside the contract's columns. Override any of these in chat.
+
+The schema is checked by a one-off script run at build time, not kept in the component: every tab has a key, every column of the contract's tables appears exactly once and in order, owner classes are only spec, human, forbidden or computed, keys and owner classes match the ownership table, enums carry values, and the files pass the hygiene scan. Re-run an equivalent check when the contract changes.
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  contract["tracker-data-contract"]:::file
+  schema["tracker-schema"]:::file
+  guide["workbook-layout-guide"]:::file
+  upd["tracker-updates-template"]:::file
+  inv["use-case-inventory-template"]:::file
+  chk["review-checklist"]:::file
+  chk -->|"validates"| contract
+  chk -->|"validates"| schema
+  chk -->|"validates"| guide
+  contract -->|"defines the proposal columns of"| upd
+  guide -->|"explains how to use"| inv
+  click contract "tracker-data-contract.md"
+  click schema "tracker-schema.csv"
+  click guide "workbook-layout-guide.md"
+  click upd "tracker-updates-template.csv"
+  click inv "use-case-inventory-template.csv"
+  click chk "review-checklist.md"
+  classDef file stroke:#333
+```
 
 ## Behavior
 
@@ -31,94 +77,17 @@ Not built yet.
 - **B09** When a lead builds the workbooks, then `workbook-layout-guide.md` gives the tabs, the vendor's single Questions sheet, the validation lists, the vendor-view rule, the due-date formula, the manual vendor-to-master copy steps, the manual apply steps and the inventory template. (untested: benchmark pending)
 - **B10** When the files are scanned, then they contain no Craft term, no real vendor data and no secret. (untested: benchmark pending)
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Tracker Data Contract**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The component delivers five files that sit together and one internal checklist. The contract prose, the machine-readable column schema, the workbook layout guide and two header-only CSV templates are the shared interface. Questions are one row per use case per question, with separate answers; grouping is internal in two extra tabs (Question Groups, Question Links). Use cases carry a source status so missing source is visible from the start, and access requests are one row per use case and endpoint. The contract and the schema are copied byte for byte into every skill folder that uses them, and the lead tools read the schema from this component's file, so the shapes live in one place.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  contract["tracker-data-contract.md"]:::planned
-  schema["tracker-schema.csv"]:::planned
-  guide["workbook-layout-guide.md"]:::planned
-  upd["tracker-updates-template.csv"]:::planned
-  inv["use-case-inventory-template.csv"]:::planned
-  chk["review-checklist.md"]:::planned
-  chk -->|"validates"| contract
-  chk -->|"validates"| schema
-  chk -->|"validates"| guide
-  schema -->|"provides"| upd
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. Write `tracker-schema.csv` from `contract.md` (one row per column with tab, column, key, owner, visibility, type and allowed values).
-2. Write `tracker-data-contract.md` (references, statuses, captured versus released, per-row answers, proposal and export formats, vendor visibility) and `workbook-layout-guide.md`, including the vendor's single Questions sheet and the manual vendor-to-master copy steps.
-3. Write the two header-only CSV templates and `review-checklist.md` with one item per behavior.
-4. Run the file review, the hygiene scan and the record validators.
-
-### Acceptance Mapping
-
-| Acceptance condition | Behaviors | Step | Validation |
-| --- | --- | --- | --- |
-| The schema, references, status lists and one owner class per column are defined exactly as `contract.md` states, including the source status, the grouping impact, the vendor answer status, the open and resolved question states and the access rows per use case and endpoint (B01, B02, B03). | B01, B02, B03 | 1 | [B01] to [B03], schema compared with contract.md |
-| The captured, released and due rules are per question row, a response never resets the due date, partial, cannot-answer and clarification-requested rows stay open and overdue, a complete answer awaiting review is not vendor-overdue, and the rule that each use case answers on its own row with no inherited answer is written (B04, B08). | B04, B08 | 2 | [B04], [B08], rule text read |
-| The proposal file and export formats are fully specified, and proposals are traceable to a specification, to inventory or source-screening evidence or to dependency evidence, and never release or apply anything (B05, B06). | B05, B06 | 2 | [B05], [B06], formats read and the template CSV headers compared |
-| The vendor separation rules (no leak of unreleased rows, groups or links), the workbook layout guide and the hygiene scan are in place (B07, B09, B10). | B07, B09, B10 | 3 | [B07], [B09], [B10], guide read and files scanned |
-
-Checks: none declared; verification is the component's `review-checklist.md` file review, plus the record validators at the end of each plan and build.
-
-### Assumptions And Open Questions
-
-Assumptions (override any of them in chat before `/craft:build`):
-
-1. The data contract is its own component and not part of the root, because every skill and tool consumes it. Override: ask for it inside the root.
-2. Central references `UC-###`, `QN-####`, `QL-####`, `MP-###`, `AX-###`, `BT-###` and `WD-###` are the planner's proposal. Override: name other prefixes before the build.
-3. The contract is a design record, not a runtime. No workbook is built or published here; a lead builds the SharePoint workbooks by hand from the guide.
-4. Per-use-case question rows (user's provisional acceptance, to test and iterate) change what `QN-####` means: it now names a row for one use case and one question, and the shared grouping is the internal `QG-###` group with `QL-####` links. The vendor's `answer_status` values (`not-answered`, `answered`, `partially-answered`, `cannot-answer`) are the planner's proposal and record only the response. Resolution is separate and confirmed: a partial or cannot-answer row stays open with its original due date, stays overdue and is also a follow-up; a cannot-answer row stays open until a lead assigns a resolver or closes it, and a resolver alone does not resolve it. The question `status` is one lifecycle (`clarification-requested` and `closed` added; there is no `responded` status, because a received response is an `answer_status` other than `not-answered`; the separate `answer_review` column is removed) and the `resolver` and `closed_reason` columns are the planner's way to record this. Override: restore `answer_review`. A complete answer awaiting lead review is not vendor-overdue and shows its owner and age; a lead-requested clarification stays open on its original due date and can be overdue even if the vendor's `answer_status` is complete; the vendor owns `answer_status` and the lead owns `status` (confirmed, correcting an earlier planner detail).
-5. The `source_status` values, `source_owner`, `source_note`, `supporting_documents`, `last_change_class`, `grouping_impact`, `grouping_impact_lead`, `resolver`, `closed_reason`, `unknown_owner` and `consolidated_request_ref` columns are the planner's proposal to carry the confirmed missing-source, access, resolution and grouping-impact rules (the grouping impact is separate from the change class and unknown stays visible; its short reason travels in the proposal row's `reason`). Override: name other columns.
-6. Open, not decided here: the optional `same as` shortcut and any lead prefill of a reviewed answer (the contract has no column for either), and the real inventory counts and repository layout. Broader network connectivity, environment setup and router availability are an open, deferred scope with no column in this contract until the user decides after the developer sample sheet.
-7. Column ownership is a table in `contract.md` (every column has one class and the keys are named). Writing it exposed two conflicts, resolved here: `request_status` is human so a skill may only suggest `proposed` or `ready-to-raise`, and `expected_availability` stays forbidden so a skill leaves it blank and the workbook shows `unknown`. Override: add a spec-owned `readiness` column and keep `request_status` forbidden.
-8. No skill writes Question Links, Question Groups or Batches; leads create them, and the reconciler's link suggestions are copied by hand. Override: let the proposer propose links.
-9. Separate vendor access and internal-only analysis are a deployment and intake prerequisite and not an implementation blocker (confirmed). The vendor storage and repository choice is deferred pending the client's confirmation. Override: make it a build prerequisite.
-
-Open questions: the optional `same as` shortcut, and the infrastructure scope (deferred, pending a developer sample sheet). Neither is in the contract.
-
-### Planned Relationships
-
-- [Website Availability Check](../website-availability-check/README.md#purpose) — read-only source evidence used for the example proposal rows in the skills that consume this contract.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
-- [contract.md](contract.md#contract) — the shapes, formats and wording rules.
-
 ## Relationships
 
-- [Website Availability Check](../website-availability-check/README.md#purpose) — read-only source evidence used for the example proposal rows in the skills that consume this contract.
+- It depends on nothing outside its lineage. It is used by its siblings [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose), [Identity Access Discovery](../identity-access-discovery/README.md#purpose), [Workflow Recommender](../workflow-recommender/README.md#purpose) and [Tracker Tools](../tracker-tools/README.md#purpose), which read and write the shapes defined here.
 
 ## Links
 
 - [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
 - [contract.md](contract.md#contract) — the shapes, formats and wording rules.
+- [tracker-data-contract.md](tracker-data-contract.md) — the contract prose, copied into the skill folders.
+- [tracker-schema.csv](tracker-schema.csv) — the machine-readable column schema.
+- [workbook-layout-guide.md](workbook-layout-guide.md) — how a lead builds and maintains the workbooks by hand.
+- [tracker-updates-template.csv](tracker-updates-template.csv) — the proposal file header.
+- [use-case-inventory-template.csv](use-case-inventory-template.csv) — the inventory header.
+- [review-checklist.md](review-checklist.md) — the internal file review, one item per behavior.

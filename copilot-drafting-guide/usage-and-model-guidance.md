@@ -1,31 +1,42 @@
 # Usage and model guidance
 
-How our team's developers use GitHub Copilot to draft a job behavior document, and which models to try. Copilot's output is a draft that a person must review against the source before it goes anywhere.
+How our team's developers use GitHub Copilot to draft a use case behavior document, and which models to try. Copilot's output is a draft that a person must review against the source before it goes anywhere.
 
 ## Before you start
 
-- The skill is the folder `document-job-behavior/` (`SKILL.md`, a copy of the template and `self-check.md`). Put it in `.github/skills`, `.claude/skills` or `.agents/skills` of the repository that holds the job. The skill name equals the folder name.
+- The skill is the folder `document-job-behavior/` (`SKILL.md`, a copy of the template and `self-check.md`). Put it in `.github/skills`, `.claude/skills` or `.agents/skills` of the repository that holds the use case's source. The skill name equals the folder name.
 - GitHub's documentation says Copilot loads a skill when it is relevant, and lists the Copilot app, the command line, the cloud agent and agent mode in VS Code, Visual Studio and JetBrains as places skills run. It does not state plan or administrator requirements or whether the feature is still in preview. Confirm skill support in your own Copilot setup (your plan and your administrator's policy) before you rely on it. Where skills are not available, use `drafting-prompt.md` instead.
 - A skill cannot block manual edits. Anyone can still edit the document by hand, so the rules below depend on people and on repository settings.
 
+## What you can give it
+
+Give the inputs as you have them. You do not rewrite them into a specification first: the skill structures and checks them against the source.
+
+- The use case's source, and the two core files `external_tools.md` and `logic.md` (exactly those names). If one is missing, the skill says so in its report and does not invent it.
+- Additional documents, tagged by you in the request as vendor document, original SOP document or team analysis. Vendor and original SOP documents come first; use team analysis only for a point no vendor document covers. Our team's analysis is a starting input, not a verified or approved description, and a point from it becomes a current behavior only when the source or a vendor document shows it.
+- Findings, questions, corrections and dependency observations, in whatever form you have them.
+
+The skill keeps four kinds of evidence apart: seen in the source, described in a vendor or original SOP document, team analysis or inference, and recommendation. Only the first two become current behaviors. It checks that the cited evidence supports each statement and flags a conflict instead of guessing.
+
 ## Draft a document in VS Code agent mode
 
-1. Open the repository that holds the job and start Copilot Chat in agent mode.
-2. Ask for the document by name, for example: "Document the job behavior of the use case `<name>` from `<path to the job source>`." Say which files make up the job. If the source is large, give it in parts, one folder or a few files at a time, and ask Copilot to extend the same document.
-3. Optional vendor documents: if the vendor gave documents about the job, name them in the request. They take precedence over documents our team created, which are used only for points no vendor document covers. Where a vendor document and the code disagree, the draft records a question instead of choosing.
-4. Copilot writes one file named after the use case, using only the parts of the template, and ends its reply with a self-check report (source and documents not read, behaviors with no scenario, scenarios naming unknown IDs, statements without an evidence pointer). The report is best effort, not a guarantee.
+1. Open the repository that holds the use case and start Copilot Chat in agent mode.
+2. Ask for the document by name, for example: "Document the behavior of the use case `<name>` from `<path to the source>`, with `external_tools.md` and `logic.md`." Say which files make up the use case. If the source is large, give it in parts, one folder or a few files at a time, and ask Copilot to extend the same document.
+3. Name any additional documents and tag each one. Where a vendor document and the code disagree, or two pieces of evidence conflict, the draft records a question instead of choosing.
+4. Copilot writes one file named after the use case, using only the parts of the template, and ends its reply with a self-check report (source, core files and documents not read or missing; behaviors with no scenario; scenarios naming unknown IDs; statements without an evidence pointer, unsupported by their evidence or in conflict). The report is best effort, not a guarantee.
+5. Run `propose-tracker-updates` next. It proposes the tracker rows from the finished document. Findings and questions you supplied reach the tracker only through the document, so check that the document records them first.
 
 ## Review the draft against the source
 
-Read every current behavior beside the source it cites. Check that each one is shown by the evidence, that nothing is inferred, that no reason or schedule was added, and that every question is something the source cannot show and whose answer would change what the migrated workflow does. Check the diagram too: one box, behavior IDs in the labels, links in the text beside it. Fix the file by hand or ask Copilot to correct it, then review again.
+Read every current behavior beside the source it cites. Check that each one is shown by the evidence and that the cited place supports it, that nothing is inferred, that no reason or schedule was added, and that every question is something the source cannot show and whose answer would change what the migrated use case does. Check the diagram too: one box, behavior IDs in the labels, links in the text beside it. Fix the file by hand or ask Copilot to correct it, then review again.
 
-## Apply answers
+## Apply answers, corrections and further findings
 
-When the vendor or our team answers questions, give the answers to Copilot with the file: "Update `<file>` with these answers: Q2 is ..., Q4 is ...". Copilot updates the same file. Each answered question becomes a current behavior marked "resolved: now Bn", a change-log entry is added and the version is bumped. It never edits an earlier acknowledgement row. Review the update against the answers as you did the draft.
+When the vendor or our team answers questions, or you have corrections or further findings, give them to Copilot with the file: "Update `<file>` with these answers: Q2 is ..., Q4 is ...". Copilot updates the same file and keeps every ID and earlier row. An answer goes in the section it belongs to and becomes a current behavior marked "resolved: now Bn" only when it establishes one. It adds no duplicate, a change-log entry is added and the version is bumped. It never edits an earlier acknowledgement row. Review the update against the answers as you did the draft, then run `propose-tracker-updates` again; a lead checks that the update reflects the vendor's answer.
 
 ## Record an acknowledgement
 
-The vendor's reply arrives in the tracker. You give Copilot the facts: company, date acknowledged, version reviewed, script link and revision, and the tracker entry or reply reference. Copilot adds one row with exactly those facts. It does not tick or confirm anything on its own: ticking a box is a decision you make from the vendor's reply, and you type it or tell Copilot to.
+The vendor's reply arrives in the tracker, and the lead passes you the facts to record. You give Copilot the facts: company, date acknowledged, version reviewed, script link and revision, and the tracker entry or reply reference. Copilot adds one row with exactly those facts. It does not tick or confirm anything on its own: ticking a box is a decision you make from the vendor's reply, and you type it or tell Copilot to.
 
 ## Tag and protect
 
@@ -40,7 +51,7 @@ Team-reported picker models: GPT-6 Luna, GPT-6.1 Sol, Claude Sonnet 5.5, GPT-5.6
 
 - No model is guaranteed to give a correct document. Output varies by model and by run.
 - GitHub's documentation suggests GPT-5.3-Codex for complex engineering and review.
-- For the GPT-6 models, the GitHub task guidance was not read, so no task advice is given. Try the model on the website job sample (the source in `website-availability-check/src/` of the specifications repository), compare its document with the finished reference document `website-availability-check.md` kept beside it, and keep the model that comes closest. Do the same for any other model in the list.
+- For the GPT-6 models, the GitHub task guidance was not read, so no task advice is given. Try the model on the website sample (the source in `website-availability-check/src/` of the specifications repository), compare its document with the finished reference document `website-availability-check.md` kept beside it, and keep the model that comes closest. Do the same for any other model in the list.
 - Terra, Fable and Kimi models are not available in the team's picker, so they are not recommended here.
 
 Note which model and date produced a draft, so a difference between runs can be understood.

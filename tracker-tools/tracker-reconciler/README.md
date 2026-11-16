@@ -9,14 +9,60 @@ A Node command line tool that compares reviewed tracker proposals with the lates
 [Job Behavior Specifications](../../README.md#navigation) / [Tracker Tools](../README.md#navigation) / **Tracker Reconciler**
 
 - [Design](#design)
+  - [Diagram](#diagram)
+- [Technology](#technology)
 - [Behavior](#behavior)
-- [Plan](#plan)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-Not built yet.
+Two commands, `reconcile --export <dir> --proposals <dir> [--scope <slug>] --out <dir>` and `validate <file-or-dir>`, behind a thin adapter. [main](src/main.ts) only connects the process to [cli](src/cli.ts), which parses the arguments, calls the modules, prints and returns the exit status. [inputs](src/inputs.ts) reads and checks the files, [reconcile](src/reconcile.ts) classifies every proposed row against the export, [matching](src/matching.ts) scores question texts, and [report](src/report.ts) renders every output and writes them. [secrets](src/secrets.ts) recognises credential-looking values. Reading, validation, schema and the vendor projection come from the [Tracker Tables](../tracker-tables/README.md#design) library by relative import; the column list, owner classes, keys and visibility are read from `tracker-schema.csv` and never repeated in code.
+
+How a run goes: every input is read and validated first (header, tab, field, operation, composed `update_id`, dates, use case names, CSV shape, secret-looking values, and the export's statuses, references and dates); any problem stops the run with exit status 1 and one `file: line N: message` per problem, before the output folder is touched. Then each proposed row is classified, all files are built in memory, and they are written into a temporary sibling folder that replaces the output folder, so an input error leaves no partial output and an earlier run's output as it was.
+
+Decisions (record of the build; override in chat):
+
+- **Rows in order.** Proposal files are found recursively under `--proposals` and sorted by path; rows keep their file order, so the same inputs give byte-identical files. The report holds no absolute path and no run date.
+- **Rejected rows** (listed with a reason in the report, never fatal): a table that proposals do not address (Question Groups, Question Links, Batches), a forbidden or computed field, `proposal_refs`, a central reference column, a `request_status` other than `proposed` or `ready-to-raise`, `question_text` on a released row (the new wording goes to `current_spec_text`), `suggest` on a spec field, `link` on a non-list field, a row that is not an `add` for a record absent from the export, and a value outside its schema list or format.
+- **Finding the record.** A proposal's `record_key` is matched to an export row by its `update_id` prefix in `proposal_refs`, else by natural key: the use case name, a `spec_refs` entry (version dropped) for a question, the use case plus `workflow_candidate` slug for a mapping, the use case plus endpoint and environment for access. A use case is named in a key by its name or by its kebab-case form, as the proposer writes it.
+- **Already reflected.** A row yields nothing when its `update_id` is in the record's `proposal_refs`, or its value equals the export (a `link` item already in the list). An `add` on an existing record is treated field by field the same way. This is what makes applying the additions and re-running give nothing.
+- **Human-field `set` rows** are always suggestions, even when their `base_value` differs from the export, so a `base-mismatch` conflict is only raised for spec fields; nothing human-owned is ever overwritten either way.
+- **Version-only changes.** Re-review follows the stated impact; a proposer states `not-expected` for a version-only or wording change, which suggests nothing. A version change with no stated impact (and none in the export) is unknown and is listed, never treated as no impact.
+- **Spec fields** become a field update (current and proposed, a `link` appends missing items in order) unless a conflict applies. **Human fields** (a `set`, `suggest` or `link` on an existing record, or any value on an `add`) are suggestions only; a blank suggestion is ignored.
+- **Conflicts.** `base-mismatch` (a `set` whose `base_value` differs from the export), `later-edit` (the row's `last_updated` is later than the proposal's `created_on`), `stale-export` (the manifest's `exported_at` date is before the proposal's `created_on`, applied to each change that would update an existing record, so additions of records absent from the export are still reported) and `proposal-disagreement` (two proposals give a spec field different values). A conflict is listed with both values and never resolved. It holds its record and every change that refers to it (the same record, the rows of a use case in conflict, a mapping that names a conflicted question as blocking); those are listed in `conflicts.csv` with kind `held` and the detail `held by <conflict id>`, and unrelated changes are reported as usual. Held changes produce no addition, update or suggestion.
+- **Additions** get the next central reference after the highest `AA-nnn` found anywhere in the export, marked `suggested`, so an export reference is never reused; spec fields are plain columns, human fields appear as `suggested_<column>`, and `trace_source`, `trace_spec_version` (the `@version` of the source) and `trace_mr_link` carry the traceability. `suggested_proposal_refs` lists the update ids a lead pastes into `proposal_refs` when applying. No answer column is ever written.
+- **Link suggestions** compare each new question's suggested text with the export's question rows and the earlier new rows, by normalised text and token overlap (lower case, accents and punctuation dropped, a short stop-word list removed): score 1 for equal normalised text, else the Jaccard overlap. A score of 0.5 or more is suggested, 0.8 or more is `likely`, between is `uncertain-review`. Nothing is linked, grouped, merged or answered.
+- **Re-review** is suggested when a version change is not held and a decided mapping (a `decision_ref` or an accepted or rejected status) of that use case considered only older versions (none recorded counts as older). The impact is the lead's `grouping_impact_lead` (`could-affect` suggests, `no-impact` does not), else the proposal's `grouping_impact`, else the export's, else unknown. `could-affect` and unknown suggest, `not-expected` does not, and unknown is listed as `impact: unknown`. It suggests `mapping_status` `re-review-suggested` and never touches decision fields.
+- **Vendor folders** hold, for each vendor name found in the export (folder name: the name in kebab case; two names with the same folder name stop the run), the vendor view of the export from the library (that vendor's rows, released question rows only, vendor-visible columns, no group, link, mapping or unreleased row, no reference to a hidden row) and a `field-updates.csv` of the non-held spec updates for those visible rows and columns (never the `vendor` field itself) with hidden references dropped from list values. Additions, conflicts and suggestions are internal only. `--scope <slug>` names the manifest row used for the stale check (default `internal`); a vendor scope limits `vendor/` to that vendor, and the master export stays authoritative.
+- **Output folder** may be new, empty or hold only a previous run's own files (`reconciliation-report.md`, `field-updates.csv`, `conflicts.csv`, `suggestions.csv`, `additions/<tab>.csv`, `vendor/<slug>/<tab>.csv`, checked file by file); anything else, or a folder that contains or sits inside an input, is refused.
+- **Unknown use case names** are checked in `reconcile` only (it knows the export); `validate` checks shape, header, tab, field, dates, composed `update_id`, secrets and, for an export, the schema lists. A reported line is the CSV record number with the header as line 1, and a proposals folder with no `tracker-updates.csv` is an input error.
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  main["<a href='src/main.ts'>main</a>"] -->|runs| cli["<a href='src/cli.ts'>cli</a>"]
+  cli -->|reads-with| inputs["<a href='src/inputs.ts'>inputs</a>"]
+  cli -->|classifies-with| rec["<a href='src/reconcile.ts'>reconcile</a>"]
+  cli -->|writes-with| rep["<a href='src/report.ts'>report</a>"]
+  inputs -->|scans-with| sec["<a href='src/secrets.ts'>secrets</a>"]
+  rec -->|scores-with| match["<a href='src/matching.ts'>matching</a>"]
+  rep -->|projects-with| lib(["Tracker Tables"])
+  inputs -->|parses-with| lib
+  rec -->|validates-with| lib
+  lib -->|loads| contract(["tracker-schema.csv (Tracker Data Contract)"])
+  tests["<a href='test/reconcile.test.ts'>test</a>"] -->|validates| cli
+```
+
+## Technology
+
+Inherited from [Tracker Tools](../README.md#technology): Node 26 with native TypeScript (erasable syntax, `.ts` import extensions), no dependencies, `node:test`, ES modules. The declared checks are `test` and `coverage`; no typecheck, lint or boundaries check exists because each would need a dev dependency. Tests use real temporary directories for the export, the proposals and the output, drive the commands through `cli`, read the real `tracker-data-contract/tracker-schema.csv` and the proposer's example `tracker-updates.csv` by relative path, and spawn `main` once as the adapter smoke test. [main](src/main.ts) is the adapter excluded from unit coverage by `adapterGlob`; argument parsing is in [cli](src/cli.ts) so it is unit tested.
 
 ## Behavior
 
@@ -31,86 +77,6 @@ Not built yet.
 - **B09** When an input has a bad header, an unknown tab or field, an unknown use case name, malformed CSV or a secret-looking value, then it exits 1 naming the file and line and writes no partial output.
 - **B10** When it is run, then it never changes or reassigns an existing central reference, answer, answer status, owner, status, ticket, date, acknowledgement or released question text, never releases or applies anything, and a repeated run does not overwrite a newer human edit.
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../../README.md#plan) / [Tracker Tools](../README.md#plan) / **Tracker Reconciler**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-A thin command line adapter parses the two commands. The reconcile module classifies each proposed update against the export; the matching module normalizes question text for duplicate suggestions; the report module writes the files. The tests build real exports and proposals in temporary directories.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  main["main"]:::planned
-  rec["reconcile"]:::planned
-  match["matching"]:::planned
-  rep["report"]:::planned
-  tests["test/*.test.ts"]:::planned
-  main -->|"uses"| rec
-  rec -->|"uses"| match
-  rec -->|"uses"| rep
-  tests -->|"validates"| rec
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. Write `src/reconcile.ts`, `src/matching.ts`, `src/report.ts` and the adapter `src/main.ts`, using `tracker-tables` for reading, validation and vendor views.
-2. Write `test/*.test.ts` with each test titled with its behavior tag, including fixtures with owners, answers per use case, tickets, dates and acknowledgements, base mismatches and stale exports, a reworded released question, a behavior change that could affect grouping, a behavior change with no grouping impact, an unknown impact, a lead override and a version-only change, and a three-vendor export that includes unreleased rows and groups.
-3. Run the declared `test` and `coverage` checks and the record validators.
-
-### Acceptance Mapping
-
-| Acceptance condition | Behaviors | Step | Validation |
-| --- | --- | --- | --- |
-| Human-owned fields, per-row answers, released text and existing references are preserved and forbidden fields are rejected (B02, B06, B10). | B02, B06, B10 | 2 | `[B02]`, `[B06]`, `[B10]` tests with human-field fixtures |
-| A repeated run is identical and creates no duplicates (B03). | B03 | 2 | `[B03]` test running twice and applying additions then re-running |
-| Conflicts hold the affected record and the rows that refer to it while unrelated safe changes are still reported, and re-review follows the grouping impact with unknown kept visible and lead overrides respected (B04, B07). | B04, B07 | 2 | `[B04]`, `[B07]` tests |
-| Vendor-safe outputs are separated with no group, link or unreleased row, and bad input stops the run with nothing written (B08, B09). | B08, B09 | 2 | `[B08]`, `[B09]` tests |
-| Similar rows are suggested and never linked, merged or given an inherited answer, and additions carry traceability (B01, B05). | B01, B05 | 2 | `[B01]`, `[B05]` tests |
-
-Checks: the declared `test` and `coverage` checks apply (inherited from Tracker Tools).
-
-### Assumptions And Open Questions
-
-Assumptions (override any of them in chat before `/craft:build`):
-
-1. Similarity matching between question rows is deterministic: normalized text and token overlap with a threshold chosen at build and recorded in the contract. Uncertain matches go to review and nothing is linked, merged or grouped automatically. Override: ask for a different rule.
-2. The tool reads the master export. A vendor workbook export can be passed with `--scope` for checks, but the master stays authoritative (confirmed by the user).
-3. Leads apply the output to SharePoint by hand; the tool writes only to its output directory, and never releases a question or applies a proposal.
-4. A conflict holds the affected record and the changes of rows that refer to it, and unrelated safe changes are still reported; the conflict is never resolved silently (confirmed).
-5. Re-review uses the grouping-impact assessment (the lead's override first, else the proposer's suggestion) and not the behavior-change class alone; unknown impact is listed for a lead (confirmed).
-6. Similarity checking between question rows is the reconciler's alone (the proposer writes no link rows); the reconciler suggests, and a lead creates links and groups by hand (confirmed in the 2026-11-15 assessment fixes).
-
-Open questions: none about behavior.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../../tracker-data-contract/README.md#plan) — the schema, reference scheme, field classes, proposal and export formats the tool implements.
-- [Tracker Tables](../tracker-tables/README.md#plan) — the library the tool uses to read, validate and write tables and to build vendor views.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
-- [contract.md](contract.md#contract) — the shapes, formats and wording rules.
-
 ## Relationships
 
 - [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the schema, reference scheme, field classes, proposal and export formats the tool implements.
@@ -120,3 +86,11 @@ Open questions: none about behavior.
 
 - [requirements.md](requirements.md#requirements) — what the component must do and what it need not.
 - [contract.md](contract.md#contract) — the shapes, formats and wording rules.
+- [src/main.ts](src/main.ts) — the adapter: connects the process arguments, output and exit status to `cli`.
+- [src/cli.ts](src/cli.ts) — argument parsing and the `reconcile` and `validate` commands.
+- [src/inputs.ts](src/inputs.ts) — reading and checking the export and the proposal files.
+- [src/reconcile.ts](src/reconcile.ts) — classification of each proposed row, conflicts, holds and suggestions.
+- [src/matching.ts](src/matching.ts) — text normalisation, similarity and the recorded thresholds.
+- [src/report.ts](src/report.ts) — the report, the files, the vendor copies and the safe write.
+- [src/secrets.ts](src/secrets.ts) — recognition of credential-looking values.
+- [test/reconcile.test.ts](test/reconcile.test.ts) — tests for B01, B02, B04 to B07 and B10; `repeat.test.ts` covers B03, `vendor.test.ts` B08 and `input.test.ts` B09.
