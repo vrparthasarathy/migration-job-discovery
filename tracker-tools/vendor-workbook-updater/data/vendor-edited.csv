@@ -1,0 +1,10 @@
+tab,column
+Questions,answer
+Questions,answer_status
+Questions,answered_on
+Questions,answered_by
+Use Cases,acknowledged_version
+Use Cases,acknowledged_on
+Use Cases,acknowledgement_reference
+Identity & Access,vendor_action_owner
+Identity & Access,additional_requirements

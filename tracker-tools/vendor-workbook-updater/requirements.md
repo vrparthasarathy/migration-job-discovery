@@ -13,7 +13,7 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 - A new record takes the exporter's suggested reference; a collision stops the run. A new question row starts with `answer_status` `not-answered`.
 - Repeat-safe: a row with `applied_on` set and an unchanged digest is skipped, and the same inputs and run date give a byte-identical workbook and report with no duplicate rows. The run date is the only clock input.
 - After a successful run, `applied_on` is set (the run date) on applied rows in the review CSVs, and nothing is written when any step fails. A row applies when a cell changed or a row was added, so an internal-only or no-change row gets no `applied_on`.
-- Input problems and secret-looking values stop the run with `file: line N: message` and write nothing. Conflicts, skips and pending items are reported with exit 0.
+- Input problems and secret-looking values stop the run with `file: line N: message` and write nothing. Conflicts, skips and pending items are reported with exit 0. An output path that is an input, inside the export or a folder is an input problem.
 - Reuse by relative path, none changed: Tracker Tables, the Tracker Reconciler's `inputs` and `secrets`, the Review CSV Exporter's `headings`, `rows` and `review`, and only `layout.ts` and `headings.csv` of the Sample Tracker Workbook.
 
 ## Must match the source
@@ -28,8 +28,8 @@ The shared rules are in the [root requirements](../../requirements.md#requiremen
 
 ## Technology
 
-- Inherited from Tracker Tools: Node 26 with native TypeScript (erasable syntax, `.ts` import extensions) and `node:test` with real temporary directories. One departure, as in the Sample Tracker Workbook: the exact-pinned dependency `exceljs` 4.4.0 reads and writes `.xlsx` (component-local `package.json` and lockfile; `npm ci` is the `install` check). Built-ins only otherwise (`node:crypto` through the exporter's digest, `node:zlib` if the zip must be rewritten). `src/main.ts` is the adapter excluded from coverage by the group's `adapterGlob`.
-- The group's Technology line and requirements name `exceljs` as an exception for the sample only; the group's owner reconciles that when this component is built.
+- Inherited from Tracker Tools: Node 26 with native TypeScript (erasable syntax, `.ts` import extensions) and `node:test` with real temporary directories. One departure, as in the Sample Tracker Workbook: the exact-pinned dependency `exceljs` 4.4.0 reads and writes `.xlsx` (component-local `package.json` and lockfile; `npm ci` is the `install` check). Built-ins only otherwise (`node:crypto` through the exporter's digest; the zip entry times are fixed with `Buffer` writes, because `exceljs` stamps them from the clock). `src/main.ts` is the adapter excluded from coverage by the group's `adapterGlob`.
+- The group's Technology line and requirements name `exceljs` as an exception for the sample only; the group's owner reconciles that and the new member (recorded as a request in the task narrative).
 
 ## Depends on
 
