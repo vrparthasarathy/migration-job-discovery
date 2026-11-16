@@ -13,6 +13,12 @@ The lead-facing Node tools for the use case tracker: a shared CSV table library,
   - [Diagram](#diagram)
 - [Technology](#technology)
 - [Links](#links)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Components](#planned-components)
+  - [Planned Design](#planned-design)
+    - [Planned Diagram](#planned-diagram)
+  - [Planned Relationships](#planned-relationships)
 
 ## Components
 
@@ -23,6 +29,7 @@ The lead-facing Node tools for the use case tracker: a shared CSV table library,
 | [Tracker Summary](tracker-summary/README.md#purpose) | A Node command line tool that writes the internal daily summary across all vendor tracks from a tracker export: use cases by stage, overdue questions, blocked items, access actions, mappings pending a decision and next batch suggestions. |
 | [Sample Tracker Workbook](sample-tracker-workbook/README.md#purpose) | A small, realistic sample of the final Excel tracker, generated from fictional data, so the team can review the format of the sheets before the real tracker is built. |
 | [Review CSV Exporter](review-csv-exporter/README.md#purpose) | A Node command line tool that turns tracker proposals and a tracker export into consolidated review CSVs, one wide row per record ordered by what needs a lead's judgment, so leads review adds, updates and suggestions without transposing proposal rows. |
+| [Vendor Workbook Updater](vendor-workbook-updater/README.md#purpose) | A Node command line tool that applies the review rows a lead accepted to one vendor's vendor-facing workbook, starting from the copy downloaded from SharePoint, and writes a new vendor-safe `.xlsx` for the lead to upload by hand. |
 
 ## Design
 
@@ -60,3 +67,63 @@ flowchart TB
 
 - [requirements.md](requirements.md#requirements) — what the group and its members must do and what they need not.
 - [contract.md](contract.md#contract) — the shared check declarations and the command line of the members.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#navigation) / **Tracker Tools**
+
+- [Planned Components](#planned-components)
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Planned Relationships](#planned-relationships)
+
+### Planned Components
+
+| Component | Purpose |
+| --- | --- |
+| [Tracker Tables](tracker-tables/README.md#purpose) | A Node library that reads and writes the tracker's CSV tables, validates them against the shared schema, builds vendor views and does working-day arithmetic. |
+| [Tracker Reconciler](tracker-reconciler/README.md#purpose) | A Node command line tool that compares reviewed tracker proposals with the latest tracker export and writes reviewable changes. |
+| [Tracker Summary](tracker-summary/README.md#purpose) | A Node command line tool that writes the internal daily summary across all vendor tracks from a tracker export. |
+| [Sample Tracker Workbook](sample-tracker-workbook/README.md#purpose) | A small, realistic sample of the final Excel tracker, generated from fictional data, so the team can review the format of the sheets. |
+| [Review CSV Exporter](review-csv-exporter/README.md#purpose) | A Node command line tool that turns tracker proposals and a tracker export into consolidated review CSVs. |
+| [Vendor Workbook Updater](vendor-workbook-updater/README.md#planned-design) | A Node command line tool that applies accepted review rows to one vendor's workbook downloaded from SharePoint and writes a new vendor-safe `.xlsx` for the lead to upload by hand. |
+
+### Planned Design
+
+The group gains a sixth member, the [Vendor Workbook Updater](vendor-workbook-updater/README.md#planned-design), a lead tool that imports the Tracker Tables library, the Tracker Reconciler's loaders and secret detection, the Review CSV Exporter's headings, digest and review reading, and the Sample Tracker Workbook's layout rules and headings by relative path, reads the shared schema and writes a vendor-safe workbook, a report and the `applied_on` cells of the review CSVs. It adds one pinned `exceljs` dependency, as the sample does, and writes `.xlsx` deliberately; the group's Technology line and requirements name that exception for the sample only and are reconciled by the group's owner when the updater is built.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  grp[["Tracker Tools"]]
+  tracker_tables["<a href='tracker-tables/README.md#diagram'>Tracker Tables</a>"]
+  tracker_reconciler["<a href='tracker-reconciler/README.md#diagram'>Tracker Reconciler</a>"]
+  tracker_summary["<a href='tracker-summary/README.md#diagram'>Tracker Summary</a>"]
+  sample["<a href='sample-tracker-workbook/README.md#diagram'>Sample Tracker Workbook</a>"]
+  exporter["<a href='review-csv-exporter/README.md#diagram'>Review CSV Exporter</a>"]
+  updater["<a href='vendor-workbook-updater/README.md#planned-diagram'>Vendor Workbook Updater</a>"]:::planned
+  schema(["tracker-schema.csv (Tracker Data Contract)"])
+  tracker_reconciler -->|"reads, validates and projects with"| tracker_tables
+  tracker_summary -->|"reads, validates and counts working days with"| tracker_tables
+  sample -->|"validates and counts working days with"| tracker_tables
+  exporter -->|"reads, validates and writes with"| tracker_tables
+  exporter -->|"classifies changes with"| tracker_reconciler
+  updater -->|"reads, validates and counts working days with"| tracker_tables
+  updater -->|"loads the export and detects secrets with"| tracker_reconciler
+  updater -->|"reads review files with"| exporter
+  updater -->|"follows the layout of"| sample
+  tracker_tables -->|"loads columns and owner classes from"| schema
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Planned Relationships
+
+None.

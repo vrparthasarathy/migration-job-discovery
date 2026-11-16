@@ -1,0 +1,25 @@
+{
+  "configuration": {
+    "checks": {
+      "install": "npm ci --prefix {path}"
+    }
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T10:30:00Z",
+    "constraints": {
+      "cost": { "currency": "USD", "allocated": 8, "spent": 0, "reserve": 1.5, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
+      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
+      "execution": { "wall-clock": { "allocated-seconds": 7200, "spent-seconds": 0, "reserve-seconds": 900, "source": "unavailable" } },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "A vendor's accepted review rows appear once in a new vendor workbook in the agreed format, with that vendor's rows and vendor-visible columns only and nothing hidden, and a second run on the same inputs and run date gives an identical file. (B1, B3, B4)",
+      "Rows that are not accepted, already applied, conflicting or changed since review are left alone and listed with the reason. (B2, B3, B7)",
+      "A new question is added only on a lead-named release with its due date, and vendor answers, acknowledgements and the release and due dates of existing rows never change. (B5, B6)",
+      "A new record takes the exporter's suggested reference, a collision stops the run, and `applied_on` is set on applied rows in the review files only after everything succeeded. (B8, B9)",
+      "Invalid input or a secret-looking value stops the run with an error naming the file and line and writes nothing, and the report lists what was applied, skipped and left for the internal tracker. (B10)"
+    ]
+  }
+}
