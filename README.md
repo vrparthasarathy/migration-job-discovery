@@ -27,6 +27,7 @@ Two things for the vendor-to-platform migration: a job behavior pack (a blank te
 | [Tracker Update Proposer](tracker-update-proposer/README.md#purpose) | A GitHub Copilot agent skill that turns a use case specification into proposed use case and question rows in `tracker-updates.csv`, so developers hand a lead reviewable tracker changes with each specification and no one retypes questions. |
 | [Identity Access Discovery](identity-access-discovery/README.md#purpose) | A GitHub Copilot agent skill that reads a use case's source and configuration and proposes Identity & Access rows (services, environments, observed operations and identity references), so access requests can start from day one and leads can see possible shared requests. |
 | [Workflow Recommender](workflow-recommender/README.md#purpose) | A GitHub Copilot agent skill that compares use case specifications by their behaviors and generates internal use-case-to-workflow recommendations, with the format of the lead-owned decisions file, so leads can decide which use cases can share one reusable workflow. |
+| [Discovery Orchestrator](discovery-orchestrator/README.md#purpose) | A GitHub Copilot agent skill that takes one use-case folder through the discovery stages in order, refreshes the consolidated review CSVs and walks a lead through the pending rows, so leads review and decide in one flow and each folder is processed without duplicates. |
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
 
 ## Design
@@ -99,3 +100,86 @@ flowchart TB
 - [review-checklist.md](review-checklist.md) — the file review and scans for the document and skill behaviors `B01` to `B05`.
 - [test](test/) — the root integration tests for `B01` and `B05` to `B08`: [documents](test/documents.test.ts), [pipeline](test/pipeline.test.ts), [vendor safety](test/vendor-safety.test.ts) and [revision](test/revision.test.ts).
 - [backlog.md](backlog.md) — later items: the skill benchmark, the notification-system decision, the vendor access and layout decision, the vendor inventory, direct tracker integration, the naming alignment, the skill grouping and the follow-ups found while building the toolkit.
+
+## Plan
+
+### Planned Navigation
+
+**Job Behavior Specifications**
+
+- [Planned Components](#planned-components)
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Planned Relationships](#planned-relationships)
+
+### Planned Components
+
+| Component | Purpose |
+| --- | --- |
+| [Website Availability Check](website-availability-check/README.md#purpose) | A job script that checks one configured website URL, stays silent when it is up and requests one email alert through a notifier when it is down; kept unchanged as read-only source evidence. |
+| [Job Behavior Template](job-behavior-template/README.md#purpose) | The blank, reusable form our team fills in to document one vendor use case from its source code, with a short filling guide. |
+| [Website Check Job Behavior](website-check-job-behavior/README.md#purpose) | The completed reference specification of the website-check job in plain business language. |
+| [Copilot Drafting Guide](copilot-drafting-guide/README.md#purpose) | A GitHub Copilot agent skill that creates, drafts, updates and versions a job behavior document from source, with usage and model guidance. |
+| [Tracker Data Contract](tracker-data-contract/README.md#purpose) | The one shared data contract for the use case tracker: tabs, columns, references, status lists, vendor visibility, the proposal file format and the export format, with a guide for building the SharePoint workbooks, so every skill and tool reads and writes the same shapes. |
+| [Tracker Update Proposer](tracker-update-proposer/README.md#purpose) | A GitHub Copilot agent skill that turns a use case specification into proposed use case and question rows in `tracker-updates.csv`, so developers hand a lead reviewable tracker changes with each specification and no one retypes questions. |
+| [Identity Access Discovery](identity-access-discovery/README.md#purpose) | A GitHub Copilot agent skill that reads a use case's source and configuration and proposes Identity & Access rows (services, environments, observed operations and identity references), so access requests can start from day one and leads can see possible shared requests. |
+| [Workflow Recommender](workflow-recommender/README.md#purpose) | A GitHub Copilot agent skill that compares use case specifications by their behaviors and generates internal use-case-to-workflow recommendations, with the format of the lead-owned decisions file, so leads can decide which use cases can share one reusable workflow. |
+| [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) | A GitHub Copilot agent skill that takes one use-case folder through the discovery stages in order, refreshes the consolidated review CSVs and walks a lead through the pending rows, so leads review and decide in one flow and each folder is processed without duplicates. |
+| [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
+
+### Planned Design
+
+The root gains a tenth child, the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design), a Copilot skill that coordinates the four existing skills and runs the lead tools' new Review CSV Exporter (planned in [Tracker Tools](tracker-tools/README.md#plan)), so a lead takes one use-case folder through the discovery stages and reviews the pending rows in one flow. It writes no proposal file of its own and decides nothing for the lead. When the plan is built the root records change as proposed here, to be made by the root's owner: the technology text counts five Copilot skills, root `B02` lists the new skill folder among the inspected pack files, the end-to-end handoffs note that steps 2, 4, 5 and 6 can run per folder through the orchestrator and the review CSVs with applying still by hand, and the review columns and their values are stated once in the contract.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  root{{"Job Behavior Specifications"}}
+  check["<a href='website-availability-check/README.md#diagram'>Website Availability Check</a>"]
+  tmpl["<a href='job-behavior-template/README.md#diagram'>Job Behavior Template</a>"]
+  ref["<a href='website-check-job-behavior/README.md#diagram'>Website Check Job Behavior</a>"]
+  guide["<a href='copilot-drafting-guide/README.md#diagram'>Copilot Drafting Guide</a>"]
+  contract["<a href='tracker-data-contract/README.md#diagram'>Tracker Data Contract</a>"]
+  proposer["<a href='tracker-update-proposer/README.md#diagram'>Tracker Update Proposer</a>"]
+  access["<a href='identity-access-discovery/README.md#diagram'>Identity Access Discovery</a>"]
+  recommender["<a href='workflow-recommender/README.md#diagram'>Workflow Recommender</a>"]
+  tools[["<a href='tracker-tools/README.md#diagram'>Tracker Tools</a>"]]
+  orch["<a href='discovery-orchestrator/README.md#planned-diagram'>Discovery Orchestrator</a>"]:::planned
+  root -->|delegates-to| check
+  root -->|delegates-to| tmpl
+  root -->|delegates-to| ref
+  root -->|delegates-to| guide
+  root -->|delegates-to| contract
+  root -->|delegates-to| proposer
+  root -->|delegates-to| access
+  root -->|delegates-to| recommender
+  root -->|delegates-to| tools
+  root -->|delegates-to| orch
+  ref -->|"uses the form of"| tmpl
+  ref -->|"is written from"| check
+  guide -->|"uses a copy of"| tmpl
+  guide -->|"points developers to"| proposer
+  proposer -->|"follows"| contract
+  access -->|"follows"| contract
+  recommender -->|"follows"| contract
+  tools -->|"reads the schema of"| contract
+  proposer -->|"reads"| ref
+  access -->|"reads"| check
+  recommender -->|"cites the IDs of"| tmpl
+  orch -->|"uses"| proposer
+  orch -->|"uses"| access
+  orch -->|"uses"| guide
+  orch -->|"uses"| recommender
+  orch -->|"uses"| tools
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Planned Relationships
+
+None.

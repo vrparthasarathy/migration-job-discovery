@@ -1,0 +1,21 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T08:10:40Z",
+    "constraints": {
+      "cost": { "currency": "USD", "allocated": 4, "spent": 0, "reserve": 0.75, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
+      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
+      "execution": { "wall-clock": { "allocated-seconds": 3600, "spent-seconds": 0, "reserve-seconds": 600, "source": "unavailable" } },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Given a use-case folder, the skill states the use case and the four stages, runs each through its own existing skill in order, asks once for a missing developer fact, records a source blocker and skips the dependent stages, and runs workflow recommendation over every specification processed so far. (B01, B02, B03, B04, B05)",
+      "After the stages the skill runs the review CSV exporter and reports per stage what was proposed, skipped or blocked, and a later folder leaves earlier folders' rows in place. (B06, B07)",
+      "The skill walks the lead through the pending rows in the exporter's order, records decisions only from the lead's own words, supports accepting all plain adds of one use case, and writes nothing to the tracker. (B08, B09, B10)"
+    ]
+  }
+}
