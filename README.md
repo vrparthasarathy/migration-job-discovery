@@ -29,6 +29,7 @@ Two things for the vendor-to-platform migration: a job behavior pack (a blank te
 | [Workflow Recommender](workflow-recommender/README.md#purpose) | A GitHub Copilot agent skill that compares use case specifications by their behaviors and generates internal use-case-to-workflow recommendations, with the format of the lead-owned decisions file, so leads can decide which use cases can share one reusable workflow. |
 | [Discovery Orchestrator](discovery-orchestrator/README.md#purpose) | A GitHub Copilot agent skill that takes one use-case folder through the discovery stages in order, refreshes the consolidated review CSVs and walks a lead through the pending rows, so leads review and decide in one flow and each folder is processed without duplicates. |
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
+| [Client Transfer Package](client-transfer-package/README.md#purpose) | A Python tool that packs the completed Copilot skills, tracker contract, guides and lead tools into one text-only zip with a manifest, a restore script and a Copilot restore prompt, so the pack can be sent into the client environment and restored there by Copilot Agent mode. |
 
 ## Design
 
@@ -126,10 +127,11 @@ flowchart TB
 | [Workflow Recommender](workflow-recommender/README.md#purpose) | A GitHub Copilot agent skill that compares use case specifications by their behaviors and generates internal use-case-to-workflow recommendations, with the format of the lead-owned decisions file, so leads can decide which use cases can share one reusable workflow. |
 | [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) | A GitHub Copilot agent skill that takes one use-case folder through the discovery stages in order, refreshes the consolidated review CSVs and walks a lead through the pending rows, so leads review and decide in one flow and each folder is processed without duplicates. |
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
+| [Client Transfer Package](client-transfer-package/README.md#planned-design) | A Python tool that packs the completed Copilot skills, tracker contract, guides and lead tools into one text-only zip with a manifest, a restore script and a Copilot restore prompt. |
 
 ### Planned Design
 
-The root gains a tenth child, the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design), a Copilot skill that coordinates the four existing skills and runs the lead tools' new Review CSV Exporter (planned in [Tracker Tools](tracker-tools/README.md#plan)), so a lead takes one use-case folder through the discovery stages and reviews the pending rows in one flow. It writes no proposal file of its own and decides nothing for the lead. When the plan is built the root records change as proposed here, to be made by the root's owner: the technology text counts five Copilot skills, root `B02` lists the new skill folder among the inspected pack files, the end-to-end handoffs note that steps 2, 4, 5 and 6 can run per folder through the orchestrator and the review CSVs with applying still by hand, and the review columns and their values are stated once in the contract.
+The root gains a tenth child, the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design), a Copilot skill that coordinates the four existing skills and runs the lead tools' new Review CSV Exporter (planned in [Tracker Tools](tracker-tools/README.md#plan)), so a lead takes one use-case folder through the discovery stages and reviews the pending rows in one flow. It writes no proposal file of its own and decides nothing for the lead. When the plan is built the root records change as proposed here, to be made by the root's owner (the root also gains an eleventh child, the [Client Transfer Package](client-transfer-package/README.md#planned-design), which reads the files of the skills, the contract, the guides and the tools to pack them and changes none of them, so its root test fixtures must not add copies of the contract or schema): the technology text counts five Copilot skills, root `B02` lists the new skill folder among the inspected pack files, the end-to-end handoffs note that steps 2, 4, 5 and 6 can run per folder through the orchestrator and the review CSVs with applying still by hand, and the review columns and their values are stated once in the contract.
 
 #### Planned Diagram
 
@@ -151,6 +153,7 @@ flowchart TB
   recommender["<a href='workflow-recommender/README.md#diagram'>Workflow Recommender</a>"]
   tools[["<a href='tracker-tools/README.md#diagram'>Tracker Tools</a>"]]
   orch["<a href='discovery-orchestrator/README.md#planned-diagram'>Discovery Orchestrator</a>"]:::planned
+  transfer["<a href='client-transfer-package/README.md#planned-diagram'>Client Transfer Package</a>"]:::planned
   root -->|delegates-to| check
   root -->|delegates-to| tmpl
   root -->|delegates-to| ref
@@ -161,6 +164,7 @@ flowchart TB
   root -->|delegates-to| recommender
   root -->|delegates-to| tools
   root -->|delegates-to| orch
+  root -->|delegates-to| transfer
   ref -->|"uses the form of"| tmpl
   ref -->|"is written from"| check
   guide -->|"uses a copy of"| tmpl
@@ -177,6 +181,15 @@ flowchart TB
   orch -->|"uses"| guide
   orch -->|"uses"| recommender
   orch -->|"uses"| tools
+  transfer -->|"reads"| guide
+  transfer -->|"reads"| proposer
+  transfer -->|"reads"| access
+  transfer -->|"reads"| recommender
+  transfer -->|"reads"| orch
+  transfer -->|"reads"| contract
+  transfer -->|"reads"| tools
+  transfer -->|"reads"| tmpl
+  transfer -->|"reads"| ref
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
 
