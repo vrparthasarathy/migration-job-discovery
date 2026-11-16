@@ -4,32 +4,47 @@
 
 A manual acceptance test of the whole lead flow, run by a person in the client environment on fictional data: a run sheet that walks the lead, a developer and a vendor stand-in from discovery of one use case through review decisions, the master and vendor workbooks, a vendor answer, its incorporation into the specification and the daily summary, with the exact prompt or command and the expected result at every step and a place to record pass or fail, plus the fictional fixtures and the automated tests that prove every documented command.
 
-## Navigation
-
-[Job Behavior Specifications](../README.md#navigation) / **End-To-End Acceptance Test**
-
-- [Design](#design)
-- [Technology](#technology)
-- [Behavior](#behavior)
-- [Plan](#plan)
-  - [Planned Navigation](#planned-navigation)
-  - [Planned Design](#planned-design)
-    - [Planned Diagram](#planned-diagram)
-  - [Steps](#steps)
-  - [Acceptance Mapping](#acceptance-mapping)
-  - [Assumptions And Open Questions](#assumptions-and-open-questions)
-  - [Planned Relationships](#planned-relationships)
-  - [Planned Links](#planned-links)
-- [Relationships](#relationships)
-- [Links](#links)
-
 ## Design
 
-Not built yet.
+The folder holds four parts, all inside its own folder. [acceptance-run-sheet](acceptance-run-sheet.md) is the runbook a person follows: prerequisites and a record sheet first, a failure-handling section, then the steps. [fixtures](fixtures/expected/s03-review-rows.csv) holds the fictional data (vendor Harborline, use case Refund Retry, derived ID `uc-harborline-refund-retry`): the use case folder, an empty tracker export, reference proposals for both specification versions, the vendor's answer and `expected/`, the reference outputs of every step, reviewed by eye once and kept fixed. [test](test/support.ts) holds the automated tests. The run sheet is also the tests' input: they extract the fenced command of each step, substitute the `{pack}` and `{sandbox}` placeholders, and run it through the tool's own command module on a copy of the fixtures in a real temporary directory, so a documented command cannot drift from the tools.
+
+The steps, in order: S01 discovery, S02 the duplicate-folder stop, S03 the review export, S04 the lead's decisions in chat (walk, accept all plain adds, revisit), S05 the master workbook built from the empty export, S06 the lead's hand release of Q1 and Q3, S06b the first Harborline workbook (`--new-vendor`), S07 the vendor's answer typed into its workbook, S08 the vendor workbook synced into the master (`--vendor`, which copies only the vendor-owned columns), S09 the lead accepting Q1 by hand, S10 the developer incorporating it through the specification skills, S10b the proposal validated, S11 the manual export of the master to CSV (a known gap, backlog item `master-csv-export`), S11b the version 2 proposal reconciled against that export (no addition, so no duplicate question row), S12 the daily summary and S13 the Vendor Workbook Updater run on the same review files and the answered workbook. The Copilot steps (S01, the live stop of S02, S04, S10) cannot be proven by code and are proven only when a person runs the sheet; the tests use the reference proposals and a scripted edit of the same review cells as stand-ins, and the hand Excel steps (S06, S07, S09) and S11 are done in test code with `exceljs`.
+
+Decisions (record of the build; override in chat):
+
+- Tests: [sheet.test.ts](test/sheet.test.ts) checks the sheet's structure (B01, B02, B08); [tools.test.ts](test/tools.test.ts) runs the documented commands and compares with `expected/` (B03 to B07, and the reruns); [safety.test.ts](test/safety.test.ts) checks the vendor workbook for internal columns and the duplicate-folder case (B10); [fixtures.test.ts](test/fixtures.test.ts) checks the fixtures (B09). [support](test/support.ts) runs the whole scripted sequence once per test file. A failure names the step, the file and the first differing line.
+- The expected files are plain CSV, text and Markdown: the review rows and decisions, the non-empty cells of the Use Cases and Questions rows of each master (`tab,ref,field,value`), the vendor workbook headings and cells, the counts line of each command, the full `export-after-answer/` folder and `summary.md`. They were produced once by running the sequence, read by eye and fixed; no test regenerates them.
+- Dates: the review decisions and the master build are 2026-11-18, the release 2026-11-19 (due 2026-11-23, release plus two working days), the answer and its sync 2026-11-25, the version 2 proposal 2026-11-30, the export and the summary 2026-12-01 (QN-0003 is 8 days overdue). People: lead Lena Park, developer Dev Okafor, vendor stand-in Harborline Contact.
+- Reruns: S03, S06b, S08, S12 and S13 are rerun as written and change nothing. S05 is rerun from the new master (`--master`), as its own report says, because a rerun from the empty export would rebuild an empty master from review rows already marked applied.
+- The Vendor Workbook Updater (S13) runs after the export, not on a first workbook, because it needs an export that holds the vendor; with every review row already applied it applies nothing and proves it reads the review files and the answered workbook the Master Workbook Updater produced.
+- Fallbacks exist only for S01 and S10 (the reference proposals) and S11 (the reference export); every other step stops and records the failure.
+- Q3 is accepted at the revisit but never released to an answer, so it is the overdue question in the summary; Q2 is rejected and never reaches the master.
+- Stage 4 of `run-discovery` (workflow recommendations) is Copilot-only and skipped in S01; the fixtures hold no recommendations proposal.
+- The sandbox is a throwaway copy of `fixtures/`, never the real repository root, because `run-discovery` writes `use-case-index.csv` at the root.
+- Packaging is out of scope; the Client Transfer Package decides whether to ship the sheet and fixtures.
+
+### Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  sheet["<a href='acceptance-run-sheet.md'>acceptance-run-sheet</a>"] -->|"gives the commands to"| support["<a href='test/support.ts'>support</a>"]
+  support -->|"runs them on a copy of"| fixtures["<a href='fixtures/expected/s03-review-rows.csv'>fixtures</a>"]
+  support -->|"calls the command modules of"| tools(["Tracker Tools"])
+  sheet2["<a href='test/sheet.test.ts'>sheet.test</a>"] -->|"checks the structure of"| sheet
+  tools2["<a href='test/tools.test.ts'>tools.test</a>"] -->|"compares outputs with"| fixtures
+  safety["<a href='test/safety.test.ts'>safety.test</a>"] -->|"checks the vendor workbook from"| support
+  fix["<a href='test/fixtures.test.ts'>fixtures.test</a>"] -->|"walks"| fixtures
+  support -->|"reads the schema of"| contract(["Tracker Data Contract"])
+```
 
 ## Technology
 
-- Node 26 with native TypeScript (erasable syntax, `.ts` import extensions), no dependencies of its own, ES modules and `node:test` with real temporary directories, as the root tests and Tracker Tools do. The tests import the tools' command modules by relative path and resolve `exceljs` from the installed Master Workbook Updater. The run sheet and fixtures are Markdown and CSV; Excel work is done by hand by the person running the test. No root `package.json`. Detail is in [requirements.md](requirements.md#requirements).
+- Node 26 with native TypeScript (erasable syntax, `.ts` import extensions), no dependencies of its own, ES modules and `node:test` with real temporary directories, as the root tests and Tracker Tools do. The tests import the tools' command modules by relative path and resolve `exceljs` from the installed Master Workbook Updater (`npm ci` there and in the Vendor Workbook Updater first). The run sheet and fixtures are Markdown and CSV, plus one fictional script; Excel work is done by hand by the person running the test. No root `package.json`. The declared check is the root `test` with this component as `{path}`; no typecheck, lint, boundaries or coverage check is declared. Detail is in [requirements.md](requirements.md#requirements).
 
 ## Behavior
 
@@ -44,110 +59,18 @@ Not built yet.
 - **B09** When the fixtures are read, then they are fictional, carry expected outputs for every step, and hold no copy of `tracker-data-contract.md` or `tracker-schema.csv`.
 - **B10** When the safety checks are run, then the vendor workbook has no internal column, a duplicate folder stops `run-discovery` naming both folders and writing nothing, and every rerun changes nothing.
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **End-To-End Acceptance Test**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The component holds four parts, all inside its own folder. [acceptance-run-sheet.md](requirements.md#requirements) is the runbook a person follows. `fixtures/` holds the fictional data (vendor Harborline, use case Refund Retry, derived ID `uc-harborline-refund-retry`): the use case folder, an empty tracker export, reference proposals for both specification versions, the vendor's answer, and `expected/` with the reference outputs. `test/` holds the automated tests. The run sheet is also the test's input: the tests extract the fenced command of each step, substitute the `{pack}` and `{sandbox}` placeholders and run it on a copy of the fixtures, so a documented command cannot drift from the tools. The steps are, in order: discovery of the folder (S01), the duplicate-folder safety stop (S02), the review export (S03), the lead's decisions in chat including a revisit (S04), the master workbook built from the empty export with the accepted rows (S05), the lead's hand release of Q1 and Q3 in the master (S06), the first vendor workbook built with `--new-vendor Harborline` (S06b), the Vendor Workbook Updater on a copy of the review files (S06c), the vendor's answer typed into the vendor workbook (S07), the vendor workbook synced into the master with `--vendor Harborline=<answered workbook>` (S08, which is what copies only the vendor-owned columns), the lead accepting Q1 by hand (S09), the developer incorporating it through the specification skills (S10), the manual export of the master to CSV (S11, a known gap) and the daily summary (S12). The Copilot steps (S01, the live stop of S02, S04, S10) cannot be proven by code; they are proven only when a person runs the sheet, and the tests use reference proposals and a scripted edit of the same review cells as stand-ins. Exact commands, field values and expected cells are fixed when built, after the builder runs the scripted sequence against the tools as they are then.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  sheet["acceptance-run-sheet"]:::planned
-  fixtures["fixtures (Harborline, Refund Retry)"]:::planned
-  expected["fixtures/expected"]:::planned
-  tests["test (sheet, tools, safety, fixtures)"]:::planned
-  sheet -->|"gives the commands to"| tests
-  tests -->|"runs them on"| fixtures
-  tests -->|"compares with"| expected
-  fixtures -->|"holds"| expected
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. Create the component records: this README, `requirements.md`, `contract.md`, `craft.json` and `tasks.md`.
-2. Write the fictional fixtures under `fixtures/` as [contract.md](contract.md#contract) lays out, and keep every file free of a copy of the contract or schema and of any secret-looking value.
-3. Write `acceptance-run-sheet.md`: the prerequisites and the record sheet first, then the steps S01 to S12 in the fixed shape, the failure-handling section, and the known-gap note on S11.
-4. Run the scripted sequence of the tools once during the build to fix the order of S05 to S09 and produce `fixtures/expected/`; review the outputs by eye, then keep them as fixed fixtures. Never regenerate them inside a test.
-5. Write the tests in `test/` (`sheet.test.ts`, `tools.test.ts`, `safety.test.ts`, `fixtures.test.ts`), each title tagged with its behavior ID.
-6. Validate, then keep this README's Design, Behavior and diagram, the requirements and the contract in step with what was built.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Test |
-| --- | --- | --- | --- |
-| The run sheet opens with prerequisites and the record sheet, and every step names who, tool, file or sheet, exact command or prompt, expected result and a pass or fail box | B01, B02 | 3 | `[B01]`, `[B02]` in `test/sheet.test.ts` |
-| The documented commands for the discovery export, review, apply and summary steps, run from the sheet's own text on the fixtures, give the expected outputs, and every rerun changes nothing | B03, B04, B07, B10 | 3, 4, 5 | `[B03]`, `[B04]`, `[B07]`, `[B10]` in `test/tools.test.ts` |
-| The vendor round trip and the developer incorporation reach the expected master cells and a proposal that validates | B05, B06 | 3, 4, 5 | `[B05]`, `[B06]` in `test/tools.test.ts` |
-| Failure handling is written for every step, including the stop on a fail and the fallback marking | B08 | 3 | `[B08]` in `test/sheet.test.ts` |
-| The fixtures are fictional, hold expected outputs for every step and no copy of the contract or schema, and the vendor workbook has no internal column | B09, B10 | 2, 5 | `[B09]` in `test/fixtures.test.ts`, `[B10]` in `test/safety.test.ts` |
-
-Validation, narrowest first: `node --test "end-to-end-acceptance-test/test/*.test.ts"` (the root `test` check with the component as `{path}`), then `node --test "test/*.test.ts"` at the root to confirm `B05` and the contract-copy count are unaffected. The tests need `npm ci` already run in the Master Workbook Updater and the Vendor Workbook Updater. No typecheck, lint, boundaries or coverage check is declared in the project, so none is run. The Copilot steps are not claimed as passed by any code.
-
-### Assumptions And Open Questions
-
-Assumptions (override any in chat):
-
-1. **Name and place.** The component is `end-to-end-acceptance-test`, a direct child of the root, because it spans several components and owns none of their contents. The other name considered was End-To-End Test Script, set aside because "script" is also the vendor's script.
-2. **Planner.** The planner agent proposed the steps and re-checked them against the built tools on 2026-11-17; this plan was written from its report. Nothing is built. The existing Plan was replaced (git history keeps the old one).
-3. **ID keys.** The use case ID change is built (commit 536c7c4), so the fixtures and the run sheet use ID keys such as `uc-harborline-refund-retry/Q1` and the tools stop on a name or slug in a `use_case` cell. This plan was refreshed on 2026-11-17 against the tools as built; the earlier note that the build waits for the ID change is retired.
-4. **Use case, questions and ID.** The fictional vendor is Harborline and the use case is Refund Retry, with ID `uc-harborline-refund-retry` (derived, never stored). Q1 is accepted and answered, Q2 is rejected, and Q3 is marked clarify, then accepted at the revisit, and left unanswered so it is overdue in the summary. Override by editing the fixtures.
-5. **Starting point.** The master is built from an empty export with `update-master-workbook --from-export`, so no sample workbook or binary is committed; fixtures hold CSV and Markdown only, and the workbooks are produced by the steps.
-6. **Vendor Workbook Updater.** It is exercised once (S06c) on a copy of the review files and a copy of the export, never on the files S05 to S08 use, because it also sets `applied_on` in the review CSVs and the Master Workbook Updater's drift list reports the mix. Override by dropping S06c.
-7. **Release is by hand.** The Master Workbook Updater never sets `batch_ref`, `released_on` or `status` released, and a new question is `captured` and unreleased, so S06 is a hand edit in Excel of those three cells for Q1 and Q3, with an expected-cell list, and only then does `--new-vendor Harborline` include them. `due_on` is filled by the tool.
-8. **Known gap.** No tool exports the master back to CSV (the open backlog item `master-csv-export`), so S11 is a manual Save As per sheet plus a `manifest.csv`, with `fixtures/expected/export-after-answer/` as the comparison and the fallback input for S12. If that item is built first, S11 becomes one command.
-9. **The tests run the sheet's own command text**, so documented commands are proven rather than paraphrased. Override by hand-copied commands in the tests, which is looser.
-10. **Safety.** The run is done in a throwaway sandbox that is a copy of `fixtures/`, never the real repository root or a real export, because `run-discovery` writes `use-case-index.csv` at the repository root.
-11. **Budget.** This component gets cost 2 and 3600 seconds, and the root's allocation and child limit are raised by the same amounts in the root's own record. Override by naming another share.
-12. **Out of scope.** Packaging is dropped. The Client Transfer Package, its decision to ship the sheet and fixtures, and its own removal are not touched here.
-13. **Answer sync is one command.** S08 is `update-master-workbook --master <master> --vendor Harborline=<answered workbook> --vendor-out <dir>`, not a hand copy, so `B05` is proved by the tool and the lead accepts by hand in S09. The behavior wording is unchanged: the lead still copies the vendor's answer into the master through the documented step.
-14. **Prerequisites.** `exceljs` is not installed in the Master Workbook Updater or the Vendor Workbook Updater, so the run sheet lists `npm ci` in both as a prerequisite and the build runs it first (it installs from the committed lock files; nothing is added to the repository).
-15. **Recommendations stage.** `run-discovery` stage 4 (workflow recommendations) is Copilot-only; the sheet notes it as skipped and the fixtures hold no recommendations proposal.
-16. **Skill output is not deterministic.** Real Copilot proposals will differ from the reference proposals, so S01 has a "fallback used" mark and later steps compare key columns, not whole files.
-
-Open questions: none. The ten behaviors and the name were confirmed by the user on 2026-11-16.
-
-### Planned Relationships
-
-- [Discovery Orchestrator](../discovery-orchestrator/README.md#purpose) — the skill S01 and S02 run.
-- [Review Decisions](../lead-tracker-skills/review-decisions/README.md#design) — the skill S04 runs.
-- [Copilot Drafting Guide](../copilot-drafting-guide/README.md#purpose) and [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose) — the skills S10 runs.
-- [Tracker Tools](../tracker-tools/README.md#purpose) — the exporter, both workbook updaters, the reconciler and the summary that S03 to S12 run.
-- [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the schema the tests read by relative path.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the test must do, must match and must not do.
-- [contract.md](contract.md#contract) — the run sheet's shape, the fixture layout and the failure rules.
-
 ## Relationships
 
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#purpose) — the skill S01 and S02 run.
 - [Review Decisions](../lead-tracker-skills/review-decisions/README.md#design) — the skill S04 runs.
 - [Copilot Drafting Guide](../copilot-drafting-guide/README.md#purpose) and [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose) — the skills S10 runs.
-- [Tracker Tools](../tracker-tools/README.md#purpose) — the tools S03 to S12 run.
+- [Tracker Tools](../tracker-tools/README.md#purpose) — the tools S03 to S13 run.
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the schema the tests read.
 
 ## Links
 
 - [requirements.md](requirements.md#requirements) — what the test must do, must match and must not do.
 - [contract.md](contract.md#contract) — the run sheet's shape, the fixture layout and the failure rules.
+- [acceptance-run-sheet.md](acceptance-run-sheet.md) — the runbook a person follows.
+- [test/support.ts](test/support.ts) — the sheet parser, the sandbox and the scripted run of every step.
+- [fixtures/expected/s03-review-rows.csv](fixtures/expected/s03-review-rows.csv) — one of the reference outputs; the folder holds all of them.

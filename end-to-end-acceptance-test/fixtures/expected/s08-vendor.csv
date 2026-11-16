@@ -1,0 +1,23 @@
+tab,ref,field,value
+Use Cases,UC-001,use_case_name,Refund Retry
+Use Cases,UC-001,vendor,Harborline
+Use Cases,UC-001,current_version,1
+Use Cases,UC-001,spec_revision,rev-0001
+Questions,QN-0001,use_case_ref,UC-001
+Questions,QN-0001,use_case_name,Refund Retry
+Questions,QN-0001,vendor,Harborline
+Questions,QN-0001,spec_refs,uc-harborline-refund-retry/Q1@v1
+Questions,QN-0001,question_text,"How many times does the refund job retry a failed payment gateway call, and how long does it wait between tries?"
+Questions,QN-0001,released_on,2026-11-19
+Questions,QN-0001,due_on,2026-11-23
+Questions,QN-0001,answer,The job retries three times and waits 30 seconds between tries.
+Questions,QN-0001,answer_status,answered
+Questions,QN-0001,answered_on,2026-11-25
+Questions,QN-0001,answered_by,Harborline Contact
+Questions,QN-0003,use_case_ref,UC-001
+Questions,QN-0003,use_case_name,Refund Retry
+Questions,QN-0003,vendor,Harborline
+Questions,QN-0003,spec_refs,uc-harborline-refund-retry/Q3@v1
+Questions,QN-0003,question_text,What happens to a refund that still fails after the last retry?
+Questions,QN-0003,released_on,2026-11-19
+Questions,QN-0003,due_on,2026-11-23

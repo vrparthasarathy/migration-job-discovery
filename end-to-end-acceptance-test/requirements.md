@@ -5,7 +5,7 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 ## Requirements
 
 - Goal: a person can validate the whole lead flow in the client environment by following one run sheet on fictional data, and can tell at each step whether it passed.
-- The run sheet, `acceptance-run-sheet.md`, opens with the prerequisites (Node 26, `npm ci` already run in the Master Workbook Updater and the Vendor Workbook Updater, the pack's skills installed, a throwaway sandbox that is a copy of `fixtures/`, the names of the lead, the vendor stand-in and the developer, and a fixed lead name and test date to type into the prompts) and the record sheet (step ID, who, pass, fail or fallback used, date, initials, notes, evidence file), then the steps S01 to S12 in order.
+- The run sheet, `acceptance-run-sheet.md`, opens with the prerequisites (Node 26, `npm ci` already run in the Master Workbook Updater and the Vendor Workbook Updater, the pack's skills installed, a throwaway sandbox that is a copy of `fixtures/`, the names of the lead, the vendor stand-in and the developer, and a fixed lead name and test date to type into the prompts) and the record sheet (step ID, who, pass, fail or fallback used, date, initials, notes, evidence file), then the steps S01 to S13 in order (including S06b, S10b and S11b).
 - Every step has the fields in [contract.md](contract.md#contract). Commands use `{pack}` and `{sandbox}` placeholders and are copied from the tools' contracts.
 - On a failure the person stops, records the failure and the error line, edits no file to get past a tool's error, and uses a reference fixture only where the sheet says so, marking the step "fallback used".
 - Fixtures are fictional only (vendor Harborline, use case Refund Retry), CSV and Markdown only, with expected outputs for every step. They hold no file named `tracker-data-contract.md` or `tracker-schema.csv`, no secret-looking value and no binary.
@@ -38,4 +38,8 @@ As the root's: the tests prove every documented command and the fixtures; the sk
 
 ## Acceptance
 
-See `task.acceptance` in [`craft.json`](craft.json).
+- The run sheet opens with the prerequisites and the record sheet, and every step names who does it, the skill or tool, the file or sheet, the exact prompt or command, the expected result and a pass or fail box (B01, B02).
+- The documented commands, run from the sheet's own text on the fixtures, give the expected outputs, and every rerun changes nothing (B03, B04, B07, B10).
+- The vendor round trip and the developer incorporation reach the expected master cells and a proposal that validates, with no duplicate question row (B05, B06).
+- Failure handling is written for every step, including the stop on a failure and the fallback marking (B08).
+- The fixtures are fictional, hold expected outputs for every step and no copy of the contract or schema, and the vendor workbook has no internal column (B09, B10).

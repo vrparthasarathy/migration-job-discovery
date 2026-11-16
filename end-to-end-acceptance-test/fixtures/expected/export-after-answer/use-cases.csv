@@ -1,0 +1,2 @@
+use_case_ref,use_case_name,vendor,source_ref,spec_link,current_version,spec_revision,vendor_contact,acknowledgement_requested_on,acknowledged_version,acknowledged_on,acknowledgement_reference,stage,blocked_reason,source_status,source_owner,source_note,supporting_documents,last_change_class,grouping_impact,grouping_impact_lead,our_owner,next_action,next_action_owner,workflow_candidate,mr_link,proposal_refs,notes_internal,last_updated
+UC-001,Refund Retry,Harborline,,,1,rev-0001,,,,,,,,,,,,,,,,,,,,uc-harborline-refund-retry,,2026-11-18

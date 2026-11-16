@@ -1,0 +1,35 @@
+tab,ref,field,value
+Use Cases,UC-001,use_case_name,Refund Retry
+Use Cases,UC-001,vendor,Harborline
+Use Cases,UC-001,current_version,1
+Use Cases,UC-001,spec_revision,rev-0001
+Use Cases,UC-001,proposal_refs,uc-harborline-refund-retry
+Use Cases,UC-001,last_updated,2026-11-18
+Questions,QN-0001,use_case_ref,UC-001
+Questions,QN-0001,use_case_name,Refund Retry
+Questions,QN-0001,vendor,Harborline
+Questions,QN-0001,spec_refs,uc-harborline-refund-retry/Q1@v1
+Questions,QN-0001,question_text,"How many times does the refund job retry a failed payment gateway call, and how long does it wait between tries?"
+Questions,QN-0001,batch_ref,BT-001
+Questions,QN-0001,released_on,2026-11-19
+Questions,QN-0001,due_on,2026-11-23
+Questions,QN-0001,status,released
+Questions,QN-0001,captured_on,2026-11-18
+Questions,QN-0001,current_spec_text,"How many times does the refund job retry a failed payment gateway call, and how long does it wait between tries?"
+Questions,QN-0001,text_review,none
+Questions,QN-0001,proposal_refs,uc-harborline-refund-retry
+Questions,QN-0001,last_updated,2026-11-18
+Questions,QN-0003,use_case_ref,UC-001
+Questions,QN-0003,use_case_name,Refund Retry
+Questions,QN-0003,vendor,Harborline
+Questions,QN-0003,spec_refs,uc-harborline-refund-retry/Q3@v1
+Questions,QN-0003,question_text,What happens to a refund that still fails after the last retry?
+Questions,QN-0003,batch_ref,BT-001
+Questions,QN-0003,released_on,2026-11-19
+Questions,QN-0003,due_on,2026-11-23
+Questions,QN-0003,status,released
+Questions,QN-0003,captured_on,2026-11-18
+Questions,QN-0003,current_spec_text,What happens to a refund that still fails after the last retry?
+Questions,QN-0003,text_review,none
+Questions,QN-0003,proposal_refs,uc-harborline-refund-retry
+Questions,QN-0003,last_updated,2026-11-18

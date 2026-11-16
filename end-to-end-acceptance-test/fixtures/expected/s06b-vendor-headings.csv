@@ -1,0 +1,53 @@
+sheet,position,heading
+Use Cases,1,Use case ref
+Use Cases,2,Use case
+Use Cases,3,Vendor
+Use Cases,4,Vendor contact
+Use Cases,5,Current version
+Use Cases,6,Spec revision
+Use Cases,7,Specification
+Use Cases,8,Acknowledgement requested on
+Use Cases,9,Acknowledged version
+Use Cases,10,Acknowledged on
+Use Cases,11,Acknowledgement reference
+Use Cases,12,Source
+Questions,1,Question ref
+Questions,2,Use case ref
+Questions,3,Use case
+Questions,4,Vendor
+Questions,5,Spec question
+Questions,6,Question
+Questions,7,Batch
+Questions,8,Released on
+Questions,9,Due on
+Questions,10,Answer
+Questions,11,Answer status
+Questions,12,Answered on
+Questions,13,Answered by
+Questions,14,Incorporated version
+Identity & Access,1,Access ref
+Identity & Access,2,Use case ref
+Identity & Access,3,Vendor
+Identity & Access,4,Service
+Identity & Access,5,Endpoint
+Identity & Access,6,Environment
+Identity & Access,7,Auth type
+Identity & Access,8,Observed operations
+Identity & Access,9,Identity reference
+Identity & Access,10,Observed access
+Identity & Access,11,Proposed access
+Identity & Access,12,Permissions to confirm
+Identity & Access,13,Unknowns
+Identity & Access,14,Unknown owner
+Identity & Access,15,Our coordinator
+Identity & Access,16,Vendor action owner
+Identity & Access,17,Ticket
+Identity & Access,18,Raised on
+Identity & Access,19,Request status
+Identity & Access,20,Expected availability
+Identity & Access,21,Additional requirements
+Identity & Access,22,Next action
+Identity & Access,23,Next action owner
+Identity & Access,24,Verification
+Identity & Access,25,Verified by
+Identity & Access,26,Verified on
