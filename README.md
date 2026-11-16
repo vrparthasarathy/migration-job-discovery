@@ -33,6 +33,7 @@ Two things for the vendor-to-platform migration: a job behavior pack (a blank te
 | [Lead Tracker Skills](lead-tracker-skills/README.md#components) | The Copilot agent skills a lead uses in chat on top of the lead tracker tools' output, starting with Review Decisions, which records and revisits decisions on the review CSVs. |
 | [Discovery Batch Agent](discovery-batch-agent/README.md#purpose) | A GitHub Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, then recommends workflows and exports the review once and hands the review to the lead in chat. |
 | [Subagent Smoke Test](subagent-smoke-test/README.md#purpose) | Two prompts a developer runs in Copilot Chat in the client environment to check that subagents run, that their context is isolated and that a subagent can use an installed skill. |
+| [End-To-End Acceptance Test](end-to-end-acceptance-test/README.md#purpose) | A manual acceptance test of the whole lead flow, run by a person in the client environment on fictional data: a run sheet with the exact prompt or command, the expected result and a pass or fail record at every step, plus the fictional fixtures and the tests that prove every documented command. |
 
 ## Design
 
@@ -58,6 +59,7 @@ flowchart TB
   recommender["<a href='workflow-recommender/README.md#diagram'>Workflow Recommender</a>"]
   tools[["<a href='tracker-tools/README.md#diagram'>Tracker Tools</a>"]]
   smoke["<a href='subagent-smoke-test/README.md#design'>Subagent Smoke Test</a>"]
+  e2e["<a href='end-to-end-acceptance-test/README.md#planned-diagram'>End-To-End Acceptance Test</a>"]:::planned
   root -->|delegates-to| check
   root -->|delegates-to| tmpl
   root -->|delegates-to| ref
@@ -138,6 +140,7 @@ flowchart TB
 | [Lead Tracker Skills](lead-tracker-skills/README.md#design) | The Copilot agent skills a lead uses in chat on top of the lead tracker tools' output, starting with Review Decisions, which records and revisits decisions on the review CSVs. |
 | [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design) | A GitHub Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, then recommends workflows and exports the review once and hands the review to the lead in chat. |
 | [Subagent Smoke Test](subagent-smoke-test/README.md#purpose) | Two prompts a developer runs in Copilot Chat in the client environment to check that subagents run, that their context is isolated and that a subagent can use an installed skill. |
+| [End-To-End Acceptance Test](end-to-end-acceptance-test/README.md#planned-design) | A manual acceptance test of the whole lead flow, run by a person in the client environment on fictional data: a run sheet with the exact prompt or command, the expected result and a pass or fail record at every step, plus the fictional fixtures and the tests that prove every documented command. |
 
 ### Planned Design
 
@@ -150,6 +153,8 @@ The lead tool conversion plan is withdrawn and replaced: the user confirmed on 2
 The master workbook update adds no root child; it is the eighth member of [Tracker Tools](tracker-tools/README.md#plan), the [Master Workbook Updater](tracker-tools/master-workbook-updater/README.md#planned-design), which applies accepted review rows to the internal master workbook, copies vendor answers into it and rebuilds each named vendor's workbook (the backlog item `internal-tracker-apply`, now planned). When it is built the root records change as proposed here, to be made by the root's owner: the contract's end-to-end handoff steps 5, 9 and 12 gain "or run `update-master-workbook`", the pack table's `tracker-tools/` row is extended, and an optional root test runs the tool on the example data. Root `B07` keeps its confirmed wording and the Tracker Data Contract is unchanged. This Plan is extended, not replaced.
 
 The batch agent adds one root child, the [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design), a Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, and hands the review to `record-review-decisions` in the main conversation. It writes only use case index rows and changes no existing component. The [Subagent Smoke Test](subagent-smoke-test/README.md#design) child, two prompts that show whether the client's Copilot supports subagents, is listed with it, and the agent's claims are gated on it. When the agent is built the root records change as proposed here, to be made by the root's owner: the technology text names the custom agent file beside the Copilot skills; root `B02` adds `discovery-batch.agent.md` and the two smoke test prompt files to the inspected pack files, in one edit with the skill-folder additions already planned above; and the end-to-end handoffs note that steps 2, 4, 5 and 6 can also run for several folders through the batch agent, with the review still through `record-review-decisions` and applying still by hand. The index lines planned above stay as they are and are made when the [Workflow Recommender](workflow-recommender/README.md#planned-design) is built, which the batch agent is built after; the Tracker Data Contract and root `B05` are unchanged. The use case ID change replaces the use case name as the identity in every tracker local reference. The ID is `uc-<vendor-slug>-<use-case-slug>`, derived from `vendor` and `use_case_name` and never stored, so two vendors' same-named use cases no longer collide; it also settles the form of a question row's local reference (`<use-case-id>/Q<n>`). It is planned once for the backlog items `local-reference-form-decision` and `cross-vendor-use-case-name-collision`, whose rows are removed with this plan, and it supersedes the earlier decision not to put the vendor in the keys. It changes eleven components, each with its own bounded Plan: the [Tracker Data Contract](tracker-data-contract/README.md#planned-design) defines the ID once and builds every local reference from it; the three skill components that hold its byte-identical copy carry their key rules and examples ([Tracker Update Proposer](tracker-update-proposer/README.md#planned-design), [Identity Access Discovery](identity-access-discovery/README.md#planned-design) and [Workflow Recommender](workflow-recommender/README.md#planned-design)); the [Tracker Tools](tracker-tools/README.md#plan) gain one shared helper in the table library and match by ID in the reconciler, the review exporter and both workbook updaters, with the Sample Tracker Workbook's fixtures; and the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) says its proposal ID is that same ID. The root's own part, built last, is the root test fixtures and support rewritten to ID keys with a pair of same-named use cases under two vendors, the behaviors `B09` and `B10`, and one `requirements.md` bullet (the vocabulary line that makes the name the identity becomes the vendor with the name); the end-to-end handoffs in `contract.md` and the review checklist change only if a search finds a key form, and none was found. Nothing in the Tracker Data Contract's schema changes, so `B05` stays unaffected once the three copies match. The [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design) and the [Client Transfer Package](client-transfer-package/README.md#planned-design) need no change, but the package builds last so its zip carries the new keys. This Plan is extended, not replaced.
+
+The end-to-end acceptance test adds one root child, the [End-To-End Acceptance Test](end-to-end-acceptance-test/README.md#planned-design), a run sheet, fictional fixtures and tests that let a person validate the whole lead flow in the client environment, from discovery of one use case through the review decisions, the master and vendor workbooks, a vendor answer, its incorporation into the specification and the daily summary. It owns none of the components it exercises and changes none of them, and the root's own tests and root `B05` are unaffected because its fixtures hold no copy of the contract or schema. The root's allocation and child limit are raised by the new child's share. It is built after the use case ID change, so its fixtures use ID keys. When it is built the root records change as proposed here, to be made by the root's owner: nothing in the technology text or the behaviors, and the end-to-end handoffs may point to the run sheet. This Plan is extended, not replaced.
 
 #### Planned Diagram
 
@@ -227,6 +232,10 @@ flowchart TB
   batch -->|"is checked with"| smoke
   transfer -->|"reads"| batch
   transfer -->|"reads"| smoke
+  root -->|delegates-to| e2e
+  e2e -->|"exercises"| orch
+  e2e -->|"exercises"| skills
+  e2e -->|"exercises"| tools
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
 
@@ -242,6 +251,8 @@ For the use case ID change. The root's own task is the last step; each other ste
 6. The Sample Tracker Workbook (its task is blocked on an unrelated model block and is set ready by the user), then the Vendor Sample Workbook, which needs no plan.
 7. Root task: `requirements.md` bullet, `test/fixtures.ts` and `test/support.ts` to ID keys with a same-named pair under two vendors, the `B09` and `B10` tests (tagged in their titles) in `test/pipeline.test.ts` and `test/vendor-safety.test.ts`, and a search that finds no `<use-case-name>/` or `<use-case-slug>/` key form in the pack.
 8. [Client Transfer Package](client-transfer-package/README.md#planned-design) last, so the zip carries the new keys.
+
+The [End-To-End Acceptance Test](end-to-end-acceptance-test/README.md#planned-design) is built after step 7, so its fixtures use the final ID keys; it changes no other component.
 
 ### Acceptance Mapping
 

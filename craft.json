@@ -19,9 +19,9 @@
     "constraints": {
       "cost": {
         "currency": "USD",
-        "allocated": 34,
+        "allocated": 36,
         "spent": 0,
-        "reserve": 3.4,
+        "reserve": 3.6,
         "source": "unavailable",
         "fallback-metric": "wall-clock seconds"
       },
@@ -31,9 +31,9 @@
       },
       "execution": {
         "wall-clock": {
-          "allocated-seconds": 41400,
+          "allocated-seconds": 45000,
           "spent-seconds": 0,
-          "reserve-seconds": 4140,
+          "reserve-seconds": 4500,
           "source": "unavailable"
         }
       },
