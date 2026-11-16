@@ -11,6 +11,14 @@ A GitHub Copilot agent skill that turns a use case specification into proposed u
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+  - [Steps](#steps)
+  - [Acceptance Mapping](#acceptance-mapping)
+  - [Assumptions And Open Questions](#assumptions-and-open-questions)
+  - [Planned Relationships](#planned-relationships)
+  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -86,3 +94,53 @@ flowchart TB
 - [review-checklist.md](review-checklist.md) — the internal review items tagged B01 to B10.
 - [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md) — the skill instructions.
 - [propose-tracker-updates/tracker-updates.csv](propose-tracker-updates/tracker-updates.csv) — the example proposal for the website use case.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Tracker Update Proposer**
+
+- [Planned Design](#planned-design)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+One wording change and no behavior change. The skill's `record_key` rule for a question row says the use case slug is "the same slug the specification folder and `spec_refs` use", which is no longer literally true now that use case folders sit at any depth under a vendor folder and the [Discovery Orchestrator](../discovery-orchestrator/README.md#design) keeps the folder in the use case index. The build rewords that sentence to say the slug is the use case name in lower case with hyphens and that the specification's location comes from the index, so no wording ties the slug to a folder name. The slug rule, the `<use-case-slug>/Q<n>` form, `spec_refs`, the example proposal and the byte-identical copies of the contract and schema do not change.
+
+### Steps
+
+1. [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md), the `record_key` bullet in the proposal rules: replace "the same slug the specification folder and `spec_refs` use" with "the use case name in lower case with hyphens; the specification's location comes from the use case index, not from the slug".
+2. Check [review-checklist.md](review-checklist.md), the Design above and [contract.md](contract.md#contract) for any wording that ties the slug to a folder name (a search found none), and change only what the search finds.
+3. Validate: a search of the skill folder, the README and the checklist shows no wording that ties the slug to a folder name, then the root `test` check shows the contract copies unchanged.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| 1. The skill says the slug is the use case name in lower case with hyphens and that the specification's location comes from the index, and no wording in the skill, README, contract or checklist ties the slug to a folder name. | B03, B10 | 1, 2 | checklist `[B03]`, `[B10]` and the search in step 3 |
+| 2. The contract and schema copies, the slug rule and `spec_refs` are unchanged. | B10 | 3 | the root `test` check, root `B05` |
+
+Validation: the commands in step 3.
+
+### Assumptions And Open Questions
+
+Assumptions (override by telling the builder, or by editing the file named):
+
+- **A wording change only**, so no behavior is added or reworded and the behaviors stay as they are. Override by asking for a behavior change.
+- **The backlog item `proposer-spec-folder-wording` is removed** in the commit that records this plan, as the backlog rules say.
+- **The local reference form is not decided here.** Which form the contract names for a question row's local reference (the exact name, the slug, or the derived use case ID `uc-<vendor-slug>-<use-case-slug>` that the proposal ID already uses) is the separate backlog item `local-reference-form-decision`; this wording keeps today's slug form. Override by deciding that item first.
+
+Open questions: none.
+
+### Planned Relationships
+
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — keeps the use case index that holds each specification's folder, which the reworded sentence points to.
+
+### Planned Links
+
+- [propose-tracker-updates/SKILL.md](propose-tracker-updates/SKILL.md) — the skill whose sentence changes.

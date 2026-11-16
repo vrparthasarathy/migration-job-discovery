@@ -31,10 +31,12 @@ Two things for the vendor-to-platform migration: a job behavior pack (a blank te
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
 | [Client Transfer Package](client-transfer-package/README.md#purpose) | A Python tool that packs the completed Copilot skills, tracker contract, guides and lead tools into one text-only zip with a manifest, a restore script and a Copilot restore prompt, so the pack can be sent into the client environment and restored there by Copilot Agent mode. |
 | [Lead Tracker Skills](lead-tracker-skills/README.md#components) | The Copilot agent skills a lead uses in chat on top of the lead tracker tools' output, starting with Review Decisions, which records and revisits decisions on the review CSVs. |
+| [Discovery Batch Agent](discovery-batch-agent/README.md#purpose) | A GitHub Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, then recommends workflows and exports the review once and hands the review to the lead in chat. |
+| [Subagent Smoke Test](subagent-smoke-test/README.md#purpose) | Two prompts a developer runs in Copilot Chat in the client environment to check that subagents run, that their context is isolated and that a subagent can use an installed skill. |
 
 ## Design
 
-The root owns no job code and no tool code. It holds the shared rules ([requirements](requirements.md#requirements), [contract](contract.md#contract)), a [review checklist](review-checklist.md) for the document and skill behaviors, and an integration test that runs the built tools against the real example proposal and schema. Three document components make the pack: the [Job Behavior Template](job-behavior-template/README.md#design), the [Website Check Job Behavior](website-check-job-behavior/README.md#design) reference specification filled in from it, and the [Copilot Drafting Guide](copilot-drafting-guide/README.md#design) skill that drafts a specification from source with a copy of the template; the illustrative job [Website Availability Check](website-availability-check/README.md#design) stays unchanged and read-only as the source evidence. The toolkit has one shared interface, the [Tracker Data Contract](tracker-data-contract/README.md#design): three Copilot skills write proposals in its format, the [Tracker Update Proposer](tracker-update-proposer/README.md#design), the [Identity Access Discovery](identity-access-discovery/README.md#design) skill and the [Workflow Recommender](workflow-recommender/README.md#design), each holding byte-identical copies of the contract files, and the [Tracker Tools](tracker-tools/README.md#diagram) (a table library, a reconciler and a daily summary) read the schema from the contract component, reconcile proposals with an export and write the vendor-safe views and the internal summary for a lead to apply by hand. The end-to-end handoffs are in [contract.md](contract.md#end-to-end-handoffs). Each job document carries its own one-box diagram; this diagram shows the components of the project.
+The root owns no job code and no tool code. It holds the shared rules ([requirements](requirements.md#requirements), [contract](contract.md#contract)), a [review checklist](review-checklist.md) for the document and skill behaviors, and an integration test that runs the built tools against the real example proposal and schema. Three document components make the pack: the [Job Behavior Template](job-behavior-template/README.md#design), the [Website Check Job Behavior](website-check-job-behavior/README.md#design) reference specification filled in from it, and the [Copilot Drafting Guide](copilot-drafting-guide/README.md#design) skill that drafts a specification from source with a copy of the template; the illustrative job [Website Availability Check](website-availability-check/README.md#design) stays unchanged and read-only as the source evidence. The toolkit has one shared interface, the [Tracker Data Contract](tracker-data-contract/README.md#design): three Copilot skills write proposals in its format, the [Tracker Update Proposer](tracker-update-proposer/README.md#design), the [Identity Access Discovery](identity-access-discovery/README.md#design) skill and the [Workflow Recommender](workflow-recommender/README.md#design), each holding byte-identical copies of the contract files, and the [Tracker Tools](tracker-tools/README.md#diagram) (a table library, a reconciler and a daily summary) read the schema from the contract component, reconcile proposals with an export and write the vendor-safe views and the internal summary for a lead to apply by hand. The end-to-end handoffs are in [contract.md](contract.md#end-to-end-handoffs). Each job document carries its own one-box diagram; this diagram shows the components of the project. The [Subagent Smoke Test](subagent-smoke-test/README.md#design) is two prompts a developer runs in the client environment to check Copilot's subagent support; it is a check, not part of the toolkit's data flow.
 
 ### Diagram
 
@@ -55,6 +57,7 @@ flowchart TB
   access["<a href='identity-access-discovery/README.md#diagram'>Identity Access Discovery</a>"]
   recommender["<a href='workflow-recommender/README.md#diagram'>Workflow Recommender</a>"]
   tools[["<a href='tracker-tools/README.md#diagram'>Tracker Tools</a>"]]
+  smoke["<a href='subagent-smoke-test/README.md#design'>Subagent Smoke Test</a>"]
   root -->|delegates-to| check
   root -->|delegates-to| tmpl
   root -->|delegates-to| ref
@@ -64,6 +67,7 @@ flowchart TB
   root -->|delegates-to| access
   root -->|delegates-to| recommender
   root -->|delegates-to| tools
+  root -->|delegates-to| smoke
   ref -->|"uses the form of"| tmpl
   ref -->|"is written from"| check
   guide -->|"uses a copy of"| tmpl
@@ -130,6 +134,8 @@ flowchart TB
 | [Tracker Tools](tracker-tools/README.md#purpose) | The lead-facing Node tools for the use case tracker: a shared CSV table library, a reconciler that turns reviewed proposals and a tracker export into reviewable changes, and a daily summary. Leads run them by hand; the authoritative tracker stays an Excel workbook on SharePoint. |
 | [Client Transfer Package](client-transfer-package/README.md#planned-design) | A Python tool that packs the completed Copilot skills, tracker contract, guides and lead tools into one text-only zip with a manifest, a restore script and a Copilot restore prompt. |
 | [Lead Tracker Skills](lead-tracker-skills/README.md#design) | The Copilot agent skills a lead uses in chat on top of the lead tracker tools' output, starting with Review Decisions, which records and revisits decisions on the review CSVs. |
+| [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design) | A GitHub Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, then recommends workflows and exports the review once and hands the review to the lead in chat. |
+| [Subagent Smoke Test](subagent-smoke-test/README.md#purpose) | Two prompts a developer runs in Copilot Chat in the client environment to check that subagents run, that their context is isolated and that a subagent can use an installed skill. |
 
 ### Planned Design
 
@@ -140,6 +146,8 @@ The use case index change adds no component. The [Discovery Orchestrator](discov
 The lead tool conversion plan is withdrawn and replaced: the user confirmed on 2026-11-16 that scripts can run in the client environment, so the lead tools stay Node tools in [Tracker Tools](tracker-tools/README.md#plan) and the [Client Transfer Package](client-transfer-package/README.md#planned-design) ships them. The [Lead Tracker Skills](lead-tracker-skills/README.md#design) child stays, now a group with one skill, [Review Decisions](lead-tracker-skills/review-decisions/README.md#design), that records and revisits the lead's decisions on the review CSVs; the [Discovery Orchestrator](discovery-orchestrator/README.md#planned-design) hands the review to it after the export and keeps the Node exporter call. When that plan is built the root records change as proposed here, to be made by the root's owner: the technology text and `requirements.md` say the lead tools are Node tools that ship to the client and the review decisions are made through a Markdown skill, the end-to-end handoffs say in step 7 that the lead records and revisits decisions through `record-review-decisions` (called by the orchestrator or alone), root `B02` lists the new skill folder among the inspected pack files, and the contract's pack table lists the group. Root `B05` and its test are unchanged, because the skill holds no copy of the contract or schema. The Tracker Data Contract is not changed.
 
 The master workbook update adds no root child; it is the eighth member of [Tracker Tools](tracker-tools/README.md#plan), the [Master Workbook Updater](tracker-tools/master-workbook-updater/README.md#planned-design), which applies accepted review rows to the internal master workbook, copies vendor answers into it and rebuilds each named vendor's workbook (the backlog item `internal-tracker-apply`, now planned). When it is built the root records change as proposed here, to be made by the root's owner: the contract's end-to-end handoff steps 5, 9 and 12 gain "or run `update-master-workbook`", the pack table's `tracker-tools/` row is extended, and an optional root test runs the tool on the example data. Root `B07` keeps its confirmed wording and the Tracker Data Contract is unchanged. This Plan is extended, not replaced.
+
+The batch agent adds one root child, the [Discovery Batch Agent](discovery-batch-agent/README.md#planned-design), a Copilot custom agent that runs discovery for several use cases in one go, each in an isolated subagent, and hands the review to `record-review-decisions` in the main conversation. It writes only use case index rows and changes no existing component. The [Subagent Smoke Test](subagent-smoke-test/README.md#design) child, two prompts that show whether the client's Copilot supports subagents, is listed with it, and the agent's claims are gated on it. When the agent is built the root records change as proposed here, to be made by the root's owner: the technology text names the custom agent file beside the Copilot skills; root `B02` adds `discovery-batch.agent.md` and the two smoke test prompt files to the inspected pack files, in one edit with the skill-folder additions already planned above; and the end-to-end handoffs note that steps 2, 4, 5 and 6 can also run for several folders through the batch agent, with the review still through `record-review-decisions` and applying still by hand. The index lines planned above stay as they are and are made when the [Workflow Recommender](workflow-recommender/README.md#planned-design) is built, which the batch agent is built after; the Tracker Data Contract and root `B05` are unchanged. The reference form of a question row's local reference and the vendor in tracker keys (backlog items `local-reference-form-decision` and `cross-vendor-use-case-name-collision`) are not planned here. This Plan is extended, not replaced.
 
 #### Planned Diagram
 
@@ -163,6 +171,8 @@ flowchart TB
   orch["<a href='discovery-orchestrator/README.md#planned-diagram'>Discovery Orchestrator</a>"]:::planned
   transfer["<a href='client-transfer-package/README.md#planned-diagram'>Client Transfer Package</a>"]:::planned
   skills[["<a href='lead-tracker-skills/README.md#diagram'>Lead Tracker Skills</a>"]]:::planned
+  batch["<a href='discovery-batch-agent/README.md#planned-diagram'>Discovery Batch Agent</a>"]:::planned
+  smoke["<a href='subagent-smoke-test/README.md#design'>Subagent Smoke Test</a>"]
   root -->|delegates-to| check
   root -->|delegates-to| tmpl
   root -->|delegates-to| ref
@@ -175,6 +185,8 @@ flowchart TB
   root -->|delegates-to| orch
   root -->|delegates-to| transfer
   root -->|delegates-to| skills
+  root -->|delegates-to| batch
+  root -->|delegates-to| smoke
   ref -->|"uses the form of"| tmpl
   ref -->|"is written from"| check
   guide -->|"uses a copy of"| tmpl
@@ -203,6 +215,16 @@ flowchart TB
   transfer -->|"reads"| skills
   skills -->|"reads the review headings of"| tools
   orch -->|"uses"| skills
+  batch -->|"uses"| proposer
+  batch -->|"uses"| access
+  batch -->|"uses"| guide
+  batch -->|"uses"| recommender
+  batch -->|"uses"| tools
+  batch -->|"uses"| skills
+  batch -->|"uses"| orch
+  batch -->|"is checked with"| smoke
+  transfer -->|"reads"| batch
+  transfer -->|"reads"| smoke
   classDef planned stroke-dasharray: 5 5,stroke:#2563eb
 ```
 

@@ -1,5 +1,20 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-16T17:08:58Z",
+    "constraints": {
+      "cost": { "currency": "USD", "allocated": 1, "spent": 0, "reserve": 0.1, "source": "unavailable", "fallback-metric": "wall-clock seconds" },
+      "delegation": { "maximum-depth": 0, "maximum-children": 0 },
+      "execution": { "wall-clock": { "allocated-seconds": 1800, "spent-seconds": 0, "reserve-seconds": 300, "source": "unavailable" } },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The skill's record_key rule says the use case slug is the use case name in lower case with hyphens and that the specification's location comes from the use case index, and no wording in the skill folder, README, contract or checklist ties the slug to a folder name. (B03, B10)",
+      "The byte-identical contract and schema copies, the slug rule, the key form and spec_refs are unchanged, and the root test check stays green. (B10)"
+    ]
   }
 }

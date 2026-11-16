@@ -96,7 +96,7 @@ flowchart TB
 
 Planned with the [Review Decisions](../lead-tracker-skills/README.md#design) skill, and after the user confirmed on 2026-11-16 that scripts can run in the client environment, so the tools stay in the package. This replaces the current wording of `B02` when built; the other behaviors are unchanged.
 
-- **B02** When the payload list is read, then the package holds only the listed files: the six Copilot skill folders complete (the five existing and `record-review-decisions`), the tracker contract, schema and templates with the workbook layout guide, the process guide and usage guidance, the job behavior template with its filling guide and the reference specification, the tracker tools with tests and fictional fixtures (including the Vendor Workbook Updater with its `package.json` and lock file, and the sample's headings file it reads), and the root integration tests with the files they read; git history, secrets, `node_modules`, caches, generated client data, unrelated components and CRAFT metadata (unless runtime use needs it) are left out.
+- **B02** When the payload list is read, then the package holds only the listed files: the six Copilot skill folders complete (the five existing and `record-review-decisions`), the Discovery Batch Agent file `discovery-batch-agent/discovery-batch.agent.md` and the two Subagent Smoke Test prompt files, the tracker contract, schema and templates with the workbook layout guide, the process guide and usage guidance, the job behavior template with its filling guide and the reference specification, the tracker tools with tests and fictional fixtures (including the Vendor Workbook Updater with its `package.json` and lock file, and the sample's headings file it reads), and the root integration tests with the files they read; git history, secrets, `node_modules`, caches, generated client data, unrelated components and CRAFT metadata (unless runtime use needs it) are left out.
 
 ### Steps
 
@@ -105,7 +105,7 @@ Planned with the [Review Decisions](../lead-tracker-skills/README.md#design) ski
 3. **`src/package.py`** (B01, B04, B05, B08): source revision, manifest, deterministic zip, `.txt` naming, rendering of the templates and the generated process guide, with the "Copilot" wording and the check that each command in the quickstart names a packaged file.
 4. **`src/restore.py`** (B06, B07): the standalone restore script, standard library only, as `contract.md` sets out.
 5. **`src/verify.py`** and **`src/build.py`** (B03, B09, B10): the two commands, the two-pass build, the clean-directory restore, the byte comparison, the zip and member-name checks, and the packaged tests where Node is available (the Vendor Workbook Updater's are skipped until `npm ci` has run in its folder).
-6. **`templates/`**: `START-HERE.txt`, `COPILOT-RESTORE-PROMPT.txt`, `CLIENT-QUICKSTART.md.txt`, `VERIFICATION.txt` (with fixed wording for the client-environment checks).
+6. **`templates/`**: `START-HERE.txt`, `COPILOT-RESTORE-PROMPT.txt`, `CLIENT-QUICKSTART.md.txt`, `VERIFICATION.txt` (with fixed wording for the client-environment checks). The restore prompt also tells Copilot to copy the agent file to the workspace's `.github/agents/` folder, because the existing step copies only skill folders to `.github/skills`, and the quickstart names the two smoke test prompts as the first thing to run in the client environment.
 7. **Tests** in `test/`, tagged `[B01]` to `[B10]` in the test name and docstring: `test_build` (B01, B04, B08), `test_payload` (B02, B03), `test_texts` (B05, B10), `test_restore` (B06, B07), `test_verify` (B09). Unit tests build a small fixture tree in a temporary directory at test time; one run builds and verifies the real repository.
 8. **Docs:** the built `Design` and diagram in this README, kept in step with `requirements.md` and `contract.md`.
 9. **Validate:** the component's `test` check (`python3 -m unittest`), then `build` and `verify` on the real repository, then a restore of the built zip into a clean directory and a byte comparison.
@@ -137,6 +137,7 @@ Assumptions (override by telling the builder, or by editing the file named):
 - **No component records are packed** (`craft.json`, `tasks.md`, `README.md`, `requirements.md`, `contract.md`, `review-checklist.md`), because no test or command reads them, and so the pack carries no internal process term. Override by adding them to `payload.txt` and removing the exclusion.
 - **The process guide is generated** from the end-to-end handoffs table of the root `contract.md`. To ship a dedicated guide instead, add the file to the payload and drop the generator.
 - **The Sample Tracker Workbook is not packed**; `requirements.md` says how to add its sources and data and why its `.xlsx` is left out.
+- **The Discovery Batch Agent file and the Subagent Smoke Test prompts are shipped** (`discovery-batch-agent/discovery-batch.agent.md`, `subagent-smoke-test/test-1-subagent-basics.md` and `test-2-subagent-skill.md`), by the user's request for the agent to be usable directly in the client environment. `payload.txt` lists them and `requirements.md` and `contract.md` are kept in step at the build. Build this component after the agent is built, because the payload expansion stops on a missing file. The agent holds no copy of the contract, so the root copy test is unchanged. Override by dropping the three paths from `payload.txt`.
 - **Output at `dist/AIRO-Client-Transfer.zip`**, ignored by git.
 - **Source revision** is the git revision, with `+dirty` for uncommitted changes and `unknown` outside a git checkout.
 - **Budget:** USD 5 and 4,500 s, thin for four modules, four templates and five test files; keep tests compact.
@@ -151,6 +152,8 @@ Open questions (behavior or real ambiguity): none.
 - [Workflow Recommender](../workflow-recommender/README.md#purpose) — the recommendation skill and its templates that are packed.
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#purpose) — the coordinating skill that is packed.
 - [Review Decisions](../lead-tracker-skills/review-decisions/README.md#design) — the skill that records and revisits review decisions, packed as the sixth skill folder.
+- [Discovery Batch Agent](../discovery-batch-agent/README.md#purpose) — the custom agent file that is packed.
+- [Subagent Smoke Test](../subagent-smoke-test/README.md#design) — the two prompt files that are packed.
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the contract, schema, templates and layout guide that are packed.
 - [Tracker Tools](../tracker-tools/README.md#purpose) — the tools, with tests, that are packed.
 - [Job Behavior Template](../job-behavior-template/README.md#purpose) — the template and filling guide that are packed.
