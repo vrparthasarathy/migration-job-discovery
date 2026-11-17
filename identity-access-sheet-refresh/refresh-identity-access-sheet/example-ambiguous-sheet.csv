@@ -1,0 +1,3 @@
+access_ref,vendor,use_case_ref,service,endpoint,environment,auth_type,observed_operations,identity_reference,observed_access,proposed_access,permissions_to_confirm,unknowns,unknown_owner,evidence_refs,our_coordinator,vendor_action_owner,ticket_ref,raised_on,request_status,expected_availability,additional_requirements,next_action,next_action_owner,verification,verified_by,verified_on,dev_notes
+AX-EX-011,Example Vendor,EX-WEB-01,Company website,CHECK_URL,prod,,,,,,,,,,A. Example Lead,,,,proposed,,,,,,,,prod address to be confirmed
+AX-EX-012,Example Vendor,EX-WEB-01,Company website,CHECK_URL,test,,,,,,,,,,,,,,proposed,,,,,,,,test address to be confirmed
