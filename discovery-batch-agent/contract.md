@@ -8,18 +8,18 @@ In VS Code agent mode, the custom agent `discovery-batch` chosen in Copilot Chat
 
 ### Inputs
 
-- First, on its own: the use cases to run, by name or slug.
+- First, on its own: the use cases to run, by name or slug; the stages to run (`screening`, `identity`, `specification`, any combination, default all three); and whether to run workflow recommendation too (default no).
 - Read from `use-case-index.csv` at the repository root, never asked for: each use case's folder, vendor and specification path. A name with no row needs its folder asked once.
 - Derived, never asked for: the proposal ID `uc-<vendor-slug>-<use-case-slug>` and the fixed recommendations ID `recommendations`, by the section "The use case index and the proposal ID" of `run-discovery`.
 - Asked once and never invented, remembered for the session: the repository root, the tracker export folder, the proposals root, the exporter path, the folder for the review CSVs, the lead's name and today's date.
 
 ### Confirmation table
 
-One table before anything runs: use case, vendor, folder, proposal ID, and `skip` where `<proposals root>/tracker-updates/<proposal-id>/tracker-updates.csv` exists. The run starts only after the lead confirms it. A duplicate proposal ID stops the run, names both folders and writes nothing.
+One table before anything runs: use case, vendor, folder, proposal ID and one column per stage (screening, identity, specification), each `run`, `skip: not chosen` or `skip: already done`. A stage is already done when its own result exists: screening when the use case's `<proposals root>/tracker-updates/<proposal-id>/tracker-updates.csv` holds a Use Cases row with `source_status`, identity when it holds an Identity & Access row, specification when the use case's index row has a non-blank `spec`. A done stage is `run` again only when the lead asks for a rerun of that stage. The agent only reads the proposal file to decide. The run starts only after the lead confirms the table. A duplicate proposal ID stops the run, names both folders and writes nothing.
 
 ### Worker subagent
 
-One subagent per use case, started one at a time with a brief that holds the use case's facts and the shared answers and nothing else from the conversation. It runs, through the installed skills, source screening (`propose-tracker-updates`), `discover-identity-access`, and behavior documentation (`document-job-behavior` then `propose-tracker-updates` in specification-update mode). It never asks the lead anything; a missing fact makes that stage blocked. It skips behavior documentation when the proposed `source_status` is `not-located` or `empty`.
+One subagent per use case, started one at a time with a brief that holds the use case's facts and the shared answers and nothing else from the conversation. The brief carries `Stages to run:` with `run` or `skip: <not chosen | already done>` for each stage. It runs only the `run` stages, in the fixed order screening (`propose-tracker-updates`), identity (`discover-identity-access`), specification (`document-job-behavior` then `propose-tracker-updates` in specification-update mode), never an unchosen stage, and each stage writes only its own rows. It never asks the lead anything; a missing fact makes that stage blocked. Specification is never blocked for missing screening: it reads `source_status` from the file when there is one, skips when it is `not-located` or `empty`, and otherwise proceeds; a source it cannot find is reported as blocked.
 
 ### Worker reply record
 
@@ -28,10 +28,10 @@ The subagent replies with exactly these nine lines, in this order, and nothing e
 ```text
 USE-CASE: <name>
 PROPOSAL-ID: <proposal-id>
-SOURCE-STATUS: <value>
-STAGE-1: done | blocked: <reason>
-STAGE-2: done | blocked: <reason>
-STAGE-3: done | skipped: <reason> | blocked: <reason>
+SOURCE-STATUS: <value, or none when no value is known>
+STAGE-1: done | skipped: not chosen | skipped: already done | blocked: <reason>
+STAGE-2: done | skipped: not chosen | skipped: already done | blocked: <reason>
+STAGE-3: done | skipped: not chosen | skipped: already done | skipped: <source status reason> | blocked: <reason>
 SPEC-PATH: <path of the specification, or none>
 FILES-WRITTEN: <paths>
 OPEN-QUESTIONS: <count and one line each, or none>
@@ -45,11 +45,11 @@ The agent's only own write. After the lead confirms the table it writes or updat
 
 ### Recommendation subagent
 
-After the loop, one subagent runs `recommend-workflows` over every index row that has a `spec`, with the fixed proposal ID `recommendations` and the lead's name and date. The lead has confirmed the list once, shown with the warning that a partial list drops the other use cases' mappings, and the brief says so. It never asks the lead anything and writes no tracker file.
+Only when the lead asked for it, after the loop, one subagent runs `recommend-workflows` over every index row that has a `spec`, with the fixed proposal ID `recommendations` and the lead's name and date. The lead has confirmed the list once, shown with the warning that a partial list drops the other use cases' mappings, and the brief says so. It never asks the lead anything and writes no tracker file.
 
 ### Export and report
 
-The agent runs once `node <exporter path>/src/main.ts export-review --export <dir> --proposals <root> --out <dir>`. On exit 1 or 2 it stops and shows the error unchanged. It then reports one table per use case (outcome per stage, skipped, blocked or failed with the reason, `spec unknown` where it applies), the recommendation counts, and the exporter's counts including rejected proposal rows.
+After every run, even when every stage was skipped, the agent runs once `node <exporter path>/src/main.ts export-review --export <dir> --proposals <root> --out <dir>`. The review folder is the same each time, so earlier review decisions are kept. On exit 1 or 2 it stops and shows the error unchanged. It then reports one table per use case (outcome per stage: done, not chosen, already done, blocked or failed with the reason, `spec unknown` where it applies), the recommendation counts, and the exporter's counts including rejected proposal rows.
 
 ### Review hand-over
 

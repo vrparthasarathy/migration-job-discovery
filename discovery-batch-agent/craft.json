@@ -1,5 +1,40 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T01:05:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The agent first asks which use cases, which stages (screening, identity and access, specification, any combination, default all three) and whether to run workflow recommendation, and its table shows per stage `run`, `skip: not chosen` or `skip: already done`. (B01, B02)",
+      "A worker runs only the chosen stages in the fixed order, each writing only its own rows, and its record shows `skipped: not chosen`, `skipped: already done` or `blocked` per stage; a blocked or malformed use case never stops the batch. (B03, B04)",
+      "A stage is skipped as done when its own result is in the proposal file or, for specification, the index row has a spec, unless the lead asks for a rerun; specification is never blocked for missing screening. (B05)",
+      "Recommendation runs only when asked, and the exporter runs after every run into the same review folder, keeping earlier decisions. (B06, B07)",
+      "The hand-over, the write limits and the no-subagent stop are unchanged, and the review checklist's scan prints nothing. (B08, B09, B10)"
+    ]
   }
 }
