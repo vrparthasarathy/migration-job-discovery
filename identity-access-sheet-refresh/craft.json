@@ -1,39 +1,5 @@
 {
   "configuration": {
     "checks": {}
-  },
-  "task": {
-    "status": "ready",
-    "worker": "builder",
-    "updated": "2026-11-17T03:17:35Z",
-    "constraints": {
-      "cost": {
-        "currency": "USD",
-        "allocated": 1,
-        "spent": 0,
-        "reserve": 0.1,
-        "source": "unavailable",
-        "fallback-metric": "wall-clock seconds"
-      },
-      "delegation": {
-        "maximum-depth": 0,
-        "maximum-children": 0
-      },
-      "execution": {
-        "wall-clock": {
-          "allocated-seconds": 1800,
-          "spent-seconds": 0,
-          "reserve-seconds": 300,
-          "source": "unavailable"
-        }
-      },
-      "external-effects": "require-current-turn-user-approval"
-    },
-    "acceptance": [
-      "Given a paired row whose `auth_type` the source shows differently from the sheet, the output row is `corrected`, with `auth_type`, `proposed_access`, `permissions_to_confirm` and `unknowns` following the rules for that type, and no permission or scope is invented; and a row whose `auth_type` is free text ends with one of `website-sign-in`, `api-credential`, `other` or `unknown` (mapped only where the text unambiguously names one kind, otherwise `unknown`), is `corrected`, and has its original wording listed in the report. (B01)",
-      "Given an unpaired finding, the `new` row has `auth_type`, `proposed_access`, `permissions_to_confirm` and `unknowns` filled by the rules (including `reuse of an existing CI identity: unconfirmed`) and `use_case_ref` filled, with every other human-owned and forbidden column blank. (B03)",
-      "Given human-owned or forbidden cells outside their allowed list or format, the cells are copied exactly as typed and the report lists each by row and column. (B05)",
-      "Given a document-only row, an identity name and a CI identity, the output keeps a `not in source` row byte-equal, writes `identity_reference` as `NAME (runtime value unknown)`, drops the document-only prefix only when a `source:` pointer is added and the source shows the observed access, and the checklist's drift section lists every restated rule, including the allowed `auth_type` values and the spec text shapes, with the sibling section it matches, the examples having been compared with the sample workbook. (B06, B07, B10)"
-    ]
   }
 }

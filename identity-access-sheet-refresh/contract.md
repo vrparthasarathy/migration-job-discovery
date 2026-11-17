@@ -9,7 +9,7 @@
 | Skill name | The `name` in the `SKILL.md` front matter is `refresh-identity-access-sheet`, identical to the folder name. |
 | Input | One vendor's Identity & Access sheet saved as CSV with the tracker's column headings; the source and configuration of each use case in it, `external_tools.md` and `logic.md` where present; the map from each `use_case_ref` value to its folder (with no folder given, the use case's index row `folder`); the use cases or vendor in scope. |
 | Output | One new CSV, `access-sheet-refresh/<sheet-stem>[-<scope>]-refreshed.csv` (the developer may name another path), and a report. Nothing else is written. |
-| Folder | `SKILL.md`, byte-identical copies of `tracker-data-contract.md` and `tracker-schema.csv` from the [Tracker Data Contract](../tracker-data-contract/README.md#purpose) component, and the example sheet and its expected output named in the plan. |
+| Folder | `SKILL.md`, byte-identical copies of `tracker-data-contract.md` and `tracker-schema.csv` from the [Tracker Data Contract](../tracker-data-contract/README.md#purpose) component, and the example sheet and its expected output named in the README. |
 
 ### Matching and normalization
 
@@ -27,7 +27,7 @@ The key of a row is the use case, the endpoint and the environment. Normalizatio
 | Value | Meaning |
 | --- | --- |
 | `unchanged` | A pair where no tracker cell differs after the source-backed fields are standardized and `evidence_refs` was already complete. |
-| `corrected` | A pair where the source contradicts or standardizes a value, or `evidence_refs` was blank or incomplete and is now filled. |
+| `corrected` | A pair where the source contradicts or standardizes a value, `evidence_refs` was blank or incomplete and is now filled, a blank `unknowns` is filled, or `auth_type` is set or corrected. |
 | `new` | A source finding no sheet row pairs with; spec fields from the source, human-owned and forbidden columns blank. |
 | `not in source` | A sheet row with no source evidence; copied unchanged. |
 
@@ -50,7 +50,7 @@ The key of a row is the use case, the endpoint and the environment. Normalizatio
 
 The reply states, in plain language: the output file path; counts per `change` value; each loose pairing and what differed; each ambiguous case listed as a possible match; each `not in source` row with the reason; use cases with no folder; unread files; the cells where a secret was replaced; the result of the read-back check; and that the developer pastes only the tracker columns back and reviews the changed rows first.
 
-## Planned change: restated evidence rules and drift check
+## Restated evidence rules and drift check
 
 - **Handling of identities.** `identity_reference` names are written `NAME (runtime value unknown)`; a value is never taken from a runtime, a log or a CI setting. Reuse of an existing CI identity is listed in `unknowns` as exactly `reuse of an existing CI identity: unconfirmed`.
 - **Prefix.** The document-only prefixes are exactly `From a supporting document, not confirmed in source:` and `From a supplied observation, not confirmed in source:`.
