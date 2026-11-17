@@ -34,3 +34,13 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 - No secret value or part of one appears in the output or the report. (B06)
 - `evidence_refs` holds `source:` pointers that resolve, the output is a new CSV with the sheet's header plus `change`, nothing else is written, and a scoped run writes only that scope. (B07, B08)
 - A rerun gives a byte-identical file, the self-check result is stated, and the folder has no Craft term and byte-identical copies. (B09, B10)
+
+## Planned change: restated evidence rules and drift check
+
+- The skill restates the evidence rules it shares with the sibling discovery skill in full for the fields it may write: the `auth_type` criteria, the per-type `proposed_access` wording, `permissions_to_confirm` listing every permission the source does not show (never guessing a permission or scope), the `unknowns` list rules including the exact text `reuse of an existing CI identity: unconfirmed`, the `NAME (runtime value unknown)` form with no value from a runtime, a log or a CI setting, and the document-only prefix on `observed_access`.
+- A paired row's `proposed_access` is rewritten only when the run sets or corrects `auth_type` or when it is blank; a blank `unknowns` is filled and a non-blank one kept as typed; the developer's `permissions_to_confirm` entries are kept and the missing ones added. Either change makes the row `corrected`.
+- A `not in source` row stays exactly as typed, prefix included; a paired row that gains a `source:` pointer drops the prefix only when the source shows the observed access; a `new` row has none.
+- Must match the source (the sibling's meaning and fixed strings): the rules above. May differ, deliberately: no shared-flag computation, no `request_status` or `unknown_owner` suggestion, no `ready-to-raise`, `use_case_ref` filled on `new` rows, no revision in pointers.
+- The review checklist holds a drift section: one row per restated rule with the sibling section it must match, the deliberate differences, and a pass rule. The skill folder does not name the sibling skill.
+- Must not: edit the sibling skill, the root or the contract and schema copies, or add code.
+- Acceptance: a corrected `auth_type` gives a `corrected` row following the rules for that type (B01); a `new` row carries the rules and the CI text (B03); identity form, prefix, byte-equal `not in source` rows, the drift section and self-containment (B06, B07, B10).

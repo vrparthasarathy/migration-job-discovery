@@ -49,3 +49,10 @@ The key of a row is the use case, the endpoint and the environment. Normalizatio
 ### Report parts
 
 The reply states, in plain language: the output file path; counts per `change` value; each loose pairing and what differed; each ambiguous case listed as a possible match; each `not in source` row with the reason; use cases with no folder; unread files; the cells where a secret was replaced; the result of the read-back check; and that the developer pastes only the tracker columns back and reviews the changed rows first.
+
+## Planned change: restated evidence rules and drift check
+
+- **Handling of identities.** `identity_reference` names are written `NAME (runtime value unknown)`; a value is never taken from a runtime, a log or a CI setting. Reuse of an existing CI identity is listed in `unknowns` as exactly `reuse of an existing CI identity: unconfirmed`.
+- **Prefix.** The document-only prefixes are exactly `From a supporting document, not confirmed in source:` and `From a supplied observation, not confirmed in source:`.
+- **Report parts.** The third part also lists the rows whose `proposed_access` was rewritten because `auth_type` was set or corrected, by row and column only.
+- The output file, the header, the `change` values, the row order and the matching rules do not change.
