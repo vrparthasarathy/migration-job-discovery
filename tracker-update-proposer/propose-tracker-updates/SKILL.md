@@ -42,13 +42,28 @@ One row per field. For every row:
 - `operation` is `add`, `set` or `suggest`. Never `link`: you write no link rows.
 - `record_key` is the local reference, never a central reference such as `UC-###` or `QN-####`. For a use case it is the use case ID, `uc-<vendor-slug>-<use-case-slug>`. For a question row it is `<use-case-id>/Q<n>`, where `Q<n>` is the question's ID in the specification. Question IDs are never renumbered and never reused. The use case ID is built from the use case's vendor and its use case name, each reduced to a slug: lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed, with the prefix `uc-`. It is derived and never written in a column of its own; the readable name stays in the `use_case_name` column. The name alone or a slug alone is never a key. Where a specification is stored comes from the use case index, never from the slug.
 - `field` is a column name from `tracker-schema.csv` for that tab.
-- `value` is the proposed value. `base_value` is the value you saw before the change, filled for every `set` and blank for an `add`.
+- `value` is the proposed value. `base_value` is the value you saw before the change, filled for every `set` and blank for an `add`. When the field was blank when you saw it, a `set` leaves `base_value` blank too: write no dot, no placeholder and no guess.
 - `source` is where the value comes from (see "Sources").
 - `reason` is a short plain sentence saying why. It is where a grouping impact reason goes.
 - `created_on` is the date (`YYYY-MM-DD`) on which the row was first proposed. When you rerun on a proposal file that already has the row with the same content, keep its `created_on` so the rerun gives identical rows.
 - `author` is `propose-tracker-updates`.
 
 Order the rows by tab (Use Cases first), then by record, then by the field order in `tracker-schema.csv`, so the same input always gives the same file.
+
+When you append to a proposal file that already exists, first make sure it ends with a line feed (add one if the last character is not a line feed), so the first row you add starts on a new line and never fuses with the last row.
+
+### Check the file before you report
+
+After you write the file and before you report, read it back and check each point. Fix every problem and check again.
+
+- The header is exactly the one above.
+- Every row has exactly 12 fields. A row with fewer or more has a lost or extra comma or a fused row.
+- Any value with a comma, a double quote or a line break is quoted, with inner quotes doubled.
+- `created_on`, and any value that is a date, is `YYYY-MM-DD`.
+- Each `record_key` has the form of its tab: the use case ID for Use Cases, and `<use-case-id>/Q<n>` for Questions.
+- The file ends with exactly one line feed: not none, and not a blank line after it.
+
+If the Tracker Reconciler toolkit is available in the workspace, also run `validate <file>` on the proposal file and fix every error it prints before you report. If it is not available, skip this step: you need nothing installed, and the check above is enough. In the report, say whether the check was clean or which problems you fixed, and whether `validate` was run.
 
 ### Field classes
 
@@ -143,7 +158,8 @@ End your reply with a report, in plain words, with these parts. Write `none` for
 4. Unread files: files you were given or looked for and could not read.
 5. Use cases with an unassigned source owner, and use cases that have only supporting documents and no located source.
 6. Use cases whose behavior changed, each with the change class, the changed behavior IDs and the suggested grouping impact with its reason, `unknown` ones listed first, so the affected workflow recommendations can be re-reviewed.
-7. Where the file is, how many rows it has per tab and per operation, and that a lead reviews every row and this report before anything is applied.
+7. The result of the file check (clean, or the problems you fixed) and whether `validate` was run.
+8. Where the file is, how many rows it has per tab and per operation, and that a lead reviews every row and this report before anything is applied.
 
 ## Always
 

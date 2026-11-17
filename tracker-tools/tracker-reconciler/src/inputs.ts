@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { parseCsv, type Table } from "../../tracker-tables/src/csv.ts";
 import { getTab, tabFileName, validateTable, type Schema } from "../../tracker-tables/src/schema.ts";
 import { useCaseId } from "../../tracker-tables/src/use_case_id.ts";
@@ -146,29 +146,97 @@ export async function loadExport(dir: string, schema: Schema, problems: string[]
   return problems.length > before || !manifest ? undefined : { dir, manifest, tables };
 }
 
-export function loadProposalFile(file: string, content: string, schema: Schema, problems: string[]): Change[] {
+const ID = "uc-[a-z0-9]+(?:-[a-z0-9]+)+";
+/** The key form of each tab a proposal may address, as the contract states it. */
+const KEY_FORMS: Record<string, { pattern: RegExp; form: string }> = {
+  "Use Cases": { pattern: new RegExp(`^${ID}$`), form: "<use-case-id>" },
+  Questions: { pattern: new RegExp(`^${ID}/Q\\d+$`), form: "<use-case-id>/Q<n>" },
+  "Identity & Access": { pattern: new RegExp(`^${ID}/.+/[^/]+$`), form: "<use-case-id>/<endpoint>/<environment>" },
+  Mappings: { pattern: new RegExp(`^${ID}->>[a-z0-9]+(?:-[a-z0-9]+)*$`), form: "<use-case-id>->><candidate-slug>" },
+};
+
+/** Problems of the raw text of a proposal file: byte order mark, line ends, final line feed and the field count of each row. */
+function shapeProblems(file: string, content: string, problems: string[]): void {
+  const bad = (line: number, message: string) => problems.push(`${file}: line ${line}: ${message}`);
+  if (content.startsWith("\uFEFF")) bad(1, "byte order mark; save the file as UTF-8 without one");
+  const body = content.replace(/^\uFEFF/, "");
+  const cr = body.indexOf("\r");
+  if (cr >= 0) {
+    bad(body.slice(0, cr).split("\n").length, "CRLF or CR line end; use LF only");
+    return;
+  }
+  const records: number[] = [];
+  let fields = 1;
+  let quoted = false;
+  let start = true;
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i]!;
+    if (quoted) {
+      if (c === '"' && body[i + 1] === '"') i++;
+      else if (c === '"') quoted = false;
+    } else if (c === '"' && start) {
+      quoted = true;
+      start = false;
+    } else if (c === ",") {
+      fields++;
+      start = true;
+    } else if (c === "\n") {
+      records.push(fields);
+      fields = 1;
+      start = true;
+    } else start = false;
+  }
+  if (!body.endsWith("\n")) {
+    records.push(fields);
+    bad(records.length, "missing final line feed");
+  }
+  records.forEach((count, index) => {
+    if (count !== PROPOSAL_HEADER.length) bad(index + 1, `row has ${count} fields but the header has ${PROPOSAL_HEADER.length}`);
+  });
+}
+
+export function loadProposalFile(file: string, content: string, schema: Schema, problems: string[], folder?: string): Change[] {
   if (content.replace(/^\uFEFF/, "").split(/\r\n|\n|\r/, 1)[0] !== PROPOSAL_HEADER.join(",")) {
     problems.push(`${file}: line 1: header must be ${PROPOSAL_HEADER.join(",")}`);
     return [];
   }
-  const table = parseText(file, content, problems);
-  if (!table) return [];
+  const parsing: string[] = [];
+  const table = parseText(file, content, parsing);
+  if (!table && !parsing.every((p) => / has \d+ fields but the header has /.test(p))) {
+    problems.push(...parsing);
+    return [];
+  }
+  const shape = problems.length;
+  shapeProblems(file, content, problems);
+  if (problems.length > shape) return [];
   const changes: Change[] = [];
-  table.rows.forEach((row, index) => {
+  table!.rows.forEach((row, index) => {
     const line = index + 2;
     const before = problems.length;
     const bad = (message: string) => problems.push(`${file}: line ${line}: ${message}`);
-    let columns: string[] = [];
+    let columns: { column: string; type: string; allowed: string[] }[] = [];
     try {
-      columns = getTab(schema, row.tab!).columns.map((c) => c.column);
+      columns = getTab(schema, row.tab!).columns;
     } catch (error) {
       bad((error as Error).message);
     }
-    if (columns.length > 0 && !columns.includes(row.field!)) bad(`unknown field "${row.field}" for tab "${row.tab}"`);
+    const column = columns.find((c) => c.column === row.field);
+    if (columns.length > 0 && !column) bad(`unknown field "${row.field}" for tab "${row.tab}"`);
     if (!OPERATIONS.includes(row.operation!)) bad(`operation "${row.operation}" must be one of ${OPERATIONS.join(", ")}`);
     if (row.record_key === "") bad("record_key is empty");
+    else {
+      const key = KEY_FORMS[row.tab!];
+      if (key && !key.pattern.test(row.record_key!)) bad(`record_key "${row.record_key}" does not fit tab ${row.tab}; expected ${key.form} with a use case ID uc-<vendor-slug>-<use-case-slug>`);
+    }
     if (row.source === "") bad("source is empty; every row must be traceable");
     if (!isIsoDate(row.created_on!)) bad(`created_on "${row.created_on}" is not a date in YYYY-MM-DD format`);
+    if (column?.type === "date") {
+      for (const name of ["value", "base_value"]) {
+        const text = row[name]!;
+        if (text !== "" && !column.allowed.includes(text) && !isIsoDate(text)) bad(`${name} "${text}" is not a date YYYY-MM-DD`);
+      }
+    }
+    if (folder !== undefined && row.proposal_id !== folder) bad(`proposal_id "${row.proposal_id}" differs from folder "${folder}"`);
     if (row.update_id !== `${row.proposal_id}:${row.tab}:${row.record_key}:${row.field}`) bad(`update_id "${row.update_id}" is not <proposal_id>:<tab>:<record_key>:<field>`);
     for (const [field, value] of Object.entries(row)) {
       if (looksSecret(value)) bad(`secret-looking value in "${field}"; remove it from the file`);
@@ -205,7 +273,7 @@ export async function loadProposals(dir: string, schema: Schema, known: ExportDa
   const changes: Change[] = [];
   for (const file of files) {
     const content = await readText(file, problems, "file");
-    if (content !== undefined) changes.push(...loadProposalFile(file, content, schema, problems));
+    if (content !== undefined) changes.push(...loadProposalFile(file, content, schema, problems, basename(dirname(resolve(file)))));
   }
   const seen = new Map<string, Change>();
   for (const change of changes) {
@@ -278,7 +346,7 @@ export async function validatePath(path: string, schema: Schema): Promise<string
     const proposals = entries.filter((e) => basename(e) === PROPOSAL_FILE).sort().map((e) => join(path, e));
     for (const file of proposals) {
       const content = await readText(file, problems, "file");
-      if (content !== undefined) loadProposalFile(file, content, schema, problems);
+      if (content !== undefined) loadProposalFile(file, content, schema, problems, basename(dirname(resolve(file))));
       valid.push(file);
     }
     if (valid.length === 0) problems.push(`${path}: nothing to validate; no manifest.csv or ${PROPOSAL_FILE} found`);

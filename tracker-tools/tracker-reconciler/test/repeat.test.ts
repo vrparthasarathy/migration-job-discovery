@@ -103,7 +103,7 @@ async function apply(outDir: string, exportDir: string): Promise<number> {
 test("[B03] the whole example proposal against an empty export gives additions, and after applying them a second run gives none", async () => {
   const f = await fixture();
   await writeExport(f.exportDir, {});
-  await put(join(f.proposals, "propose-tracker-updates", "tracker-updates.csv"), await readFile(examplePath, "utf8"));
+  await put(join(f.proposals, "website-check-example", "tracker-updates.csv"), await readFile(examplePath, "utf8"));
   const first = await reconcile(f);
   assert.equal(first.status, 0, first.stderr);
   const proposed = parseCsv(await readFile(examplePath, "utf8"), examplePath).rows;

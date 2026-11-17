@@ -54,10 +54,8 @@ A list of use case pairs the leads already know to be the same or different, wit
 
 The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Data Contract](../tracker-data-contract/contract.md#references) and is derived here from the index row's `vendor` and `use_case_name`, never stored.
 
-- A Mappings row is keyed `<use-case-id>->>candidate-slug`, where the candidate slug is the candidate name in lower case with hyphens. A blocking question is linked by its local reference `<use-case-id>/Q<n>@v<version>`. The name form and the slug-alone form are not valid.
+- A Mappings row is keyed `<use-case-id>->>candidate-slug`, where the candidate slug follows the contract's rule (each run of characters outside `a-z` and `0-9` becomes one `-`). A blocking question is linked by its local reference `<use-case-id>/Q<n>@v<version>`. The name form and the slug-alone form are not valid.
 - The ID needs the vendor. For an index row with a blank vendor the skill asks the lead once, never invents one, and writes no Mappings row for that use case until it is known; the use case is still compared and listed in the report.
 - The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built; `tracker-schema.csv` is unchanged.
 
-## Planned change: proposal file self-check
-
-The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.
+The skill's reply states the proposal file check result (clean, or the problems fixed) and whether `validate` was run, with its other report items. The proposal file format is the Tracker Data Contract's.

@@ -11,15 +11,6 @@ A GitHub Copilot agent skill that reads a use case's source and configuration an
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
-  - [Planned Navigation](#planned-navigation)
-  - [Planned Design](#planned-design)
-    - [Planned Diagram](#planned-diagram)
-  - [Steps](#steps)
-  - [Acceptance Mapping](#acceptance-mapping)
-  - [Assumptions And Open Questions](#assumptions-and-open-questions)
-  - [Planned Relationships](#planned-relationships)
-  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -32,6 +23,8 @@ The skill runs from the first day as a lightweight sweep across all known use ca
 Each record gives the service, endpoint and environment, the observed operations, the exact identity or variable reference names with runtime values `unknown`, observed and proposed access in separate columns, the permissions to confirm, the unknowns with who resolves each, and evidence pointers that begin `source:`, `document:` or `dependency:`. A row that rests only on a document or an observation is marked as not confirmed in source. A literal credential is reported as its location and `value withheld`; no secret reaches any output. The proposed request follows the observed authentication: a website sign-in asks for an approved identity or account, application permissions and a supported automated authentication or SSO where it applies; an API source asks for approved API identity or credential provisioning and the permissions or scopes the source supports, with no blanket SSO question; an unknown authentication gets a conditional request and stays `proposed`. Existing CI identity reuse is always `unconfirmed`.
 
 A record is suggested `ready-to-raise` only when its endpoint, environment, authentication type, identity reference and permission are all known, whatever the state of any specification and of the other unknowns; otherwise it is `proposed`. Identical endpoints are only flagged through `shared_request_flag` and `shared_with`, never merged; a lead sets `consolidated_request_ref`. The skill never writes the coordinator, the vendor action owner, a ticket, a raised date, an expected availability or a verification, and never marks anything approved, provisioned or verified. Rows are ordered by use case ID, then endpoint, then environment, and `shared_with` lists other rows by the same key. Repeat runs refresh the same records by their local reference, with `set` and `base_value` for a changed spec field and no overwrite of a human field. The skill ends with a report of unread files, use cases with no source to sweep, endpoints with no evidence and rows with no pointer, and says that approval or provisioning is separate from verified working access and from behavior acknowledgement.
+
+Before it reports, the skill reads its proposal file back and checks it: exactly 12 fields per row, quoting of any value with a comma, a double quote or a line break, the exact header, dates as `YYYY-MM-DD`, the key form of each row and one final line feed; it fixes every problem and checks again. When it appends to a shared file it first makes sure the file ends with a line feed, so its first row starts on a new line. An empty `base_value` stays blank. When the toolkit is available it also runs the [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose)'s `validate <file>` (optional; the skill needs nothing installed). The reply states the self-check result.
 
 The example file is written from the real source in `website-availability-check/src/`: one record for the one configured endpoint, `CHECK_URL`, whose runtime value is unknown. The source sends no credential, so the authentication type is `unknown`, there is no identity reference or permission to name, the proposed request is conditional on the website owner's answer, and the record is `proposed`, not `ready-to-raise`. The notifier of that source only prints an alert and sends nothing, so it has no endpoint and no row. The example is written under a fictional vendor, `Example Vendor`, so its key is `uc-example-vendor-website-availability-check/CHECK_URL/unknown`; its `vendor` row says the vendor is fictional and given for the example. It uses the revision `unrevised`, because the sample has no recorded revision. [review-checklist.md](review-checklist.md) is internal, with one item per behavior; the skill folder never mentions the internal records.
 
@@ -78,79 +71,10 @@ flowchart TB
 - **B09** When it finishes, then it reports unread files, use cases whose source was not available to sweep, endpoints with no evidence and rows with no pointer, and says approval or provisioning is separate from verified working access and from behavior acknowledgement, and the developer or platform team verifies access. (untested: benchmark pending)
 - **B10** When its folder is read, then it contains no Craft term, needs nothing installed in VS Code agent mode, and holds byte-identical copies of the contract and schema. (untested: benchmark pending)
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Identity Access Discovery**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The skill file `identity-access-discovery/discover-identity-access/SKILL.md` gains a short self-check section: the checklist above, run after writing and before reporting, and the rule to make sure the shared file ends with a line feed before appending a row. It stays plain Markdown and needs nothing installed (the root `B02`): the validator step reads "if the toolkit is available". Its key is `<use-case-id>/<endpoint>/<environment>`. The copies of the contract and schema are recopied byte for byte from the Tracker Data Contract after its own build, and the example proposal file is checked against the new rules.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  skill["SKILL.md"]
-  selfcheck["self-check before reporting"]:::planned
-  contractcopy["contract and schema copies"]
-  skill -->|"runs"| selfcheck
-  skill -->|"follows"| contractcopy
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. After the Tracker Data Contract is built, recopy `tracker-data-contract.md` and `tracker-schema.csv` into `identity-access-discovery/discover-identity-access/` byte for byte.
-2. In `identity-access-discovery/discover-identity-access/SKILL.md`, add the self-check and the append rule; state that blank `base_value` stays blank; keep the example proposal file well formed (12 fields, one final line feed).
-3. Update this README's `B08`, `contract.md`, `requirements.md` and `review-checklist.md`, then dissolve this Plan into Design.
-4. Run the scan in `review-checklist.md` and the root `B05` test.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Check |
-| --- | --- | --- | --- |
-| The skill self-checks the file and ensures a final line feed before appending, with the validator optional | B08 | 2 | review-checklist `[B08]` |
-| The contract and schema copies equal the originals | B10 | 1 | root `B05` test |
-
-### Assumptions And Open Questions
-
-Assumptions (override any in chat):
-
-1. **Policy and scope.** Planned under `deciding-what-to-ask`; the change is part of one request (validation of proposal files) that also touches the other components named in the root request, each planned in its own README. Nothing is built.
-2. **Choices.** An empty `base_value` stays blank (no dot); on a `set` a blank `base_value` means the field was blank when seen. The exact 12-field check and the final-line-feed check catch a lost trailing field and a fused row. Validation lives in the existing Tracker Reconciler `validate` command; the exporter shares its loader and gains no new mode. Recorded from the user's answers of 2026-11-17.
-3. **Optional validator.** The pack skills stay Markdown-only (root `B02`); the validator is named as optional for developers who have the toolkit, as the user chose. The mandatory run is in the Discovery Batch Agent, which already needs Node.
-4. **Order.** Built after the Tracker Data Contract.
-
-Open questions: none. The behavior changes and the choices on the base value (kept blank, with checks) and on the pack skills (a self-check checklist, the validator optional) were confirmed by the user on 2026-11-17.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the originals the copies follow.
-- [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) — the optional `validate` command.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
-- [contract.md](contract.md#contract) — the interface, with the planned change section.
-
 ## Relationships
 
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the Identity & Access columns and the proposal format this skill follows, copied into its folder.
+- [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) — the optional `validate` command the skill runs when the toolkit is available.
 - [Website Availability Check](../website-availability-check/README.md#purpose) — the read-only source the example rows are derived from.
 
 ## Links
@@ -159,4 +83,6 @@ Open questions: none. The behavior changes and the choices on the base value (ke
 - [contract.md](contract.md#contract) — the shapes, formats and wording rules.
 - [review-checklist.md](review-checklist.md) — the internal review items tagged B01 to B10.
 - [discover-identity-access/SKILL.md](discover-identity-access/SKILL.md) — the skill instructions.
+- [discover-identity-access/tracker-data-contract.md](discover-identity-access/tracker-data-contract.md) — the copy of the contract the skill follows.
+- [discover-identity-access/tracker-schema.csv](discover-identity-access/tracker-schema.csv) — the copy of the schema the skill reads.
 - [discover-identity-access/tracker-updates.csv](discover-identity-access/tracker-updates.csv) — the example proposal for the website use case.

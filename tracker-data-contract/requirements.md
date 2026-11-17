@@ -35,7 +35,7 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - **Meaning of `QN-####` changed.** It now names a use case and question row, not a central question; the grouping is the internal `QG-###`. Earlier drafts of other components that used one shared answer cell were revised with this change.
 - **Hand application.** Because leads apply changes by hand, the contract keeps stable references and human-owned fields easy to see.
 
-## Planned change: proposal file shape rules
+## Change: proposal file shape rules
 
 - The Proposal file section states: exactly 12 fields per row; the file ends with one line feed, LF only, no byte order mark; a stage that appends to a shared file first makes sure the file ends with a line feed; an empty `base_value` is written blank (never a placeholder), and on a `set` a blank `base_value` means the field was blank when seen; the key form of each tab; and the candidate slug rule of the reconciler.
 - Must not: change `tracker-schema.csv`, the references or the statuses.

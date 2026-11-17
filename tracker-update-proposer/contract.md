@@ -29,6 +29,6 @@
 - A value the evidence does not show is left blank or `unknown`, never guessed.
 - Output is a proposal for a lead to review; it is never written into the authoritative tracker.
 
-## Planned change: proposal file self-check
+### Proposal file self-check
 
 The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.

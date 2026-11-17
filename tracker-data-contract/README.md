@@ -11,21 +11,12 @@ The one shared data contract for the use case tracker: tabs, columns, references
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
-  - [Planned Navigation](#planned-navigation)
-  - [Planned Design](#planned-design)
-    - [Planned Diagram](#planned-diagram)
-  - [Steps](#steps)
-  - [Acceptance Mapping](#acceptance-mapping)
-  - [Assumptions And Open Questions](#assumptions-and-open-questions)
-  - [Planned Relationships](#planned-relationships)
-  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
 ## Design
 
-The component is five shared files and one internal checklist, all plain Markdown and CSV with no code: [tracker-data-contract](tracker-data-contract.md) (the contract prose), [tracker-schema](tracker-schema.csv) (one row per column: tab, column, key, owner, visibility, type, allowed values), [workbook-layout-guide](workbook-layout-guide.md), the header-only [tracker-updates-template](tracker-updates-template.csv) and [use-case-inventory-template](use-case-inventory-template.csv), and [review-checklist](review-checklist.md) (one item per behavior). [contract.md](contract.md#contract) is the specification they were written from. The contract and the schema are copied byte for byte into every skill folder that uses them, and the lead tools read the schema from this component's file, so the shapes live in one place. A use case's identity is the use case ID `uc-<vendor-slug>-<use-case-slug>`, defined once in the contract's References section and derived from the `vendor` and `use_case_name` columns, so two vendors' use cases with the same name do not collide; every local reference and `spec_refs` entry is built from it.
+The component is five shared files and one internal checklist, all plain Markdown and CSV with no code: [tracker-data-contract](tracker-data-contract.md) (the contract prose), [tracker-schema](tracker-schema.csv) (one row per column: tab, column, key, owner, visibility, type, allowed values), [workbook-layout-guide](workbook-layout-guide.md), the header-only [tracker-updates-template](tracker-updates-template.csv) and [use-case-inventory-template](use-case-inventory-template.csv), and [review-checklist](review-checklist.md) (one item per behavior). [contract.md](contract.md#contract) is the specification they were written from. The contract and the schema are copied byte for byte into every skill folder that uses them, and the lead tools read the schema from this component's file, so the shapes live in one place. The Proposal file section also states the proposal file shape rules: exactly 12 fields per row, one final line feed with LF only and no byte order mark, a stage that appends first ensures the file ends with a line feed, a blank `base_value` stays blank (on a `set` the field was blank when seen), the record key form of each tab, and the candidate slug rule (each run of characters outside `a-z` and `0-9` becomes one `-`), worded to match the Tracker Reconciler's `slug()`; the schema is unchanged. The skill copies must be recopied after a change; that is each skill's own task. A use case's identity is the use case ID `uc-<vendor-slug>-<use-case-slug>`, defined once in the contract's References section and derived from the `vendor` and `use_case_name` columns, so two vendors' use cases with the same name do not collide; every local reference and `spec_refs` entry is built from it.
 
 Questions are one row per use case per question with separate answers; grouping is internal in two extra tabs (Question Groups, Question Links). Use cases carry a source status so missing source is visible from the start, and access requests are one row per use case and endpoint.
 
@@ -86,78 +77,9 @@ flowchart TB
 - **B09** When a lead builds the workbooks, then `workbook-layout-guide.md` gives the tabs, the vendor's single Questions sheet, the validation lists, the vendor-view rule, the due-date formula, the manual vendor-to-master copy steps, the manual apply steps and the inventory template. (untested: benchmark pending)
 - **B10** When the files are scanned, then they contain no Craft term, no real vendor data and no secret. (untested: benchmark pending)
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Tracker Data Contract**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-Only the Proposal file section of [tracker-data-contract.md](tracker-data-contract.md#design) gains rules; the schema CSV, the references and the statuses do not change. The copies of the contract and schema held by the three proposal-writing skills must be recopied after this build so the root `B05` test stays green; that is each skill's own task. Wording is aligned with the Tracker Reconciler's `slug()` so the contract and the tools agree on the candidate slug and on the four key forms.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  contract["tracker-data-contract.md"]
-  rules["proposal file shape rules"]:::planned
-  copies["copies in the three skills"]
-  contract -->|"holds"| rules
-  contract -->|"is copied byte for byte to"| copies
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. In the Proposal file section of `tracker-data-contract.md`, add the rules: exactly 12 fields per row; one final line feed, LF only, no byte order mark; a stage that appends first makes sure the file ends with a line feed; a blank `base_value` stays blank and on a `set` means the field was blank when seen; the key form of each tab; the candidate slug rule.
-2. Align the wording of the candidate slug with the reconciler's rule and update `contract.md`, `requirements.md` and the README Design and `B05`.
-3. Do not touch `tracker-schema.csv`. The skills' copies are recopied by their own tasks; run the root `B05` test last as the check.
-4. Dissolve this Plan into Design.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Check |
-| --- | --- | --- | --- |
-| The Proposal file section states the shape rules, the blank base value and the key forms | B05 | 1, 2 | file review and the root scan |
-| No Craft term, no real data, schema unchanged | B10 | 3 | the scan in `review-checklist.md` |
-
-### Assumptions And Open Questions
-
-Assumptions (override any in chat):
-
-1. **Policy and scope.** Planned under `deciding-what-to-ask`; the change is part of one request (validation of proposal files) that also touches the other components named in the root request, each planned in its own README. Nothing is built.
-2. **Choices.** An empty `base_value` stays blank (no dot); on a `set` a blank `base_value` means the field was blank when seen. The exact 12-field check and the final-line-feed check catch a lost trailing field and a fused row. Validation lives in the existing Tracker Reconciler `validate` command; the exporter shares its loader and gains no new mode. Recorded from the user's answers of 2026-11-17.
-3. **Copy order.** This component is built first; the three skills then recopy the contract. Until they do, the root `B05` test fails by design.
-
-Open questions: none. The behavior changes and the choices on the base value (kept blank, with checks) and on the pack skills (a self-check checklist, the validator optional) were confirmed by the user on 2026-11-17.
-
-### Planned Relationships
-
-- [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose), [Identity Access Discovery](../identity-access-discovery/README.md#purpose) and [Workflow Recommender](../workflow-recommender/README.md#purpose) — hold byte-identical copies, recopied after this build.
-- [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) — enforces these rules.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
-- [contract.md](contract.md#contract) — the interface, with the planned change section.
-
 ## Relationships
 
-- It depends on nothing outside its lineage. It is used by its siblings [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose), [Identity Access Discovery](../identity-access-discovery/README.md#purpose), [Workflow Recommender](../workflow-recommender/README.md#purpose) and [Tracker Tools](../tracker-tools/README.md#purpose), which read and write the shapes defined here.
+- It depends on nothing outside its lineage. It is used by its siblings [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose), [Identity Access Discovery](../identity-access-discovery/README.md#purpose), [Workflow Recommender](../workflow-recommender/README.md#purpose) and [Tracker Tools](../tracker-tools/README.md#purpose), which read and write the shapes defined here. [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) enforces the proposal file rules.
 
 ## Links
 

@@ -11,15 +11,6 @@ A GitHub Copilot agent skill that turns a use case specification into proposed u
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
-  - [Planned Navigation](#planned-navigation)
-  - [Planned Design](#planned-design)
-    - [Planned Diagram](#planned-diagram)
-  - [Steps](#steps)
-  - [Acceptance Mapping](#acceptance-mapping)
-  - [Assumptions And Open Questions](#assumptions-and-open-questions)
-  - [Planned Relationships](#planned-relationships)
-  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -34,7 +25,7 @@ The skill has two modes and owns the Use Cases and Questions tabs only. It write
 
 Every row is keyed by the use case ID `uc-<vendor-slug>-<use-case-slug>`, built from the vendor and the use case name as defined in the contract and never stored: a use case record's `record_key` is the ID and a Questions row's is `<use-case-id>/Q<n>`, with `spec_refs` `<use-case-id>/Q<n>@v<version>`. The readable name stays in `use_case_name`, and the specification's location comes from the use case index, not from the slug. Source-screening rows are keyed by the ID too. The vendor comes from the inventory row, the input or the specification; when none shows it, the skill asks the lead once, invents none and writes no keyed row for that use case until it is known, and names the use case in the report.
 
-Both modes follow the contract's field classes: spec fields are `add`ed or `set` with `base_value`, human fields only `suggest`ed on an existing record or given as an initial suggestion on an `add`, and forbidden and computed fields are never written. Rows are composed with deterministic `update_id` values, so a rerun on the same input gives the same rows and no duplicate; unchanged rows keep their `created_on`, and local references are never renumbered. Output goes only to `tracker-updates/<proposal-id>/tracker-updates.csv` and is never applied. The skill ends with a report of content with no row, supplied items not yet in a specification, rows without a source, unread files, unassigned source owners and use cases with only document support, and behavior changes with their grouping impact.
+Both modes follow the contract's field classes: spec fields are `add`ed or `set` with `base_value`, human fields only `suggest`ed on an existing record or given as an initial suggestion on an `add`, and forbidden and computed fields are never written. Rows are composed with deterministic `update_id` values, so a rerun on the same input gives the same rows and no duplicate; unchanged rows keep their `created_on`, and local references are never renumbered. Output goes only to `tracker-updates/<proposal-id>/tracker-updates.csv` and is never applied. Before reporting the skill checks the file (12 fields per row, quoting, the exact header, `YYYY-MM-DD` dates, the key form of each tab, one final line feed), makes sure an existing shared file ends with a line feed before it appends, leaves a `base_value` blank when the field was blank, and names the Tracker Reconciler's `validate` as an optional extra when the toolkit is available; the skill itself needs nothing installed. The skill ends with a report of content with no row, supplied items not yet in a specification, rows without a source, unread files, unassigned source owners and use cases with only document support, and behavior changes with their grouping impact.
 
 The example file is written from the built website specification: one use case record and one Questions record for each of Q1 to Q6, under the fictional vendor `Example Vendor`, so the use case ID is `uc-example-vendor-website-availability-check`, with record keys `<use-case-id>/Q<n>`, `spec_refs` `<use-case-id>/Q<n>@v1` and a `@v1#q<n>` source on every question row; its proposal ID is `website-check-example`. It has no specification link, because none was given, and says so in the row's reason. It has no source-screening rows, because the website specification has no inventory row to cite; the screening rows are described in `SKILL.md` with invented names. [review-checklist.md](review-checklist.md) is internal, with one item per behavior; the skill folder never mentions the internal records.
 
@@ -53,6 +44,7 @@ flowchart TB
   skill["propose-tracker-updates (skill)"]
   copy["tracker-data-contract and tracker-schema (copies)"]
   ex["tracker-updates (example)"]
+  selfcheck["self-check before reporting"]
   contract["tracker-data-contract (built component)"]
   drafting["copilot-drafting-guide (specification producer)"]
   ref["website-check-job-behavior (reference specification)"]
@@ -68,6 +60,7 @@ flowchart TB
   skill -->|"shows the format with"| ex
   ref -->|"is the source of the example"| ex
   drafting -->|"produces the specification read by"| skill
+  skill -->|"runs"| selfcheck
   chk -->|"reviews B01 to B10 on"| skill
 ```
 
@@ -83,76 +76,6 @@ flowchart TB
 - **B08** When it writes the file, then it follows the contract's encoding, rewrites only its own tabs in its own proposal directory, and never releases or applies anything. Before reporting, the skill runs a self-check on the proposal file: every row has exactly 12 fields, any value with a comma, a double quote or a line break is quoted, the header is exact, `created_on` and any date value are `YYYY-MM-DD`, each `record_key` has the form of its tab, and the file ends with exactly one line feed; when appending to the shared file it first makes sure the file ends with a line feed so its first row starts on a new line; and when the toolkit is available it also runs `validate <file>` of the Tracker Reconciler and fixes every error before reporting. (untested: benchmark pending)
 - **B09** When it finishes, then it reports content with no row, supplied items not yet in a specification, rows without a source, unread files, use cases with an unassigned source owner or only document support, and use cases whose behavior changed with the suggested grouping impact (so affected workflow recommendations can be re-reviewed), and says a lead reviews it all. (untested: benchmark pending)
 - **B10** When its folder is read, then it contains no Craft term, needs nothing installed in VS Code agent mode, and holds a copy of the contract that equals the Tracker Data Contract component's file as built, a byte-identical copy of the schema, and an example `tracker-updates.csv` for the website use case under a fictional vendor whose keys, `spec_refs` and `update_id` values use the use case ID. (untested: benchmark pending)
-
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Tracker Update Proposer**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The skill file `tracker-update-proposer/propose-tracker-updates/SKILL.md` gains a short self-check section: the checklist above, run after writing and before reporting, and the rule to make sure the shared file ends with a line feed before appending a row. It stays plain Markdown and needs nothing installed (the root `B02`): the validator step reads "if the toolkit is available". Its keys are the use case ID alone and `<use-case-id>/Q<n>`. The copies of the contract and schema are recopied byte for byte from the Tracker Data Contract after its own build, and the example proposal file is checked against the new rules.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  skill["SKILL.md"]
-  selfcheck["self-check before reporting"]:::planned
-  contractcopy["contract and schema copies"]
-  skill -->|"runs"| selfcheck
-  skill -->|"follows"| contractcopy
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. After the Tracker Data Contract is built, recopy `tracker-data-contract.md` and `tracker-schema.csv` into `tracker-update-proposer/propose-tracker-updates/` byte for byte.
-2. In `tracker-update-proposer/propose-tracker-updates/SKILL.md`, add the self-check and the append rule; state that blank `base_value` stays blank; keep the example proposal file well formed (12 fields, one final line feed).
-3. Update this README's `B08`, `contract.md`, `requirements.md` and `review-checklist.md`, then dissolve this Plan into Design.
-4. Run the scan in `review-checklist.md` and the root `B05` test.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Check |
-| --- | --- | --- | --- |
-| The skill self-checks the file and ensures a final line feed before appending, with the validator optional | B08 | 2 | review-checklist `[B08]` |
-| The contract and schema copies equal the originals | B10 | 1 | root `B05` test |
-
-### Assumptions And Open Questions
-
-Assumptions (override any in chat):
-
-1. **Policy and scope.** Planned under `deciding-what-to-ask`; the change is part of one request (validation of proposal files) that also touches the other components named in the root request, each planned in its own README. Nothing is built.
-2. **Choices.** An empty `base_value` stays blank (no dot); on a `set` a blank `base_value` means the field was blank when seen. The exact 12-field check and the final-line-feed check catch a lost trailing field and a fused row. Validation lives in the existing Tracker Reconciler `validate` command; the exporter shares its loader and gains no new mode. Recorded from the user's answers of 2026-11-17.
-3. **Optional validator.** The pack skills stay Markdown-only (root `B02`); the validator is named as optional for developers who have the toolkit, as the user chose. The mandatory run is in the Discovery Batch Agent, which already needs Node.
-4. **Order.** Built after the Tracker Data Contract.
-
-Open questions: none. The behavior changes and the choices on the base value (kept blank, with checks) and on the pack skills (a self-check checklist, the validator optional) were confirmed by the user on 2026-11-17.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the originals the copies follow.
-- [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) — the optional `validate` command.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
-- [contract.md](contract.md#contract) — the interface, with the planned change section.
 
 ## Relationships
 

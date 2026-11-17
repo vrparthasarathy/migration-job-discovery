@@ -448,7 +448,7 @@ function twoVendors(): Record<string, Row[]> {
   return data;
 }
 
-test("[B11] same-named use cases of two vendors are separate records: updates and additions reach only their own ID's row", async () => {
+test("[B01] same-named use cases of two vendors are separate records: updates and additions reach only their own ID's row", async () => {
   const acme = "uc-acme-daily-report";
   const beta = "uc-beta-daily-report";
   const f = await setup(
@@ -465,7 +465,7 @@ test("[B11] same-named use cases of two vendors are separate records: updates an
   assert.deepEqual((await result.additions("questions.csv")).map((r) => [r.suggested_ref, r.local_key]), [["QN-0004", `${acme}/Q2`], ["QN-0005", `${beta}/Q2`]]);
 });
 
-test("[B11] with an empty export both vendors' use cases and question 1 are additions under their own IDs and equal texts are only a link suggestion", async () => {
+test("[B01] with an empty export both vendors' use cases and question 1 are additions under their own IDs and equal texts are only a link suggestion", async () => {
   const data = twoVendors();
   for (const tab of Object.keys(data)) data[tab] = [];
   const proposals: PRow[] = [];
@@ -490,7 +490,7 @@ test("[B01] the MR link of an addition comes from the export row of the same use
   assert.equal(added[0]!.trace_mr_link, "https://git.example/beta");
 });
 
-test("[B11] an export use case without a vendor has no ID: it matches no key and its mapping and access rows are never matched by a key", async () => {
+test("[B01] an export use case without a vendor has no ID: it matches no key and its mapping and access rows are never matched by a key", async () => {
   const data = baseExport();
   data["Use Cases"]!.push({ use_case_ref: "UC-009", use_case_name: "Orphan", vendor: "", current_version: "1" });
   data.Mappings!.push({ mapping_ref: "MP-009", use_case_ref: "UC-009", workflow_candidate: "Hub", mapping_status: "candidate" });

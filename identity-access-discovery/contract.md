@@ -29,6 +29,6 @@
 - The ID needs the vendor. When it is not known, the skill asks the lead once, never invents one, and writes no keyed row for that use case until it is known.
 - The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built.
 
-## Planned change: proposal file self-check
+### Proposal file self-check
 
-The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.
+Before reporting, the skill checks its proposal file: 12 fields per row, quoting, the exact header, date forms, key forms and one final line feed, and fixes every problem. When appending to a shared file it first makes sure the file ends with a line feed. An empty `base_value` stays blank. When the toolkit is available it also runs the Tracker Reconciler's `validate <file>` (optional). The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.

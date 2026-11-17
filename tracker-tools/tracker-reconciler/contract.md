@@ -45,6 +45,6 @@ The output files and their columns carry the key strings below; nothing else abo
 - **Rule, unknown or duplicate ID.** A key whose leading use case ID is not an ID of an export Use Cases row or of a Use Cases `add` stops the run with `<file>: line <n>: unknown use case ID in record_key "<key>"; expected uc-<vendor-slug>-<use-case-slug> ...`, naming the file and line. A Questions `use_case_name` value that is not the name of the key's use case stops the run with `use_case_name "<value>" does not belong to use case ID <id>`. Two export Use Cases rows that derive the same ID stop the run naming the export file and both lines. Nothing is written.
 - **Rule, same name, two vendors.** Use cases with the same name and different vendors have different IDs and are never merged or matched to each other's rows.
 
-## Planned change: strict proposal shape
+## Strict proposal shape
 
-`validate` and the shared loader add these messages, each as `<file>: line <n>: <message>`: `missing final line feed`, `CRLF line end`, `byte order mark`, `row has <n> fields but the header has 12`, `record_key "<key>" does not fit tab <tab>; expected <form>`, `<field> "<value>" is not a date YYYY-MM-DD`, `proposal_id "<id>" differs from folder "<name>"`. Exit status 1 as today.
+`validate` and the shared loader report these messages, each as `<file>: line <n>: <message>`: `missing final line feed`, `CRLF or CR line end; use LF only`, `byte order mark; ...`, `row has <n> fields but the header has 12`, `record_key "<key>" does not fit tab <tab>; expected <form> ...`, `value "<value>" is not a date YYYY-MM-DD` (and the same for `base_value`), `proposal_id "<id>" differs from folder "<name>"` (for `reconcile` and `validate <dir>`, not for `validate <file>`). Exit status 1 as today.

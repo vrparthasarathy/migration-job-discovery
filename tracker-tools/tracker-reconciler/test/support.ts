@@ -55,11 +55,16 @@ export function proposalText(id: string, rows: PRow[]): string {
   );
 }
 
+/** Writes `<root>/<id>/tracker-updates.csv`; a row with its own `id` goes to the folder of that proposal. */
 export async function writeProposal(root: string, id: string, rows: PRow[]): Promise<string> {
-  const dir = join(root, id);
-  await mkdir(dir, { recursive: true });
-  await writeFile(join(dir, "tracker-updates.csv"), proposalText(id, rows));
-  return dir;
+  const ids = [...new Set([id, ...rows.map((r) => r.id ?? id)])];
+  for (const own of ids) {
+    const mine = rows.filter((r) => (r.id ?? id) === own);
+    if (mine.length === 0 && own !== id) continue;
+    await mkdir(join(root, own), { recursive: true });
+    await writeFile(join(root, own, "tracker-updates.csv"), proposalText(own, mine));
+  }
+  return join(root, id);
 }
 
 export async function rows(path: string): Promise<Row[]> {

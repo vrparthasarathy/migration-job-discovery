@@ -11,15 +11,6 @@ A GitHub Copilot agent skill that compares use case specifications by their beha
 - [Design](#design)
   - [Diagram](#diagram)
 - [Behavior](#behavior)
-- [Plan](#plan)
-  - [Planned Navigation](#planned-navigation)
-  - [Planned Design](#planned-design)
-    - [Planned Diagram](#planned-diagram)
-  - [Steps](#steps)
-  - [Acceptance Mapping](#acceptance-mapping)
-  - [Assumptions And Open Questions](#assumptions-and-open-questions)
-  - [Planned Relationships](#planned-relationships)
-  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -33,7 +24,7 @@ A use case is identified by its use case ID `uc-<vendor-slug>-<use-case-slug>`, 
 
 The skill compares the whole set of specifications on every run, by behavior: shared steps and outcomes, with differences as parameter values, optional steps or exceptions. A shared external system is listed as context and never makes a candidate. A manually tagged folder of earlier workflow analyses (the user described about four or five files; the real paths and counts are unknown and not assumed) supplies starting hints only: they are not verified or approved groupings, never decide a workflow, never stand for vendor acceptance and are not reconciled exhaustively. Each candidate lists its members with the specification version, revision and status, the shared behaviors by ID, the parameter differences, the exceptions, the decision status read from the decisions file, and whether each member rests on a specification, an earlier analysis or both. Missing, unread, unversioned and draft specifications are listed under `not compared` with their state; a draft may still produce recommendations, labelled as a draft. The skill says the method is not validated and, when `validation-examples.md` is supplied, reports the agreement with the known pairs.
 
-The skill rewrites only `use-case-to-workflow-recommendations.md` and the Mappings rows of its proposal file. It reads the decisions file and never edits it. A decided mapping is flagged for re-review only when a member's specification changed in a way that could affect grouping or whose impact is unknown: the impact comes from a lead's `grouping_impact_lead` override, else the proposer's `grouping_impact` suggestion in the optional read-only Use Cases export, else the skill's own stated assessment from the two specification versions. A behavior change with no grouping impact, a version bump, spelling, date, change-log or acknowledgement edit alone is not flagged, `unknown` is never read as no impact, a decision is never changed, and a rejected pairing returns only with stated new evidence. Only grouping-relevant unknowns block, with the existing specification question linked; a missing question is reported as a specification gap. Tracker rows are Mappings `add`, `set` or `suggest` rows that follow the contract's owner classes (`mapping_status` only as a suggestion, never a decision field). A member that rests on an earlier analysis only has no specification to cite, so it gets no row. No per-use-case profile file is kept; any normalized summary is a temporary, uncommitted cache.
+The skill rewrites only `use-case-to-workflow-recommendations.md` and the Mappings rows of its proposal file. It reads the decisions file and never edits it. A decided mapping is flagged for re-review only when a member's specification changed in a way that could affect grouping or whose impact is unknown: the impact comes from a lead's `grouping_impact_lead` override, else the proposer's `grouping_impact` suggestion in the optional read-only Use Cases export, else the skill's own stated assessment from the two specification versions. A behavior change with no grouping impact, a version bump, spelling, date, change-log or acknowledgement edit alone is not flagged, `unknown` is never read as no impact, a decision is never changed, and a rejected pairing returns only with stated new evidence. Only grouping-relevant unknowns block, with the existing specification question linked; a missing question is reported as a specification gap. Tracker rows are Mappings `add`, `set` or `suggest` rows that follow the contract's owner classes (`mapping_status` only as a suggestion, never a decision field). A blank `base_value` stays blank. Before reporting, the skill checks its proposal file (12 fields per row, quoting, the exact header, dates, key forms and one final line feed), makes sure the shared file ends with a line feed before appending, and names the Reconciler's `validate` as an optional extra when the toolkit is available, so the skill still needs nothing installed. A member that rests on an earlier analysis only has no specification to cite, so it gets no row. No per-use-case profile file is kept; any normalized summary is a temporary, uncommitted cache.
 
 No example proposal file is shipped: a candidate needs at least two use cases, only one real use case exists, and inventing a pair would be invented data. `SKILL.md` carries one invented-name illustration row instead, and its format was checked mechanically with a throwaway script (12 columns, composed `update_id`, a use case ID key, a Mappings human field proposed with an allowed value and an `add`). The decisions and validation templates each carry an invented-name illustration that is marked not to be copied. [review-checklist.md](review-checklist.md) is internal, with one item per behavior; the skill folder never mentions the internal records.
 
@@ -50,6 +41,7 @@ config:
 flowchart TB
   chk["review-checklist"]
   skill["recommend-workflows (skill)"]
+  selfcheck["proposal file check before reporting"]
   dec["use-case-to-workflow-decisions-template"]
   val["validation-examples-template"]
   copy["tracker-data-contract and tracker-schema (copies)"]
@@ -66,6 +58,7 @@ flowchart TB
   dec -->|"gives the decision format read by"| skill
   val -->|"gives the pair format compared by"| skill
   skill -->|"reads"| idx
+  skill -->|"runs"| selfcheck
   chk -->|"reviews B01 to B10 on"| skill
 ```
 
@@ -82,79 +75,10 @@ flowchart TB
 - **B09** When it works, then it keeps no persistent per-use-case profile file, and any normalized summary is a temporary, uncommitted cache. (untested: benchmark pending)
 - **B10** When it runs, then the default list is every use case in `use-case-index.csv`, with each specification read from the row's `spec` path, and it uses the fixed proposal ID `recommendations` without asking; it compares the full set, states which specifications, earlier analyses and date it covered and what was not compared, and marks the output internal; when its caller has not already confirmed the list this session it shows the list once with a warning that a partial list drops the other use cases' mappings; when the index is absent it stops and says to run `run-discovery` first; the decisions file format has decision ID, status (accepted, rejected, pending-clarification), candidate, affected use cases, rationale, evidence and versions, date and decided-by name, is append-only, and a changed decision is a new row that refers to the earlier one. (untested: benchmark pending)
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../README.md#plan) / **Workflow Recommender**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The skill file `workflow-recommender/recommend-workflows/SKILL.md` gains a short self-check section: the checklist above, run after writing and before reporting, and the rule to make sure the shared file ends with a line feed before appending a row. It stays plain Markdown and needs nothing installed (the root `B02`): the validator step reads "if the toolkit is available". Its key is `<use-case-id>->><candidate-slug>`, where the slug follows the contract's rule (each run of characters outside `a-z` and `0-9` becomes one `-`), replacing the looser "lower case with hyphens". The copies of the contract and schema are recopied byte for byte from the Tracker Data Contract after its own build, and the example proposal file is checked against the new rules.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  skill["SKILL.md"]
-  selfcheck["self-check before reporting"]:::planned
-  contractcopy["contract and schema copies"]
-  skill -->|"runs"| selfcheck
-  skill -->|"follows"| contractcopy
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. After the Tracker Data Contract is built, recopy `tracker-data-contract.md` and `tracker-schema.csv` into `workflow-recommender/recommend-workflows/` byte for byte.
-2. In `workflow-recommender/recommend-workflows/SKILL.md`, add the self-check and the append rule; state that blank `base_value` stays blank; keep the example proposal file well formed (12 fields, one final line feed).
-3. Update this README's `B05`, `contract.md`, `requirements.md` and `review-checklist.md`, then dissolve this Plan into Design.
-4. Run the scan in `review-checklist.md` and the root `B05` test.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Check |
-| --- | --- | --- | --- |
-| The skill self-checks the file and ensures a final line feed before appending, with the validator optional | B05 | 2 | review-checklist `[B05]` |
-| The contract and schema copies equal the originals | B10 | 1 | root `B05` test |
-
-### Assumptions And Open Questions
-
-Assumptions (override any in chat):
-
-1. **Policy and scope.** Planned under `deciding-what-to-ask`; the change is part of one request (validation of proposal files) that also touches the other components named in the root request, each planned in its own README. Nothing is built.
-2. **Choices.** An empty `base_value` stays blank (no dot); on a `set` a blank `base_value` means the field was blank when seen. The exact 12-field check and the final-line-feed check catch a lost trailing field and a fused row. Validation lives in the existing Tracker Reconciler `validate` command; the exporter shares its loader and gains no new mode. Recorded from the user's answers of 2026-11-17.
-3. **Optional validator.** The pack skills stay Markdown-only (root `B02`); the validator is named as optional for developers who have the toolkit, as the user chose. The mandatory run is in the Discovery Batch Agent, which already needs Node.
-4. **Order.** Built after the Tracker Data Contract.
-
-Open questions: none. The behavior changes and the choices on the base value (kept blank, with checks) and on the pack skills (a self-check checklist, the validator optional) were confirmed by the user on 2026-11-17.
-
-### Planned Relationships
-
-- [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the originals the copies follow.
-- [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) — the optional `validate` command.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
-- [contract.md](contract.md#contract) — the interface, with the planned change section.
-
 ## Relationships
 
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the Mappings columns, the use case ID and the proposal format this skill follows, copied into its folder.
+- [Tracker Reconciler](../tracker-tools/tracker-reconciler/README.md#purpose) — its `validate` command, optional for the skill's proposal file check.
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — writes the `use-case-index.csv` this skill reads and defines its columns.
 - [Job Behavior Template](../job-behavior-template/README.md#purpose) — the form whose behavior IDs, parameters and versions the recommendations cite.
 

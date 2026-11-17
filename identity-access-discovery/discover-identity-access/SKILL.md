@@ -47,13 +47,32 @@ One row per field. For every row:
   - `link` only to add a reference to `shared_with` of an existing record without replacing the list.
 - `record_key` is the local reference `<use-case-id>/<endpoint>/<environment>`, never a central reference such as `AX-###` or `UC-###`. The use case ID is `uc-<vendor-slug>-<use-case-slug>`: the vendor and the use case name exactly as the inventory writes them, each reduced to a slug (lower case, each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed), as `tracker-data-contract.md` defines it. It is derived, never written as a column. The use case name alone is not part of the key, and a key that starts with the use case name is not valid. The endpoint and the environment are written as in the `endpoint` and `environment` fields of the record. The tab has no use case name column, so the use case is identified by this key. The ID needs the vendor: if it is not in the inventory or from the developer, ask the lead once, never invent one, write no keyed row for that use case until it is known, and name the use case in the report.
 - `field` is a column name from `tracker-schema.csv` for the Identity & Access tab.
-- `value` is the proposed value. `base_value` is the value you saw before the change, filled for every `set` and blank for an `add`.
+- `value` is the proposed value. `base_value` is the value you saw before the change, filled for every `set` and blank for an `add`. An empty `base_value` stays blank (no dot, no placeholder); on a `set`, a blank `base_value` means the field was blank when you saw it.
 - `source` is where the value comes from (see "Sources").
 - `reason` is a short plain sentence saying why.
 - `created_on` is the date (`YYYY-MM-DD`) on which the row was first proposed. When you rerun on a proposal file that already has the row with the same content, keep its `created_on` so the rerun gives identical rows.
 - `author` is `discover-identity-access`.
 
 Order the rows by record (use case ID, then endpoint, then environment), then by the field order in `tracker-schema.csv`, so the same input always gives the same file.
+
+### Appending to a shared file
+
+When the file already exists and you add rows to it, first make sure it ends with a line feed. If its last character is not a line feed, write one before your first row, so that row starts on a new line and is not fused to the last row already there. Never leave a blank line between rows.
+
+### Self-check before you report
+
+After you write the file and before you write the report, read the file back and check it. Fix every problem you find, then check again, until none is left:
+
+1. Every row, including the header, has exactly 12 fields. Count fields the way CSV does: a comma, a double quote or a line break inside a quoted value is part of that value. A short, fused or blank row is a problem.
+2. Every value that holds a comma, a double quote or a line break is quoted, and every quote inside a quoted value is doubled.
+3. The header is exactly `update_id,proposal_id,tab,operation,record_key,field,value,base_value,source,reason,created_on,author`.
+4. `created_on` and any date value are `YYYY-MM-DD`.
+5. Every `record_key` has the form `<use-case-id>/<endpoint>/<environment>`, starting with a use case ID of the form `uc-<vendor-slug>-<use-case-slug>`.
+6. The file ends with exactly one line feed: not none, and not a blank line after the last row.
+
+If the toolkit is available, also run `validate <file>` of the Tracker Reconciler on the file and fix every error it names before you report. This is optional: if the toolkit is not available, the checklist above is enough, and you say in the report that `validate` was not run.
+
+State the self-check result in the report: clean, or the problems you found and fixed.
 
 ### Fields you write
 
@@ -162,6 +181,7 @@ End your reply with a report, in plain words, with these parts. Write `none` for
 8. Rows suggested `ready-to-raise`, and rows left `proposed` with the first thing missing.
 9. Facts in an input that belong to a lead or to a later step and were not copied (a ticket, a raised date, an approval, an availability, a verification).
 10. Where the file is, how many rows it has per operation, and that a lead reviews every row and this report before anything is applied.
+11. The self-check result: clean, or the problems found and fixed, and whether `validate` was run.
 
 State in the report that approval or provisioning of access is separate from verified working access and from the acknowledgement of a use case's behavior. The developer or the platform team verifies working access, and none of the three stands in for another.
 

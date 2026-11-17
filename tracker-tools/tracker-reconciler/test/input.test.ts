@@ -54,8 +54,8 @@ test("[B09] an unknown use case ID, a name key or a slug key names the file, lin
     f,
     /line 3: .*unknown use case ID in record_key "uc-ghost-case\/Q1"; expected uc-<vendor-slug>-<use-case-slug>/,
     /line 4: .*unknown use case ID in record_key "uc-ghost-phantom"/,
-    /line 5: .*unknown use case ID in record_key "Daily Report"/,
-    /line 6: .*unknown use case ID in record_key "daily-report\/Q1"/,
+    /line 5: .*record_key "Daily Report" does not fit tab Use Cases; expected <use-case-id>/,
+    /line 6: .*record_key "daily-report\/Q1" does not fit tab Questions; expected <use-case-id>\/Q<n>/,
   );
 });
 
@@ -128,9 +128,9 @@ test("[B09] a row that breaks the proposal format names the file and line", asyn
 test("[B09] a duplicate update_id across two proposal files is an input error naming both lines", async () => {
   const f = await fixture();
   await writeExport(f.exportDir, baseExport());
-  await writeProposal(f.proposals, "mr-1", [good]);
-  await put(join(f.proposals, "copy", "tracker-updates.csv"), proposalText("mr-1", [good]));
-  await failsWith(f, /mr-1[/\\]tracker-updates\.csv: line 2: duplicate update_id.*copy[/\\]tracker-updates\.csv line 2/);
+  await writeProposal(join(f.proposals, "a"), "mr-1", [good]);
+  await writeProposal(join(f.proposals, "b"), "mr-1", [good]);
+  await failsWith(f, /b[/\\]mr-1[/\\]tracker-updates\.csv: line 2: duplicate update_id.*a[/\\]mr-1[/\\]tracker-updates\.csv line 2/);
 });
 
 test("[B09] a bad export names its file and line: an out-of-list value, a missing key column, a secret, a bad manifest or no manifest", async () => {
@@ -303,4 +303,98 @@ test("[B09] an unexpected failure exits 1 with its message instead of a stack", 
   });
   assert.equal(status, 1);
   assert.equal(stderr, "standard output is closed\n");
+});
+
+/** Writes raw proposal text to `proposals/<folder>/tracker-updates.csv` with a matching export. */
+async function withRaw(raw: string, folder = "mr-1"): Promise<Fixture> {
+  const f = await fixture();
+  await writeExport(f.exportDir, baseExport());
+  await put(join(f.proposals, folder, "tracker-updates.csv"), raw);
+  return f;
+}
+
+const head = PROPOSAL_HEADER.join(",");
+
+test("[B09] a proposal file without a final line feed stops the run naming the file and the last line", async () => {
+  const f = await withRaw([head, line(), line({ field: "spec_revision" })].join("\n"));
+  await failsWith(f, /tracker-updates\.csv: line 3: missing final line feed/);
+  const v = await cli("validate", join(f.proposals, "mr-1", "tracker-updates.csv"));
+  assert.equal(v.status, 1);
+  assert.match(v.stderr, /line 3: missing final line feed/);
+});
+
+test("[B09] a CRLF or lone CR line end or a byte order mark stops the run naming the file and line", async () => {
+  const crlf = await withRaw([head, line(), line({ field: "spec_revision" })].join("\r\n") + "\r\n");
+  await failsWith(crlf, /tracker-updates\.csv: line 1: CRLF or CR line end/);
+  const lone = await withRaw([head, line()].join("\r") + "\r");
+  await failsWith(lone, /tracker-updates\.csv: line 1: CRLF or CR line end/);
+  const later = await withRaw(head + "\n" + line() + "\r\n");
+  await failsWith(later, /tracker-updates\.csv: line 2: CRLF or CR line end/);
+  const bom = await withRaw("﻿" + [head, line()].join("\n") + "\n");
+  await failsWith(bom, /tracker-updates\.csv: line 1: byte order mark/);
+});
+
+test("[B09] a row with fewer or more than 12 fields, a fused row or a blank line stops the run naming the line", async () => {
+  const short = line().split(",").slice(0, 11).join(",");
+  const fused = line() + line({ field: "spec_revision" });
+  const long = line() + ",extra";
+  const f = await withRaw([head, line(), short, fused, "", line({ field: "vendor_contact" })].join("\n") + "\n");
+  const stderr = await failsWith(f, /line 3: row has 11 fields but the header has 12/, /line 4: row has 23 fields but the header has 12/, /line 5: row has 1 fields but the header has 12/);
+  assert.equal(stderr.includes("line 2"), false);
+  const onlyLong = await withRaw([head, line(), long].join("\n") + "\n");
+  await failsWith(onlyLong, /line 3: .*13 fields but the header has 12/);
+  const quoted = await withRaw(proposalText("mr-1", [{ ...good, reason: "a, b\nstill \"one\" row" }]));
+  assert.equal((await reconcile(quoted)).status, 0, "commas and line feeds inside quotes are one field");
+});
+
+test("[B09] a record key that does not fit its tab names the file, line and form", async () => {
+  const bad = [
+    line({ tab: "Questions", op: "add", key: "uc-acme-daily-report/Q", field: "use_case_name", value: "Daily Report" }),
+    line({ tab: "Questions", op: "add", key: "uc-acme-daily-report", field: "use_case_name", value: "Daily Report" }),
+    line({ tab: "Mappings", key: "uc-acme-daily-report->>Report Builder", field: "workflow_candidate" }),
+    line({ tab: "Mappings", key: "uc-acme-daily-report/report-builder", field: "workflow_candidate" }),
+    line({ tab: "Identity & Access", key: "uc-acme-daily-report/reports", field: "service" }),
+    line({ tab: "Use Cases", key: "uc-acme-daily-report/Q1", field: "current_version" }),
+  ];
+  const f = await withProposal([line(), ...bad]);
+  await failsWith(
+    f,
+    /line 3: .*does not fit tab Questions; expected <use-case-id>\/Q<n>/,
+    /line 4: .*does not fit tab Questions/,
+    /line 5: .*does not fit tab Mappings; expected <use-case-id>->><candidate-slug>/,
+    /line 6: .*does not fit tab Mappings/,
+    /line 7: .*does not fit tab Identity & Access; expected <use-case-id>\/<endpoint>\/<environment>/,
+    /line 8: .*does not fit tab Use Cases; expected <use-case-id>/,
+  );
+  const ok = await withProposal([
+    line({ tab: "Questions", op: "add", key: "uc-acme-daily-report/Q12", field: "use_case_name", value: "Daily Report" }),
+    line({ tab: "Mappings", key: "uc-acme-daily-report->>report-builder", field: "workflow_candidate" }),
+    line({ tab: "Identity & Access", key: "uc-acme-daily-report//api/report/prod", field: "service" }),
+  ]);
+  assert.equal((await reconcile(ok)).status, 0);
+});
+
+test("[B09] a date field whose value or base_value is not YYYY-MM-DD stops the run naming the line", async () => {
+  const access = "uc-acme-daily-report/reports/prod";
+  const f = await withProposal([
+    line(),
+    line({ op: "set", field: "acknowledged_on", value: "19/11/2026", base: "2026-11-05" }),
+    line({ op: "set", field: "acknowledged_on", value: "2026-11-19", base: "soon" }),
+    line({ tab: "Identity & Access", op: "set", key: access, field: "expected_availability", value: "unknown", base: "2026-13-40" }),
+  ]);
+  await failsWith(f, /line 3: value "19\/11\/2026" is not a date YYYY-MM-DD/, /line 4: base_value "soon" is not a date YYYY-MM-DD/, /line 5: base_value "2026-13-40" is not a date YYYY-MM-DD/);
+});
+
+test("[B09] a proposal_id that differs from its folder name stops the run and validate of a folder, naming the line", async () => {
+  const f = await withRaw([head, line({}, "mr-2")].join("\n") + "\n", "mr-1");
+  await failsWith(f, /tracker-updates\.csv: line 2: proposal_id "mr-2" differs from folder "mr-1"/);
+  const v = await cli("validate", f.proposals);
+  assert.equal(v.status, 1);
+  assert.match(v.stderr, /line 2: proposal_id "mr-2" differs from folder "mr-1"/);
+});
+
+test("[B09] a well-formed proposal with a date and a matching folder is accepted by validate", async () => {
+  const f = await withRaw([head, line(), line({ op: "set", field: "acknowledged_on", value: "2026-11-19", base: "" })].join("\n") + "\n");
+  const v = await cli("validate", f.proposals);
+  assert.deepEqual([v.status, v.stderr], [0, ""]);
 });

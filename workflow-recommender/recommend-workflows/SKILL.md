@@ -117,10 +117,26 @@ For every row:
 
 - `update_id` is `<proposal_id>:<tab>:<record_key>:<field>`, composed and never hashed. The same content always gives the same `update_id`.
 - `tab` is `Mappings`. `operation` is `add`, `set` or `suggest`; never `link`.
-- `record_key` is `<use-case-id>->><candidate-slug>`: the use case ID built from the index row's vendor and use case name, then the candidate name in lower case with hyphens. With no vendor known there is no ID and no row for that use case. A use case name or a slug alone is not a valid key. Never a central reference (`MP-###`, `UC-###`, `QN-####`, `WD-###`).
+- `record_key` is `<use-case-id>->><candidate-slug>`: the use case ID built from the index row's vendor and use case name, then the candidate name as a slug by the contract's rule (each run of characters outside `a-z` and `0-9` becomes one `-`, leading and trailing `-` trimmed). With no vendor known there is no ID and no row for that use case. A use case name or a slug alone is not a valid key. Never a central reference (`MP-###`, `UC-###`, `QN-####`, `WD-###`).
 - `source` is `<spec path>@v<version>#<anchor>` of that use case's specification, using the `spec` path from its index row, for example `<use-case-folder>/<use-case-name>.md@v2#b3`. A row without a source is not written.
 - `reason` is a short plain sentence. `created_on` is the date the row was first proposed; keep it when a rerun has the same content. `author` is `recommend-workflows`.
+- `base_value` is blank unless a `set` row has a value to compare; an empty `base_value` stays blank (no dot), and on a `set` a blank `base_value` means the field was blank when you saw it.
 - Order by record, then by the field order in `tracker-schema.csv`.
+
+When you append to a proposal file that already exists, first make sure it ends with a line feed (add one if the last character is not a line feed), so the first row you add starts on a new line and never fuses with the last row.
+
+### Check the file before you report
+
+After you write the file and before you report, read it back and check each point. Fix every problem and check again.
+
+- The header is exactly the line above.
+- Every row has exactly 12 fields, no more and no fewer (a lost trailing field or a fused row shows here).
+- Any value with a comma, a double quote or a line break is in double quotes, and each double quote inside it is doubled.
+- `created_on`, and any value that is a date, is `YYYY-MM-DD`.
+- Each `record_key` has the form of its tab: here `<use-case-id>->><candidate-slug>`.
+- The file ends with exactly one line feed: not none, and not a blank line after it.
+
+If the Tracker Reconciler toolkit is available in the workspace, also run `validate <file>` on the proposal file and fix every error it prints before you report. If it is not available, skip this step: you need nothing installed, and the check above is enough. In the reply, say whether the check was clean or which problems you fixed, and whether `validate` was run.
 
 Fields, looked up in `tracker-schema.csv` column `owner`:
 
@@ -143,7 +159,8 @@ End your reply with a report in plain words, with these parts. Write `none` for 
 4. Blocking unknowns with their linked questions, and specification gaps.
 5. Validation: the agreement with `validation-examples.md`, or `not validated`.
 6. Rows not written and why, and rows without a source.
-7. Where the files are, how many Mappings rows per operation, the set and date covered, that the recommendations are internal, and that a lead reviews the recommendations and every row before anything is applied.
+7. The proposal file check: clean, or the problems you fixed, and whether `validate` was run.
+8. Where the files are, how many Mappings rows per operation, the set and date covered, that the recommendations are internal, and that a lead reviews the recommendations and every row before anything is applied.
 
 ## Always
 

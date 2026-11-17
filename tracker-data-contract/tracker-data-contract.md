@@ -146,11 +146,15 @@ A proposal is a file named `tracker-updates.csv`.
 - **Columns.** Long format, one row per field, so a single file can address several tabs: `update_id,proposal_id,tab,operation,record_key,field,value,base_value,source,reason,created_on,author`. `tracker-updates-template.csv` holds this header only.
 - **`update_id`** is `<proposal_id>:<tab>:<record_key>:<field>`. It is composed and not hashed, so regenerating the same content gives the same IDs.
 - **`record_key`** is the local reference from the References table; a proposal never carries a central reference for a new row, and a reference in the use case name form or in the slug-alone form is not valid.
+  - Key form of each tab: Use Cases, the use case ID; Questions, `<use-case-id>/Q<n>`; Identity & Access, `<use-case-id>/<endpoint>/<environment>`; Mappings, `<use-case-id>->><candidate-slug>`.
+  - **Candidate slug.** The `workflow_candidate` value in lower case, with each run of characters outside `a-z` and `0-9` replaced by one `-` and a leading or trailing `-` trimmed.
 - **`operation`** is one of:
   - `add`: one row per field of a new record.
   - `set`: changes a field of an existing record and carries `base_value`, the value the proposer saw.
   - `link`: adds a reference to a list field of an existing record (for example `shared_with` or `source_links`) without replacing the list. It never targets Question Links.
   - `suggest`: offers a value for a human-owned field of an existing record.
+- **Row and file shape.** Every row has exactly 12 fields. The file ends with one line feed, uses LF line ends only and has no byte order mark. A stage that appends to a shared file first makes sure the file ends with a line feed, so a new row never fuses with the last one.
+- **`base_value`.** A blank `base_value` stays blank, never a placeholder; on a `set` it means the field was blank when the proposer saw it.
 - **Field classes.** Only spec fields are set. Human fields are only suggested (or given an initial suggestion on an `add`) and a non-empty value is never overwritten. Forbidden and computed fields are never accepted.
 - **`source`** is a specification path with `@version#anchor`, a script path `@revision:place`, an inventory or source-screening reference (`inventory:<row>` or `source-screen:<path>`) for source-screening rows, or a dependency evidence reference for access rows. Every row is traceable to a specification, to inventory or source-screening evidence, or to dependency evidence. Source-screening and access rows need no specification.
 - **Location.** `tracker-updates/<proposal-id>/tracker-updates.csv`, where `<proposal-id>` is the MR number or branch slug. Each skill rewrites only the rows of its own tabs in its own proposal directory: the proposer owns Use Cases and Questions; access discovery owns Identity & Access; the recommender owns Mappings.

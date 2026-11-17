@@ -8,6 +8,7 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 - It exposes what it did not compare (missing, unread or unversioned specifications) and the unknowns that could change a mapping, linking existing specification questions and reporting a missing question as a specification gap. Only grouping-relevant unknowns block a mapping. Draft specifications may generate recommendations before any vendor acknowledgement.
 - It never claims the method is proven: it says not validated unless the supplied validation examples (known same and different pairs) were compared, and reports the agreement.
 - Leads own the decisions file. The skill reads it, never edits it, shows decision status, and assesses the grouping impact of a change separately from whether behavior changed, suggesting re-review with a short reason when the impact could affect grouping or is unknown (never silently none, and not for any version bump or spelling edit), using a lead's override from an optional, read-only Use Cases export when one is supplied and never overturning a decision; a rejected pairing is proposed again only with new evidence.
+- Before reporting, the skill checks its proposal file: exactly 12 fields per row; quoting of any value with a comma, a double quote or a line break; the exact header; `created_on` and any date value as `YYYY-MM-DD`; the key form of its tab; one final line feed. When appending to the shared file it first makes sure the file ends with a line feed. An empty `base_value` stays blank. When the toolkit is available it also runs `validate <file>` of the Tracker Reconciler and fixes every error before reporting; the skill needs nothing installed.
 - The recommendations and decisions are internal and cross-vendor comparisons stay internal; each vendor confirms only its own scope.
 - The skill is a GitHub Copilot agent skill (`recommend-workflows/SKILL.md`) for our team's developers and leads, who use Copilot in VS Code agent mode and have no Craft. Nothing in the skill folder mentions Craft or needs anything installed.
 - Output is a proposal that stays outside the authoritative tracker until a lead has reviewed it. No secret value appears in any output.
@@ -31,10 +32,3 @@ See `task.acceptance` in [`craft.json`](craft.json).
 
 - **Output varies.** Copilot output differs between models and runs; the behaviors can be judged only on samples.
 - **Copies must stay in step.** The contract and schema copies in the skill folder must match the contract component's files; the root checks them.
-
-## Planned change: proposal file self-check
-
-- Before reporting, the skill checks its proposal file: exactly 12 fields per row; quoting of any value with a comma, a double quote or a line break; the exact header; `created_on` and any date value as `YYYY-MM-DD`; the key form of each of its tabs; one final line feed.
-- When appending to the shared file it first makes sure the file ends with a line feed, so the first row it adds starts on a new line.
-- An empty `base_value` stays blank.
-- When the toolkit is available it also runs `validate <file>` of the Tracker Reconciler and fixes every error before reporting; the skill needs nothing installed.

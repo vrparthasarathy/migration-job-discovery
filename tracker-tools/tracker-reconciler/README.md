@@ -12,15 +12,6 @@ A Node command line tool that compares reviewed tracker proposals with the lates
   - [Diagram](#diagram)
 - [Technology](#technology)
 - [Behavior](#behavior)
-- [Plan](#plan)
-  - [Planned Navigation](#planned-navigation)
-  - [Planned Design](#planned-design)
-    - [Planned Diagram](#planned-diagram)
-  - [Steps](#steps)
-  - [Acceptance Mapping](#acceptance-mapping)
-  - [Assumptions And Open Questions](#assumptions-and-open-questions)
-  - [Planned Relationships](#planned-relationships)
-  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -46,6 +37,7 @@ Decisions (record of the build; override in chat):
 - **Vendor folders** hold, for each vendor name found in the export (folder name: the name in kebab case; two names with the same folder name stop the run), the vendor view of the export from the library (that vendor's rows, released question rows only, vendor-visible columns, no group, link, mapping or unreleased row, no reference to a hidden row) and a `field-updates.csv` of the non-held spec updates for those visible rows and columns (never the `vendor` field itself) with hidden references dropped from list values. Additions, conflicts and suggestions are internal only. `--scope <slug>` names the manifest row used for the stale check (default `internal`); a vendor scope limits `vendor/` to that vendor, and the master export stays authoritative.
 - **Output folder** may be new, empty or hold only a previous run's own files (`reconciliation-report.md`, `field-updates.csv`, `conflicts.csv`, `suggestions.csv`, `additions/<tab>.csv`, `vendor/<slug>/<tab>.csv`, checked file by file); anything else, or a folder that contains or sits inside an input, is refused.
 - **Unknown use case IDs** are checked in `reconcile` only (it knows the export): a key's leading ID must be the ID of an export Use Cases row or of a Use Cases `add` (`<file>: line <n>: unknown use case ID in record_key "<key>"; expected uc-<vendor-slug>-<use-case-slug> ...`), a Questions `use_case_name` value must be the name of the key's use case (`use_case_name "<value>" does not belong to use case ID <id>`), and two export Use Cases rows deriving one ID stop the run first (`<export>/use-cases.csv: line <n>: use case ID <id> is also derived by line <m>`). An `add` key is trusted as the ID, and a name is checked only when the use case's name is known; `validate` checks shape, header, tab, field, dates, composed `update_id`, secrets and, for an export, the schema lists. A reported line is the CSV record number with the header as line 1, and a proposals folder with no `tracker-updates.csv` is an input error.
+- **Proposal file shape** is checked in the proposal loader (`loadProposalFile`), which `validate`, `reconcile` and the Review CSV Exporter share. After the CSV parses, a scan of the raw text reports a byte order mark, a CR or CRLF line end (first occurrence), a missing final line feed and every row whose field count is not 12 (blank lines count as rows, so a short, fused or blank row is named by its record number). The scan follows the parser's quoting, so commas and line feeds inside quotes are one field. Row checks then add: the `record_key` must fit its tab (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>/<endpoint>/<environment>` with a non-empty endpoint that may hold `/`, `<use-case-id>->><candidate-slug>`) with a use case ID of the form `uc-<vendor-slug>-<use-case-slug>`; a `value` or `base_value` for a date-typed column must be `YYYY-MM-DD` unless the column's allowed list names it (`unknown`); and `proposal_id` must equal the name of the folder holding the file (checked for `reconcile` and `validate <dir>`; `validate <file>` does not check the folder, since a loose example file has no proposal folder). A key that fails the shape is reported as `record_key "<key>" does not fit tab <tab>; expected <form> ...` instead of the unknown use case ID message, which stays for a well-formed ID that is not in the export. Any shape problem returns no changes for that file.
 
 ### Diagram
 
@@ -86,84 +78,11 @@ Inherited from [Tracker Tools](../README.md#technology): Node 26 with native Typ
 - **B09** When an input has a bad header, an unknown tab or field, a key whose leading use case ID is unknown (or is written as the use case name or its slug), a `use_case_name` value that does not belong to the key's use case ID, two export Use Cases rows that derive the same use case ID, malformed CSV or a secret-looking value, then it exits 1 naming the file and line and writes no partial output. It also stops, naming the file and line, on a proposal file that does not end with exactly one line feed, on a CRLF or lone CR line end or a byte order mark, on a row with fewer or more than 12 fields, on a record key whose form does not fit its tab (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>/<endpoint>/<environment>` or `<use-case-id>->><candidate-slug>`), and on a `proposal_id` that differs from its folder name, and `validate <file-or-dir>` runs exactly these checks without an export.
 - **B10** When it is run, then it never changes or reassigns an existing central reference, answer, answer status, owner, status, ticket, date, acknowledgement or released question text, never releases or applies anything, and a repeated run does not overwrite a newer human edit.
 
-## Plan
-
-### Planned Navigation
-
-[Job Behavior Specifications](../../README.md#plan) / [Tracker Tools](../README.md#navigation) / **Tracker Reconciler**
-
-- [Planned Design](#planned-design)
-  - [Planned Diagram](#planned-diagram)
-- [Steps](#steps)
-- [Acceptance Mapping](#acceptance-mapping)
-- [Assumptions And Open Questions](#assumptions-and-open-questions)
-- [Planned Relationships](#planned-relationships)
-- [Planned Links](#planned-links)
-
-### Planned Design
-
-The checks are added to the proposal loader (`loadProposalFile` in `src/inputs.ts`), which `validate`, `reconcile` and the Review CSV Exporter already share, so one change serves all three. A short row is currently padded silently, so a pre-scan of the raw text counts the fields of each row before the table is built; the final line feed, LF-only, no byte order mark and the key shape per tab are checked on the raw text and rows. A date-typed `value` or `base_value` is checked as `YYYY-MM-DD`. The `validate` command and its exit codes do not change; it prints one `file: line N: message` per problem. Blank lines no longer shift reported line numbers. The exporter needs no code change and no new mode, but its tests and every fixture that is a proposal file must pass the stricter loader.
-
-#### Planned Diagram
-
-```mermaid
----
-config:
-  layout: elk
----
-%%{init: {"securityLevel": "loose"}}%%
-flowchart TB
-  cli["src/cli.ts (reconcile, validate)"]
-  inputs["src/inputs.ts (proposal loader)"]
-  checks["strict proposal shape checks"]:::planned
-  exporter["review-csv-exporter (shares the loader)"]
-  cli -->|"calls"| inputs
-  inputs -->|"runs"| checks
-  exporter -->|"loads proposals through"| inputs
-  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
-```
-
-### Steps
-
-1. Add the raw-text checks and the per-tab key-shape check to the proposal loader in `src/inputs.ts`, with one `file: line N: message` per problem and the proposal-id-equals-folder check for `validate <dir>` and `reconcile`.
-2. Add tests in `test/input.test.ts` for each new stop (missing final line feed, CRLF, BOM, a short row, a fused row, a bad key per tab, a wrong folder name) and for the unchanged good case.
-3. Run the tests of the Review CSV Exporter, the Tracker Summary and the root integration tests against the stricter loader; a fixture that fails is a bounded request to its owner, not an edit here.
-4. Update this README's Design and `B09`, `contract.md` and `requirements.md`, then dissolve this Plan into Design.
-
-### Acceptance Mapping
-
-| Acceptance | Behaviors | Step | Check |
-| --- | --- | --- | --- |
-| `validate` and `reconcile` stop on each new malformed-file case naming file and line | B09 | 1, 2 | `[B09]` cases in `test/input.test.ts` |
-| Every existing behavior still holds on well-formed input | B01 to B08, B10 | 3 | the component's `test` check and the root tests |
-
-### Assumptions And Open Questions
-
-Assumptions (override any in chat):
-
-1. **Policy and scope.** Planned under `deciding-what-to-ask`; the change is part of one request (validation of proposal files) that also touches the other components named in the root request, each planned in its own README. Nothing is built.
-2. **Choices.** An empty `base_value` stays blank (no dot); on a `set` a blank `base_value` means the field was blank when seen. The exact 12-field check and the final-line-feed check catch a lost trailing field and a fused row. Validation lives in the existing Tracker Reconciler `validate` command; the exporter shares its loader and gains no new mode. Recorded from the user's answers of 2026-11-17.
-3. **Key shapes.** Per tab: Use Cases `<use-case-id>`; Questions `<use-case-id>/Q<n>`; Identity & Access `<use-case-id>/<endpoint>/<environment>`; Mappings `<use-case-id>->><candidate-slug>` with the slug rule of the reconciler's `slug()`. Override by naming another form.
-4. **Behavior cap.** The component was at 11 behaviors, over the cap of 10 that the record checker enforces once the component has a task, so the same-name-vendors behavior `B11` is folded into `B01`; at build, tests tagged `[B11]` are retagged `[B01]`. Override by merging another pair.
-5. **Fixtures.** If an existing proposal fixture elsewhere fails the stricter loader, it is reported as a bounded request to its owner at build time.
-
-Open questions: none. The behavior changes and the choices on the base value (kept blank, with checks) and on the pack skills (a self-check checklist, the validator optional) were confirmed by the user on 2026-11-17.
-
-### Planned Relationships
-
-- [Review CSV Exporter](../review-csv-exporter/README.md#purpose) — shares the loader, so it also stops on these cases.
-- [Tracker Tables](../tracker-tables/README.md#purpose) — the CSV parser, unchanged.
-- [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the format and key forms the checks follow.
-
-### Planned Links
-
-- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
-- [contract.md](contract.md#contract) — the interface, with the planned change section.
-
 ## Relationships
 
 - [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the schema, reference scheme, field classes, proposal and export formats the tool implements.
 - [Tracker Tables](../tracker-tables/README.md#purpose) — the library the tool uses to read, validate and write tables and to build vendor views.
+- [Review CSV Exporter](../review-csv-exporter/README.md#purpose) — shares the proposal loader, so it also stops on the proposal shape cases.
 
 ## Links
 
@@ -176,4 +95,4 @@ Open questions: none. The behavior changes and the choices on the base value (ke
 - [src/matching.ts](src/matching.ts) — text normalisation, similarity and the recorded thresholds.
 - [src/report.ts](src/report.ts) — the report, the files, the vendor copies and the safe write.
 - [src/secrets.ts](src/secrets.ts) — recognition of credential-looking values.
-- [test/reconcile.test.ts](test/reconcile.test.ts) — tests for B01, B02, B04 to B07, B10 and B11; `repeat.test.ts` covers B03, `vendor.test.ts` B08 and `input.test.ts` B09.
+- [test/reconcile.test.ts](test/reconcile.test.ts) — tests for B01, B02, B04 to B07 and B10; `repeat.test.ts` covers B03, `vendor.test.ts` B08 and `input.test.ts` B09.

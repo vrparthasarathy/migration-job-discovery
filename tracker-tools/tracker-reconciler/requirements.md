@@ -29,7 +29,7 @@ See `task.acceptance` in [`craft.json`](craft.json).
 
 - **Duplicate matching is heuristic.** It is deterministic and conservative, and uncertain matches always go to a lead.
 
-## Planned change: strict proposal shape
+## Strict proposal shape
 
 - The proposal loader stops, naming file and line, on: a missing final line feed or more than one; a CRLF or lone CR; a byte order mark; a row with fewer or more than 12 fields (counted on the raw text, since short rows are padded today); a `record_key` whose form does not fit its tab; a date-typed `value` or `base_value` that is not `YYYY-MM-DD`; and, for a folder, a `proposal_id` that differs from the folder name.
 - `validate <file-or-dir>` runs exactly these checks and needs no export. Exit codes and the output format are unchanged.
