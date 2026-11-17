@@ -63,3 +63,10 @@ The agent says `NO SUBAGENT TOOL`, says that `run-discovery` handles one folder 
 ### Wording rules
 
 The agent file says `use case` for the business unit and `job` or `script` only for the vendor's script, names no Craft term, and holds no copy of the Tracker Data Contract.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- Worker brief: adds the specification location and the exception to the proposals-root rule.
+- Worker reply record: the `SPEC-PATH` line is the root-relative path of the specification written at `<folder>/<use case name>.md`; the line count is unchanged.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

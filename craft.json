@@ -11,5 +11,39 @@
       "test": "node --test \"{path}/test/*.test.ts\"",
       "testGlob": "**/test/**/*.test.ts"
     }
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T02:35:07Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 8,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 2,
+        "maximum-children": 7
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 14400,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The root `contract.md` states the one lookup (index row `folder` and `spec`) and the one write location for a use case's files, and the review checklist scan finds the same wording in every skill and agent that names a specification, `external_tools.md` or `logic.md` location. (B02)",
+      "A specification written by the batch agent for a use case with an index row is found, with no path given, by `propose-tracker-updates`, `discover-identity-access` and `document-job-behavior` run by hand, in the manual run sheet. (B02)",
+      "A use case with no index row, a blank `spec` or a missing file is reported as having no specification by a manual run, and no fallback location is used. (B02)",
+      "The Tracker Data Contract files and every copy of them, the new skill folder's included, are identical, and the root `test` check passes. (B05)"
+    ]
   }
 }

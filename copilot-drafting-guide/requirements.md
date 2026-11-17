@@ -87,3 +87,12 @@ These topics are recorded as evidence and are not planned changes: no behavior i
 Built on 2026-11-16 from the plan agreed on 2026-11-15 after the user's alignment and the user's component review; the reasons are in the [root requirements](../requirements.md#requirements). `use case` names the business unit, `job` or `script` names only the vendor's script, the question rule reads `what the migrated use case must do`, the heading reads `Use Case Behavior`, and no vendor-readable text mentions workflows or grouping. Structure, IDs and anchors do not change.
 
 Further wording from the user's component review: the core inputs (`external_tools.md`, `logic.md`), manually tagged documents and supplied findings are accepted as they are; four evidence kinds are kept apart and evidence is checked for support, with conflicts flagged and not guessed; existing analyses are starting inputs and not verified or approved descriptions; an update keeps IDs and history, avoids duplicates and creates a behavior only when an answer establishes one. These are built into the files and checked by the file review only. They do not replace the earlier-version evidence above, and no result there is a pass for the revised version.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- `document-job-behavior` writes a new document at `<index row folder>/<use case name>.md` and ends its reply with the root-relative path.
+- An update finds the file through the index `spec`; `external_tools.md` and `logic.md` are read from the same folder.
+- With no index row, a blank `spec` or a missing file it asks once for the path and otherwise reports "no specification"; it never falls back to another location and never scans for the file.
+- Must not: write the specification into a proposal folder, move an existing document, or change the template or the drafting rules.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

@@ -77,6 +77,85 @@ flowchart TB
 - **B09** When it finishes, then it reports content with no row, supplied items not yet in a specification, rows without a source, unread files, use cases with an unassigned source owner or only document support, and use cases whose behavior changed with the suggested grouping impact (so affected workflow recommendations can be re-reviewed), and says a lead reviews it all. (untested: benchmark pending)
 - **B10** When its folder is read, then it contains no Craft term, needs nothing installed in VS Code agent mode, and holds a copy of the contract that equals the Tracker Data Contract component's file as built, a byte-identical copy of the schema, and an example `tracker-updates.csv` for the website use case under a fictional vendor whose keys, `spec_refs` and `update_id` values use the use case ID. (untested: benchmark pending)
 
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Tracker Update Proposer**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+Only the way the skill finds the specification changes. In specification-update mode a path the developer gives is used first; otherwise the skill asks once for the repository root, reads `use-case-index.csv`, finds the row by use case name, slug or derived ID and reads the file in `spec`. A blank `spec`, an absent row or a missing file is reported as "no specification" after one question for a path, and the source location in the inventory is no longer used for a specification. Source-screening mode keeps reading the inventory's source locations, since it runs before any specification exists. The one sentence in the `record_key` bullet is replaced by the rule.
+
+Rule followed by every skill and agent that names a specification: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder. A skill run by hand with no path uses it, and when there is no index row, `spec` is blank or the file is missing, the skill asks once for the path and, if none is given, reports "no specification" and uses no other location (no fallback to the inventory's source location, no scan for the file).
+
+Behavior wording (amended at build; no behavior is added): **B01** (no new behavior; the cap of 10 holds). New wording: "When a use case is first listed or its specification is first drafted, then the skill proposes an `add` for the use case, keyed by its use case ID, with name, vendor, link, version and revision, and never a central reference; when the vendor is not known it asks the lead once, never invents one, and writes no keyed row for that use case until the vendor is known; in specification-update mode with no path given it finds the specification through the use case index (the row's `spec`, found by use case name, slug or derived ID, a path the developer gives winning), and with no row, a blank `spec` or a missing file it asks once for the path and otherwise reports "no specification", using no other location. (untested: benchmark pending)" Tests and checklist items tagged B01 stay as they are.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  skill["propose-tracker-updates (skill)"]
+  idx["use-case-index.csv (repository root)"]
+  lookup["specification lookup through the index"]:::planned
+  spec["specification named by spec"]
+  orch["discovery-orchestrator (writes the index)"]
+  skill -->|"resolves with no path through"| lookup
+  lookup -->|"reads the row in"| idx
+  lookup -->|"opens"| spec
+  orch -->|"writes"| idx
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. Edit `propose-tracker-updates/SKILL.md`: in the Specification update inputs add the index lookup, the repository root question and the match rule, and the no-row rule; remove the source-location fallback for a specification.
+2. Replace the `record_key` bullet's one sentence about the index with the real rule, and keep Source screening unchanged.
+3. Update `contract.md` (Skill input and output) and add one line under B01 in `review-checklist.md`.
+4. Rewrite README `B01` as above, update Design, and dissolve this Plan into Design.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| Specification mode resolves the specification from the index, with the developer's path first and the no-row rule | B01 | 1, 2, 3 | file review against the checklist line |
+| The folder, the example and the contract copy are unchanged in kind and contain no Craft term | B10 | 1, 4 | the checklist's scan and the byte comparison of the contract copy |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`, as one part of the request `shared-use-case-file-location`: the other affected components each carry their own Plan, and the root holds the convention. Nothing is built.
+2. **Location.** A newly drafted specification is written in the use case's own folder; the proposal folder holds only proposal files. Confirmed by the user on 2026-11-17. Override by naming the proposal folder `<proposals root>/tracker-updates/<use-case-id>/` instead; the specification is then vendor-readable only if that folder is shared, so the root's vendor-separation rule would also need to change.
+3. **File name.** `<use case name>.md`, as the reference specification is named after its use case. Override by naming another pattern.
+4. **Existing specifications are not moved.** A batch-written specification keeps working because its index `spec` already points at it, wherever it is.
+5. **Tracker Data Contract.** It defines no specification location, so it and its copies in the skill folders do not change and nothing is recopied.
+6. **Behavior cap.** The component lists 10 behaviors, so none is added: **B01** is reworded in the Plan above and at build; tests and checklist items tagged for it stay.
+
+Open questions: none. The location choice was confirmed by the user on 2026-11-17; where a hand-run skill finds no index row it asks once for a path, as recorded above.
+
+### Planned Relationships
+
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — writes the use case index whose `spec` this skill now resolves a specification from.
+
+### Planned Links
+
+- [requirements.md](requirements.md#planned-change-shared-use-case-file-location) — what the change must do, with the planned change section.
+- [contract.md](contract.md#planned-change-shared-use-case-file-location) — the interface, with the planned change section.
+
 ## Relationships
 
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the schema, the use case ID, reference scheme and proposal format this skill follows, copied into its folder.

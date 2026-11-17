@@ -36,3 +36,11 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - When appending to the shared file it first makes sure the file ends with a line feed, so the first row it adds starts on a new line.
 - An empty `base_value` stays blank.
 - When the toolkit is available it also runs `validate <file>` of the Tracker Reconciler and fixes every error before reporting; the skill needs nothing installed.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- With no folder given, the skill takes the folder of `external_tools.md` and `logic.md` from the use case index row's `folder` (`use-case-index.csv` at the repository root, row found by use case name, slug or derived ID); a developer-given folder wins.
+- With no row it asks the developer for the folder, as today; a missing file is still reported and never invented.
+- Must not: read a specification, change any row or the proposal file format, or change the contract and schema copies.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

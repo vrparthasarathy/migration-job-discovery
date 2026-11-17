@@ -60,6 +60,84 @@ flowchart TB
 - **B09** When the review CSVs are ready, then it hands the review folder, the lead's name and the date to `record-review-decisions`, which walks the lead through the pending rows and records every decision; the orchestrator records no decision itself. (untested: benchmark pending)
 - **B10** When the lead asks to accept all plain adds of one use case, then it passes the request to `record-review-decisions`, which records them as accepted in that lead's name in one step, only for that use case and only for adds with no conflict. (untested: benchmark pending)
 
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Discovery Orchestrator**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+The orchestrator is the index's only writer, so it states the rule the other skills follow. At stage 3 it names the folder as the specification's home, `<folder>/<use case name>.md`, and sets the row's `spec` from the root-relative path the drafting stage reports. The `spec` column definition in the contract gains one sentence: the index row is the single lookup for a specification, and a new specification is written in the row's own folder. Nothing else about the index, the stages or the review hand-over changes.
+
+Rule followed by every skill and agent that names a specification: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder. A skill run by hand with no path uses it, and when there is no index row, `spec` is blank or the file is missing, the skill asks once for the path and, if none is given, reports "no specification" and uses no other location (no fallback to the inventory's source location, no scan for the file).
+
+Behavior wording (amended at build; no behavior is added): **B05** (no new behavior; the cap of 10 holds). New wording: "When a use case's behavior documentation is done, then it sets that row's `spec` in the index from the root-relative path the stage reports (the stage writes the specification at `<folder>/<use case name>.md`, told that folder as its home) and runs workflow recommendation over every row of the index with the fixed proposal ID `recommendations`, shows the full list once with a warning that a partial list drops the other use cases' mappings, and runs only after the lead confirms. (untested: benchmark pending)" Tests and checklist items tagged B05 stay as they are.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  skill["run-discovery (skill)"]
+  idx["use-case-index.csv (repository root)"]
+  home["folder passed as the specification home"]:::planned
+  draft["document-job-behavior (stage 3)"]
+  skill -->|"passes"| home
+  home -->|"tells"| draft
+  draft -->|"reports the path to"| skill
+  skill -->|"sets spec in"| idx
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. Edit `run-discovery/SKILL.md`: stage 3 passes the folder as the specification's home and `spec` is set from the reported path.
+2. Add one sentence to the `spec` column definition in `contract.md` (Use case index) and one line under B05 in `review-checklist.md`.
+3. Rewrite README `B05` as above, update Design, and dissolve this Plan into Design.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| Stage 3 is told the folder as the specification's home and `spec` is set from the reported path | B05 | 1, 3 | file review against the checklist line |
+| The `spec` column definition names the one write location and the lookup rule, in plain Markdown with no Craft term | B05 | 2 | the checklist's scan for `Craft` |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`, as one part of the request `shared-use-case-file-location`: the other affected components each carry their own Plan, and the root holds the convention. Nothing is built.
+2. **Location.** A newly drafted specification is written in the use case's own folder; the proposal folder holds only proposal files. Confirmed by the user on 2026-11-17. Override by naming the proposal folder `<proposals root>/tracker-updates/<use-case-id>/` instead; the specification is then vendor-readable only if that folder is shared, so the root's vendor-separation rule would also need to change.
+3. **File name.** `<use case name>.md`, as the reference specification is named after its use case. Override by naming another pattern.
+4. **Existing specifications are not moved.** A batch-written specification keeps working because its index `spec` already points at it, wherever it is.
+5. **Tracker Data Contract.** It defines no specification location, so it and its copies in the skill folders do not change and nothing is recopied.
+6. **Behavior cap.** The component lists 10 behaviors, so none is added: **B05** is reworded in the Plan above and at build; tests and checklist items tagged for it stay.
+
+Open questions: none. The location choice was confirmed by the user on 2026-11-17; where a hand-run skill finds no index row it asks once for a path, as recorded above.
+
+### Planned Relationships
+
+- [Copilot Drafting Guide](../copilot-drafting-guide/README.md#purpose) — stage 3 writes the specification at the location the orchestrator names.
+- [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose) and [Identity Access Discovery](../identity-access-discovery/README.md#purpose) — resolve a specification and the core files through the index this skill writes.
+
+### Planned Links
+
+- [requirements.md](requirements.md#planned-change-shared-use-case-file-location) — what the change must do, with the planned change section.
+- [contract.md](contract.md#planned-change-shared-use-case-file-location) — the interface, with the planned change section.
+
 ## Relationships
 
 - [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose) — the skill that runs source screening and specification update.

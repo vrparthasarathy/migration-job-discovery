@@ -59,6 +59,15 @@ How this consolidated direction resolves the conflicts found against the earlier
 | Root budget covered three children | Ten descendants now have tasks | The root allocation is the sum of its descendants plus its own share, now 16 USD and 34200 s after the confirmed increase |
 | Root assumption: developers draft when they pick up a job | Drafting across the full set is urgent | Consistent: drafting is simply prioritised and recommendations are not gated on acknowledgement |
 
+## Planned change: where a use case's files live
+
+- The use case index row (`use-case-index.csv` at the repository root: `folder`, `spec`) is the single lookup for a use case's specification and for the folder that holds `external_tools.md` and `logic.md`. Every skill and agent that reads or writes one of these files names this lookup and no other default.
+- A new specification is written in the use case's own folder as `<use case name>.md`, never in a proposal folder; `spec` records its root-relative path. The proposal file stays at `<proposals root>/tracker-updates/<use-case-id>/tracker-updates.csv`.
+- A skill or agent run by hand with no path asks once for the repository root, finds the row by use case name, slug or derived ID, and uses `spec` and `folder`. A path the developer gives wins.
+- A use case with no row, a blank `spec` or a missing file is reported as having no specification (a skill may ask once for a path). Nothing falls back to the inventory's source location or scans for the file.
+- A fourth Copilot skill folder, `identity-access-sheet-refresh/refresh-identity-access-sheet`, joins the file lists of `B02` and the copy comparison of `B05`.
+- Must not: move an existing folder or specification, or change the Tracker Data Contract.
+
 ## Acceptance
 
 See `task.acceptance` in [`craft.json`](craft.json).

@@ -1,5 +1,37 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T02:35:40Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "`document-job-behavior` writes a new document at `<index row folder>/<use case name>.md` and reports its root-relative path, finds an existing document through the index `spec`, reads `external_tools.md` and `logic.md` from the same folder, and with no row, a blank `spec` or a missing file asks once for a path and otherwise reports \"no specification\". (B01)",
+      "`drafting-prompt.md` repeats the same instructions, the checklist names the location rule, and no folder, guidance file or prompt mentions Craft. (B08)"
+    ]
   }
 }

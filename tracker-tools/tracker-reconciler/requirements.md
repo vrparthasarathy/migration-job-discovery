@@ -35,3 +35,10 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - `validate <file-or-dir>` runs exactly these checks and needs no export. Exit codes and the output format are unchanged.
 - Blank lines are not skipped silently in a way that shifts line numbers.
 - Must not: change the CSV parser's tolerance for the export files, or add an exporter mode.
+
+## Planned change: Windows path separators
+
+- Relative paths are compared, sorted and printed with `/` on every platform: the output-folder allow check, the report's `Proposal:` lines and the proposal file order do not depend on the platform separator.
+- The output-folder safety rule is unchanged: the allowed file name pattern is not widened, and a name that does not fit it, including one with a backslash on a `/` platform, is still refused.
+- The test snapshot and listing keys use `/` on every platform.
+- Must not: change what the reconciler reports, its commands or exit codes, or the paths in stderr problem messages.

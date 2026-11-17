@@ -71,6 +71,82 @@ flowchart TB
 - **B09** When it finishes, then it reports unread files, use cases whose source was not available to sweep, endpoints with no evidence and rows with no pointer, and says approval or provisioning is separate from verified working access and from behavior acknowledgement, and the developer or platform team verifies access. (untested: benchmark pending)
 - **B10** When its folder is read, then it contains no Craft term, needs nothing installed in VS Code agent mode, and holds byte-identical copies of the contract and schema. (untested: benchmark pending)
 
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Identity Access Discovery**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+One input rule changes. The skill looks for `external_tools.md` and `logic.md` in the folder the developer names; when none is named it reads `use-case-index.csv` at the repository root (asking once for the root), finds the row by use case name, slug or derived ID and uses its `folder`. With no row it asks the developer for the folder, as today. The skill needs no specification and writes only the proposal file, so nothing else changes.
+
+Rule followed by every skill and agent that names a specification: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder. A skill run by hand with no path uses it, and when there is no index row, `spec` is blank or the file is missing, the skill asks once for the path and, if none is given, reports "no specification" and uses no other location (no fallback to the inventory's source location, no scan for the file).
+
+Behavior wording (amended at build; no behavior is added): **B01** (no new behavior; the cap of 10 holds). New wording: "When it reads source, configuration, `external_tools.md` (looked for in the folder a developer names, else in the use case index row's `folder`), `logic.md` and tagged documents for one use case, then it lists each external service, endpoint and environment with the observed operations and an evidence pointer that shows whether it rests on source or only on a supporting document (a document never makes a row source-verified), and it runs as an early lightweight sweep across all known use cases in parallel with detailed behavior discovery, not after acknowledgements or document completion. (untested: benchmark pending)" Tests and checklist items tagged B01 stay as they are.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  skill["discover-identity-access (skill)"]
+  idx["use-case-index.csv (repository root)"]
+  rule["core files folder from the index row"]:::planned
+  core["external_tools.md and logic.md"]
+  skill -->|"with no path applies"| rule
+  rule -->|"reads folder from"| idx
+  rule -->|"finds"| core
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. Edit `discover-identity-access/SKILL.md`: in Inputs, take the core files' folder from the index row's `folder` when no path is given, with the repository root question and the match rule; keep the developer-given folder first and the existing report line for a missing file.
+2. Update `contract.md` (Skill input and output) and add one line under B01 in `review-checklist.md`.
+3. Rewrite README `B01` as above, update Design, and dissolve this Plan into Design.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| The core files' folder comes from the index row when no path is given, with a developer's folder first and the existing no-row behavior | B01 | 1, 2 | file review against the checklist line |
+| The folder, example and copies stay free of Craft terms and byte-identical | B10 | 1, 3 | the checklist's scan and the byte comparison of the copies |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`, as one part of the request `shared-use-case-file-location`: the other affected components each carry their own Plan, and the root holds the convention. Nothing is built.
+2. **Location.** A newly drafted specification is written in the use case's own folder; the proposal folder holds only proposal files. Confirmed by the user on 2026-11-17. Override by naming the proposal folder `<proposals root>/tracker-updates/<use-case-id>/` instead; the specification is then vendor-readable only if that folder is shared, so the root's vendor-separation rule would also need to change.
+3. **File name.** `<use case name>.md`, as the reference specification is named after its use case. Override by naming another pattern.
+4. **Existing specifications are not moved.** A batch-written specification keeps working because its index `spec` already points at it, wherever it is.
+5. **Tracker Data Contract.** It defines no specification location, so it and its copies in the skill folders do not change and nothing is recopied.
+6. **Behavior cap.** The component lists 10 behaviors, so none is added: **B01** is reworded in the Plan above and at build; tests and checklist items tagged for it stay.
+
+Open questions: none. The location choice was confirmed by the user on 2026-11-17; where a hand-run skill finds no index row it asks once for a path, as recorded above.
+
+### Planned Relationships
+
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — writes the use case index whose `folder` this skill now uses to find the core files.
+
+### Planned Links
+
+- [requirements.md](requirements.md#planned-change-shared-use-case-file-location) — what the change must do, with the planned change section.
+- [contract.md](contract.md#planned-change-shared-use-case-file-location) — the interface, with the planned change section.
+
 ## Relationships
 
 - [Tracker Data Contract](../tracker-data-contract/README.md#purpose) — the Identity & Access columns and the proposal format this skill follows, copied into its folder.

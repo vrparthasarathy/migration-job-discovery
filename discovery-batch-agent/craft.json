@@ -1,5 +1,37 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T02:35:40Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The Worker brief names the use case's `Folder:` as the specification's home, states that the specification is written at `<folder>/<use case name>.md` as the one exception to writing only under the proposals root, and requires the `SPEC-PATH` reply line to be that path; the index `spec` is set from it. (B03)",
+      "The agent still writes only index rows itself, and the file, contract and checklist contain no Craft term and no copy of the Tracker Data Contract. (B09)"
+    ]
   }
 }

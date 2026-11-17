@@ -36,3 +36,11 @@ The shared rules are in the [root requirements](../requirements.md#requirements)
 
 - Verify subagent support and skill loading in the client environment with the [Subagent Smoke Test](../subagent-smoke-test/README.md#design).
 - Benchmark batch runs with the Copilot skills (backlog item `prompt-skill-benchmark`) and consider parallel runs (backlog item `batch-parallel-runs`).
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- The Worker brief names the use case's `Folder:` as the specification's home and says the specification is written at `<folder>/<use case name>.md`, the one exception to writing only under the proposals root.
+- The `SPEC-PATH` reply line is that root-relative path, and the agent sets the index `spec` from it.
+- Must not: change the stage choice, the done checks, the reply record's other lines or what the agent itself writes; move an existing specification.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

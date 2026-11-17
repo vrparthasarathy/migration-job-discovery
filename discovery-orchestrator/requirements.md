@@ -41,3 +41,12 @@ As the root's: the behaviors are checked by the file review in the checklist and
 ## Acceptance
 
 See `task.acceptance` in [`craft.json`](craft.json).
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- Stage 3 is told the use case's `folder` as the specification's home; the specification is written at `<folder>/<use case name>.md`.
+- The index `spec` is set from the root-relative path the drafting stage reports, never guessed.
+- The contract's `spec` column definition says the index row is the single lookup for a specification and that a new specification is written in the row's own folder.
+- Must not: write a specification itself, move an existing one, or change the index columns, the proposal ID or the review hand-over.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

@@ -32,3 +32,10 @@
 ### Proposal file self-check
 
 The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- Lookup: `use-case-index.csv` at the repository root, columns `use_case_name,slug,vendor,folder,spec`; the specification is the file `spec` names, root-relative.
+- No-row message: `no specification`, after one question for a path; the report lists the use case.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

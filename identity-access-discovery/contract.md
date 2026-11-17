@@ -32,3 +32,10 @@
 ### Proposal file self-check
 
 Before reporting, the skill checks its proposal file: 12 fields per row, quoting, the exact header, date forms, key forms and one final line feed, and fixes every problem. When appending to a shared file it first makes sure the file ends with a line feed. An empty `base_value` stays blank. When the toolkit is available it also runs the Tracker Reconciler's `validate <file>` (optional). The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- Lookup: `use-case-index.csv` at the repository root, columns `use_case_name,slug,vendor,folder,spec`; only `folder` is used here.
+- No-row behavior: unchanged, the skill asks for the folder.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

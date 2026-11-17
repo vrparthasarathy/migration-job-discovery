@@ -78,6 +78,87 @@ Inherited from [Tracker Tools](../README.md#technology): Node 26 with native Typ
 - **B09** When an input has a bad header, an unknown tab or field, a key whose leading use case ID is unknown (or is written as the use case name or its slug), a `use_case_name` value that does not belong to the key's use case ID, two export Use Cases rows that derive the same use case ID, malformed CSV or a secret-looking value, then it exits 1 naming the file and line and writes no partial output. It also stops, naming the file and line, on a proposal file that does not end with exactly one line feed, on a CRLF or lone CR line end or a byte order mark, on a row with fewer or more than 12 fields, on a record key whose form does not fit its tab (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>/<endpoint>/<environment>` or `<use-case-id>->><candidate-slug>`), and on a `proposal_id` that differs from its folder name, and `validate <file-or-dir>` runs exactly these checks without an export.
 - **B10** When it is run, then it never changes or reassigns an existing central reference, answer, answer status, owner, status, ticket, date, acknowledgement or released question text, never releases or applies anything, and a repeated run does not overwrite a newer human edit.
 
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../../README.md#navigation) / [Tracker Tools](../README.md#navigation) / **Tracker Reconciler**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+Paths are compared, sorted and printed with `/` on every platform. A small `posixPath(path, separator = sep)` helper in `src/inputs.ts` (which `src/report.ts` already imports) does `split(separator).join("/")`. `src/report.ts` gains `isOwnOutput(relativePath, separator = sep)`, which normalizes with `posixPath` and then applies the unchanged tool-owned file name pattern, and `checkOutput` calls it, so a valid previous output folder is accepted on Windows and anything else is refused exactly as today. The report's `Proposal:` line wraps its relative path in `posixPath`, and the proposal files are sorted by their normalized path before `join`, so the report bytes and the row order are the same on macOS, Linux and Windows. In the tests, `snapshot` and `ls` key files with `/`. The `separator` parameter is the test seam: a test passes `\` to simulate Windows on macOS without mocking `node:path`. File system access keeps native paths, stderr problem messages keep native paths, and no behavior, command, exit code or reported value changes.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  inputs["src/inputs.ts (proposal loader)"]
+  posix["posixPath (normalize to /)"]:::planned
+  report["src/report.ts (report, checkOutput)"]
+  own["isOwnOutput (normalize, then the unchanged pattern)"]:::planned
+  tests["test (snapshot and ls keys use /)"]
+  inputs -->|"exports"| posix
+  inputs -->|"sorts proposal paths with"| posix
+  report -->|"prints Proposal lines with"| posix
+  report -->|"checks output folder with"| own
+  own -->|"normalizes with"| posix
+  tests -->|"key files with"| posix
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. In `src/inputs.ts`, add and export `posixPath(path, separator = sep)`, and sort the `readdir` entries in `proposalFiles` by their normalized form before `join(dir, entry)`.
+2. In `src/report.ts`, add `isOwnOutput(relativePath, separator = sep)` (normalize, then the existing pattern, unchanged), use it in `checkOutput`, and wrap the `Proposal:` relative path in `posixPath`.
+3. In `test/support.ts`, build the `snapshot` keys from `relative(dir, name)` normalized with `posixPath` and prefixed with `/`; in `test/vendor.test.ts`, make `ls` return normalized paths.
+4. In `test/input.test.ts` and `test/repeat.test.ts`, add `[B09]` cases for the backslash listing (accepted own files, refused foreign files and `..\x.csv`, a backslash name still refused under the default separator) and `[B03]` cases for `mr-1` and `mr-10` ordering with `/` in the `Proposal:` lines and for `posixPath` with a `\` separator.
+5. Update the README Design ("Rows in order" and "Output folder" bullets: paths compared and printed with `/`), `contract.md` (byte-identical outputs on every platform, with `/` in every path) and `requirements.md`, then dissolve this Plan into Design.
+6. Validate with the component's `test` check and `coverage`, then the exporter, summary and root tests, which share the loader.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| A previous output listed with backslash paths is accepted, a foreign file is refused, the pattern is not widened | B09 | 2, 4 | `[B09]` cases in `test/input.test.ts`; the existing real-directory test at `input.test.ts:188` |
+| `Proposal:` lines and proposal order use `/` on every platform | B03 | 1, 2, 4 | `[B03]` cases in `test/repeat.test.ts` |
+| Same inputs give identical outputs and snapshot keys use `/` | B03 | 3 | `repeat.test.ts` with the normalized `snapshot` |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`. The change follows the backlog item `reconciler-windows-path-separators`; nothing is built.
+2. **Test seam.** A `separator` parameter on `posixPath` and `isOwnOutput` simulates Windows on macOS. Override by mocking `node:path` in the tests instead (more invasive).
+3. **Helper placement.** `posixPath` lives in `src/inputs.ts` because `report.ts` already imports from it. Override by naming a new small module.
+4. **Beyond the two spots the user named.** The `Proposal:` report line and the proposal file sort order are included, because without them the report bytes differ on Windows (`mr-1\tracker-updates.csv`, and `mr-10` sorted before `mr-1`). Override by dropping them; each is then recorded as a backlog item.
+5. **Stderr.** Problem messages on stderr keep native paths, since they are not report output. Override by normalizing them too, which would let the tests drop the `[/\\]` patterns.
+6. **Behaviors.** No behavior is added or reworded: B03 already requires identical outputs and B09 already covers the output-folder rule, and neither names a separator. The component stays at 10 behaviors.
+
+Open questions: none.
+
+### Planned Relationships
+
+- [Review CSV Exporter](../review-csv-exporter/README.md#purpose) — shares the proposal loader, so it gets the same ordering and needs no change of its own.
+- [Tracker Tables](../tracker-tables/README.md#purpose) — the CSV parser, unchanged.
+
+### Planned Links
+
+- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
+- [contract.md](contract.md#contract) — the interface, with the planned change section.
+
 ## Relationships
 
 - [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the schema, reference scheme, field classes, proposal and export formats the tool implements.

@@ -50,3 +50,10 @@ No Craft term. `use case` names the business unit; `job` or `script` only the ve
 - **Repository root.** Asked once per session, never guessed; each folder must sit under it, otherwise the run stops.
 - **Fixed recommendations ID.** `recommendations`, so the recommender writes `tracker-updates/recommendations/tracker-updates.csv`. The skill never asks for it. Before stage 4 it shows the list (every index row) once with the warning that a partial list drops the other use cases' mappings, and runs only after the lead confirms.
 - **Export step.** Unchanged: the skill runs the exporter command above and stops on exit 1. It asks for the exporter path and needs Node 26.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- `spec` column definition gains: "The index row is the single lookup for a specification, and a new specification is written in the row's own `folder` as `<folder>/<use case name>.md`; the stage reports the root-relative path and this skill sets `spec` from it."
+- Stage 3 brief: names the `folder` as the specification's home and asks for the root-relative path of the file written.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

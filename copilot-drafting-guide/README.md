@@ -67,6 +67,85 @@ flowchart TB
 - **B09** When model advice is given, then it is marked team-reported and environment-dependent with a valid-as-of date, tells the user to check the model picker, plan and administrator policy, and calls no model guaranteed. (untested: benchmark pending)
 - **B10** When the usage guidance is read, then it tells the developer that Copilot's output is a draft a person must review against the source, that a skill cannot block manual edits, that acknowledged versions are tagged in the repository and protected by repository settings outside this deliverable, that skill support must be confirmed in the developers' Copilot setup, that supplied findings, questions and corrections and the files `external_tools.md` and `logic.md` can be given as they are, and to run `propose-tracker-updates` after drafting or updating. (untested: benchmark pending)
 
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Copilot Drafting Guide**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+The skill's output location and its lookup change; its drafting rules do not. The skill writes a new document at `<folder>/<use case name>.md`, where `folder` is the use case index row's `folder`, and ends its reply with the root-relative path so the orchestrator or batch agent can set the row's `spec`. An update opens the file the index `spec` names. The two core files are read from the same folder. With no row, a blank `spec` or a missing file it asks once for the path and otherwise reports "no specification", using no other location. [drafting-prompt.md](drafting-prompt.md) repeats the instructions, so it changes in step.
+
+Rule followed by every skill and agent that names a specification: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder. A skill run by hand with no path uses it, and when there is no index row, `spec` is blank or the file is missing, the skill asks once for the path and, if none is given, reports "no specification" and uses no other location (no fallback to the inventory's source location, no scan for the file).
+
+Behavior wording (amended at build; no behavior is added): **B01** (no new behavior; the cap of 10 holds). New wording: "When a developer asks the skill to document a use case, then it drafts from the use case's source, the core files `external_tools.md` and `logic.md` read from the use case's folder (the use case index row's `folder`), manually tagged additional documents (including original SOP and vendor documents when available) and any findings, questions, corrections and dependency observations the developer supplies as they are, using only the template's parts, writes a new document at `<folder>/<use case name>.md` and reports its root-relative path, and finds an existing document through the index `spec`; when there is no row, `spec` is blank or the file is missing it asks once for the path and otherwise reports "no specification", and the developer does not first rewrite supplied findings into a specification. (untested: benchmark pending)" `B06` (update the same file) is unchanged. Tests and checklist items tagged B01 and B06 stay as they are.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  skill["document-job-behavior (skill)"]
+  prompt["drafting-prompt (fallback)"]
+  idx["use-case-index.csv (repository root)"]
+  rule["specification location and lookup rule"]:::planned
+  spec["specification in the use case folder"]:::planned
+  skill -->|"reads the folder and spec from"| idx
+  skill -->|"applies"| rule
+  rule -->|"writes and finds"| spec
+  skill -->|"same instructions repeated in"| prompt
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. Edit `document-job-behavior/SKILL.md`: output location `<index row folder>/<use case name>.md`, the reported root-relative path, the update lookup through the index `spec`, the core files read from the same folder, and the no-row rule.
+2. Edit `drafting-prompt.md` so it repeats the same instructions, and `usage-and-model-guidance.md` only where it names a location.
+3. Add the location rule to `review-checklist.md` under B01 and update `contract.md` (Skill input and output).
+4. Rewrite README `B01` as above, update Design, and dissolve this Plan into Design.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| The skill creates, finds and reports the specification by the one rule and handles the no-row case | B01 | 1, 3 | file review against the checklist line |
+| The fallback prompt, the guidance and the folder stay in step and free of Craft terms | B08 | 2 | the checklist's scan for `Craft` |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`, as one part of the request `shared-use-case-file-location`: the other affected components each carry their own Plan, and the root holds the convention. Nothing is built.
+2. **Location.** A newly drafted specification is written in the use case's own folder; the proposal folder holds only proposal files. Confirmed by the user on 2026-11-17. Override by naming the proposal folder `<proposals root>/tracker-updates/<use-case-id>/` instead; the specification is then vendor-readable only if that folder is shared, so the root's vendor-separation rule would also need to change.
+3. **File name.** `<use case name>.md`, as the reference specification is named after its use case. Override by naming another pattern.
+4. **Existing specifications are not moved.** A batch-written specification keeps working because its index `spec` already points at it, wherever it is.
+5. **Tracker Data Contract.** It defines no specification location, so it and its copies in the skill folders do not change and nothing is recopied.
+6. **Behavior cap.** The component lists 10 behaviors, so none is added: **B01** is reworded in the Plan above and at build; tests and checklist items tagged for it stay.
+
+Open questions: none. The location choice was confirmed by the user on 2026-11-17; where a hand-run skill finds no index row it asks once for a path, as recorded above.
+
+### Planned Relationships
+
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — owns the use case index whose `folder` and `spec` the skill now uses as its lookup.
+
+### Planned Links
+
+- [requirements.md](requirements.md#planned-change-shared-use-case-file-location) — what the change must do, with the planned change section.
+- [contract.md](contract.md#planned-change-shared-use-case-file-location) — the interface, with the planned change section.
+
 ## Relationships
 
 - [Job Behavior Template](../job-behavior-template/README.md#purpose) — the form the skill fills in; a copy goes into the skill folder so the skill uses only that form's parts.

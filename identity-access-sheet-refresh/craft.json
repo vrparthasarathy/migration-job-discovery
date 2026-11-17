@@ -1,0 +1,40 @@
+{
+  "configuration": {
+    "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T02:33:49Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Given the example sheet and source, the output has one row per use case, endpoint and environment with the right `change` value for matched, contradicted, new and unsourced rows, and loose or ambiguous matches never create a duplicate. (B01, B02, B03, B04)",
+      "Human-owned and forbidden columns are byte-equal to the input in every output row, and no forbidden value is ever generated. (B05)",
+      "No secret value or part of one appears in the output or the report; a literal credential is shown only as its location and `value withheld`. (B06)",
+      "`evidence_refs` holds `source:` pointers that resolve to line ranges in the real files, the output is a new CSV with the sheet's header plus a trailing `change` column, the input sheet, the tracker and the proposals are untouched, and a run limited to one use case or vendor writes only that scope. (B07, B08)",
+      "A rerun on the same inputs gives a byte-identical file, the read-back self-check result is stated in the reply, and the skill folder has no Craft term and byte-identical contract and schema copies. (B09, B10)"
+    ]
+  }
+}

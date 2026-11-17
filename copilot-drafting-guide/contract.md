@@ -25,3 +25,11 @@
 ### Revision (use case wording)
 
 The skill, the guidance and the fallback prompt use `use case` for the business unit and `script` only for the vendor's code, accept the inputs above as they are, and contain no Craft term. The skill folder name and the skill `name` stay `document-job-behavior`. The skill's template copy is a byte-identical copy of the revised template. The companion skill is `propose-tracker-updates` (see [Tracker Update Proposer](../tracker-update-proposer/README.md#purpose)); this skill tells the developer to run it and does not run it.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- Output: the document at `<folder>/<use case name>.md`; the last line of the reply is the root-relative path of the file written or updated.
+- Lookup: the use case index `use-case-index.csv` at the repository root, columns `use_case_name,slug,vendor,folder,spec`; the row is found by use case name, slug or derived use case ID.
+- No-row message: `no specification`, after one question for a path.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

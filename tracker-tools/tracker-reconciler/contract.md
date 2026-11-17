@@ -48,3 +48,8 @@ The output files and their columns carry the key strings below; nothing else abo
 ## Strict proposal shape
 
 `validate` and the shared loader report these messages, each as `<file>: line <n>: <message>`: `missing final line feed`, `CRLF or CR line end; use LF only`, `byte order mark; ...`, `row has <n> fields but the header has 12`, `record_key "<key>" does not fit tab <tab>; expected <form> ...`, `value "<value>" is not a date YYYY-MM-DD` (and the same for `base_value`), `proposal_id "<id>" differs from folder "<name>"` (for `reconcile` and `validate <dir>`, not for `validate <file>`). Exit status 1 as today.
+
+## Planned change: Windows path separators
+
+- Outputs are byte-identical on every platform, with `/` in every path the report prints and in the order of the proposal files; an output folder from an earlier run is checked file by file with `/` separators before the same file name pattern as today.
+- Commands, arguments, exit codes and the output file names do not change. Problem messages on standard error keep the platform's native paths.

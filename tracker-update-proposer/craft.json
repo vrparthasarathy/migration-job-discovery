@@ -1,5 +1,37 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T02:35:40Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "In specification-update mode with no specification path, `propose-tracker-updates` finds the repository root's `use-case-index.csv` row by use case name, slug or derived ID and reads the file its `spec` names; a developer-given path wins; with no row, a blank `spec` or a missing file it asks once for a path and otherwise reports \"no specification\", and it never falls back to the inventory's source location for a specification. (B01)",
+      "The `record_key` note in the skill states the real lookup rule, and the folder, example and contract copy still pass the review checklist with no Craft term. (B10)"
+    ]
   }
 }

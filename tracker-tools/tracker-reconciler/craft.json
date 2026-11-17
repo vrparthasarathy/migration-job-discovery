@@ -1,1 +1,35 @@
-{}
+{
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T02:33:46Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "Given a previous output listed with backslash relative paths and the separator `\\`, the output-folder check accepts `reconciliation-report.md`, `additions\\use-cases.csv` and `vendor\\acme\\questions.csv`, refuses a foreign file such as `vendor\\acme\\notes.md` or `..\\x.csv`, and still refuses a name containing a backslash on a `/` platform, so the allowed pattern is not widened. (B09)",
+      "Given proposal folders `mr-1` and `mr-10` and a nested folder, the report's `Proposal:` lines use `/` in `/` order on every platform, and `posixPath(\"mr-1\\\\tracker-updates.csv\", \"\\\\\")` gives `mr-1/tracker-updates.csv`. (B03)",
+      "Two runs with the same inputs give identical outputs, and the test snapshot and listing helpers key files with `/` on every platform. (B03)"
+    ]
+  }
+}

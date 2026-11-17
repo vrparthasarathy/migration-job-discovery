@@ -37,3 +37,12 @@ See `task.acceptance` in [`craft.json`](craft.json).
 - When appending to the shared file it first makes sure the file ends with a line feed, so the first row it adds starts on a new line.
 - An empty `base_value` stays blank.
 - When the toolkit is available it also runs `validate <file>` of the Tracker Reconciler and fixes every error before reporting; the skill needs nothing installed.
+
+## Planned change: shared use case file location
+
+- Convention: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder.
+- In specification-update mode, with no specification path given, the skill resolves the specification through `use-case-index.csv` at the repository root (it asks once for the root), found by use case name, slug or derived ID; a path the developer gives wins.
+- With no row, a blank `spec` or a missing file it asks once for a path and otherwise reports "no specification"; it uses no other location and does not scan.
+- The source location in the inventory is no longer a fallback for a specification; source screening still reads it.
+- Must not: change source screening, the proposal file format, the Tracker Data Contract copy, or any row the skill writes.
+- Applies from the build of this change; the Tracker Data Contract and its copies do not change.

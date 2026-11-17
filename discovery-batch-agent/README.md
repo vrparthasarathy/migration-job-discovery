@@ -63,6 +63,84 @@ flowchart TB
 - **B09** When it runs, then its only own write is an index row, and it never writes to the tracker, a proposal file, a specification or a review cell, and never releases, acknowledges, decides or applies anything. (untested: benchmark pending)
 - **B10** When no subagent tool exists, then it says `NO SUBAGENT TOOL`, says that `run-discovery` handles one folder at a time, and stops without running any use case itself. (untested: benchmark pending)
 
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../README.md#plan) / **Discovery Batch Agent**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+The Worker brief carries the rule. It already passes the use case's `Folder:` and says each stage writes only under `<proposals root>/tracker-updates/<proposal-id>/`; it now says the specification is the one exception, written at `<folder>/<use case name>.md`, and that the `SPEC-PATH` line of the reply record is that path. The agent sets the index `spec` from `SPEC-PATH` as before. The reply record, the stage choice, the done checks and the agent's own writes do not change.
+
+Rule followed by every skill and agent that names a specification: the use case index `use-case-index.csv` at the repository root is the single lookup: its row's `folder` is the use case's own folder and its `spec` is the root-relative path of the specification; a new specification is written in the use case's own folder as `<folder>/<use case name>.md`, never in a proposal folder. A skill run by hand with no path uses it, and when there is no index row, `spec` is blank or the file is missing, the skill asks once for the path and, if none is given, reports "no specification" and uses no other location (no fallback to the inventory's source location, no scan for the file).
+
+Behavior wording (amended at build; no behavior is added): **B03** (no new behavior; the cap of 10 holds). New wording adds, after "through its installed skills,": "the specification written at `<folder>/<use case name>.md` in the use case's own folder as the one exception to writing only under the proposals root, " and "its `SPEC-PATH` line is that path," before "it keeps only the fixed ten-line reply record". The rest of B03 is unchanged. Tests and checklist items tagged B03 stay as they are; one line is added under B03 in the checklist.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  agent["discovery-batch.agent.md"]
+  worker["worker subagent (one per use case)"]
+  rule["specification written in the use case folder"]:::planned
+  idx["use-case-index.csv (repository root)"]
+  agent -->|"starts, one at a time"| worker
+  worker -->|"follows"| rule
+  worker -->|"replies SPEC-PATH to"| agent
+  agent -->|"sets spec in"| idx
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. Edit `discovery-batch.agent.md`: the Worker brief states the specification's location, the exception to the proposals-root rule, and that `SPEC-PATH` is that path.
+2. Update `contract.md` (Worker subagent and Worker reply record) and add one line under B03 in `review-checklist.md`.
+3. Rewrite README `B03` as above, update Design, and dissolve this Plan into Design.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| The Worker brief names the folder as the specification's home, the exception to the proposals root, and `SPEC-PATH` as that path | B03 | 1, 2 | file review against the checklist line |
+| The agent's own writes and its wording stay as they were | B09 | 1 | the checklist's scan for `Craft` and for any copy of the contract |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`, as one part of the request `shared-use-case-file-location`: the other affected components each carry their own Plan, and the root holds the convention. Nothing is built.
+2. **Location.** A newly drafted specification is written in the use case's own folder; the proposal folder holds only proposal files. Confirmed by the user on 2026-11-17. Override by naming the proposal folder `<proposals root>/tracker-updates/<use-case-id>/` instead; the specification is then vendor-readable only if that folder is shared, so the root's vendor-separation rule would also need to change.
+3. **File name.** `<use case name>.md`, as the reference specification is named after its use case. Override by naming another pattern.
+4. **Existing specifications are not moved.** A batch-written specification keeps working because its index `spec` already points at it, wherever it is.
+5. **Tracker Data Contract.** It defines no specification location, so it and its copies in the skill folders do not change and nothing is recopied.
+6. **Behavior cap.** The component lists 10 behaviors, so none is added: **B03** is reworded in the Plan above and at build; tests and checklist items tagged for it stay.
+
+Open questions: none. The location choice was confirmed by the user on 2026-11-17; where a hand-run skill finds no index row it asks once for a path, as recorded above.
+
+### Planned Relationships
+
+- [Copilot Drafting Guide](../copilot-drafting-guide/README.md#purpose) — the worker's specification stage writes at the location the brief names.
+- [Discovery Orchestrator](../discovery-orchestrator/README.md#design) — owns the index rules and the same location rule for one folder at a time.
+
+### Planned Links
+
+- [requirements.md](requirements.md#planned-change-shared-use-case-file-location) — what the change must do, with the planned change section.
+- [contract.md](contract.md#planned-change-shared-use-case-file-location) — the interface, with the planned change section.
+
 ## Relationships
 
 - [Discovery Orchestrator](../discovery-orchestrator/README.md#purpose) — owns the use case index rules and `run-discovery`, which this agent reads and follows.
