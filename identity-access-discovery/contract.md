@@ -28,3 +28,7 @@
 - An Identity & Access row is keyed `<use-case-id>/<endpoint>/<environment>`, in the `record_key`, the row order, `shared_with` and the repeat-run match. The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Data Contract](../tracker-data-contract/contract.md); it is derived, never stored. The use case name is not part of the key and a key in the old name form is not valid.
 - The ID needs the vendor. When it is not known, the skill asks the lead once, never invents one, and writes no keyed row for that use case until it is known.
 - The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built.
+
+## Planned change: proposal file self-check
+
+The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.

@@ -12,6 +12,15 @@ A Node command line tool that compares reviewed tracker proposals with the lates
   - [Diagram](#diagram)
 - [Technology](#technology)
 - [Behavior](#behavior)
+- [Plan](#plan)
+  - [Planned Navigation](#planned-navigation)
+  - [Planned Design](#planned-design)
+    - [Planned Diagram](#planned-diagram)
+  - [Steps](#steps)
+  - [Acceptance Mapping](#acceptance-mapping)
+  - [Assumptions And Open Questions](#assumptions-and-open-questions)
+  - [Planned Relationships](#planned-relationships)
+  - [Planned Links](#planned-links)
 - [Relationships](#relationships)
 - [Links](#links)
 
@@ -66,7 +75,7 @@ Inherited from [Tracker Tools](../README.md#technology): Node 26 with native Typ
 
 ## Behavior
 
-- **B01** When a proposed record is absent from the export, then it is an addition in the per-tab file with its local key (built from the use case ID), source, specification version and MR link (the MR link of the same use case ID, from a proposal row or the export), human-owned fields shown as suggestions, and a suggested reference that never reuses an export reference.
+- **B01** When a proposed record is absent from the export, then it is an addition in the per-tab file with its local key (built from the use case ID), source, specification version and MR link (the MR link of the same use case ID, from a proposal row or the export), human-owned fields shown as suggestions, and a suggested reference that never reuses an export reference; when two vendors have use cases of the same name (two IDs, `uc-<vendor-a>-<name>` and `uc-<vendor-b>-<name>`), their additions and updates are separate records under their own IDs, a key reaches only its own ID's row, and nothing is merged or matched to the other vendor's row (a similar question text is at most a link suggestion).
 - **B02** When a spec-owned field differs on an existing row, then a field update lists the current and the proposed value, a human-owned field is never overwritten and is suggested only, and forbidden fields are rejected; a changed question wording appears as a `current_spec_text` update with a text-review suggestion and never touches the released question text or an answer.
 - **B03** When the same inputs are run twice, then the outputs are identical, and a proposal already reflected in the export (an equal value, or its `update_id` in `proposal_refs`) yields nothing.
 - **B04** When a proposal's `base_value` differs from the export, or a row's `last_updated` is later than the proposal's `created_on`, then it is a conflict listing both values and is never resolved silently; the affected record and the changes of rows that refer to it are held with it, and unrelated safe changes are still reported.
@@ -74,9 +83,82 @@ Inherited from [Tracker Tools](../README.md#technology): Node 26 with native Typ
 - **B06** When a proposal sets `released_on`, `batch_ref`, an answer or answer status, an acknowledgement, a ticket, verification or a decision, then it is rejected, and release status comes only from the tracker.
 - **B07** When a decided mapping's `spec_versions_considered` is older than the proposed version, then it suggests re-review with the reason only when the use case's grouping impact is could-affect or unknown (a lead's override replaces the suggestion), lists an unknown impact as unknown and never as no impact, suggests nothing for a not-expected impact or a version-only or wording change, and never edits decision fields.
 - **B08** When it writes vendor outputs, then each `vendor/<slug>/` holds only that vendor's released question rows and vendor-visible columns, and internal tabs, internal columns, groups, links and cross-vendor suggestions appear only in the internal outputs.
-- **B09** When an input has a bad header, an unknown tab or field, a key whose leading use case ID is unknown (or is written as the use case name or its slug), a `use_case_name` value that does not belong to the key's use case ID, two export Use Cases rows that derive the same use case ID, malformed CSV or a secret-looking value, then it exits 1 naming the file and line and writes no partial output.
+- **B09** When an input has a bad header, an unknown tab or field, a key whose leading use case ID is unknown (or is written as the use case name or its slug), a `use_case_name` value that does not belong to the key's use case ID, two export Use Cases rows that derive the same use case ID, malformed CSV or a secret-looking value, then it exits 1 naming the file and line and writes no partial output. It also stops, naming the file and line, on a proposal file that does not end with exactly one line feed, on a CRLF or lone CR line end or a byte order mark, on a row with fewer or more than 12 fields, on a record key whose form does not fit its tab (`<use-case-id>`, `<use-case-id>/Q<n>`, `<use-case-id>/<endpoint>/<environment>` or `<use-case-id>->><candidate-slug>`), and on a `proposal_id` that differs from its folder name, and `validate <file-or-dir>` runs exactly these checks without an export.
 - **B10** When it is run, then it never changes or reassigns an existing central reference, answer, answer status, owner, status, ticket, date, acknowledgement or released question text, never releases or applies anything, and a repeated run does not overwrite a newer human edit.
-- **B11** When two vendors have use cases with the same name (two IDs, `uc-<vendor-a>-<name>` and `uc-<vendor-b>-<name>`), then their use case additions, their question 1 additions and their updates are separate records under their own IDs, a key reaches only its own ID's row, and nothing is merged or matched to the other vendor's row; a similar question text is at most a link suggestion.
+
+## Plan
+
+### Planned Navigation
+
+[Job Behavior Specifications](../../README.md#plan) / [Tracker Tools](../README.md#navigation) / **Tracker Reconciler**
+
+- [Planned Design](#planned-design)
+  - [Planned Diagram](#planned-diagram)
+- [Steps](#steps)
+- [Acceptance Mapping](#acceptance-mapping)
+- [Assumptions And Open Questions](#assumptions-and-open-questions)
+- [Planned Relationships](#planned-relationships)
+- [Planned Links](#planned-links)
+
+### Planned Design
+
+The checks are added to the proposal loader (`loadProposalFile` in `src/inputs.ts`), which `validate`, `reconcile` and the Review CSV Exporter already share, so one change serves all three. A short row is currently padded silently, so a pre-scan of the raw text counts the fields of each row before the table is built; the final line feed, LF-only, no byte order mark and the key shape per tab are checked on the raw text and rows. A date-typed `value` or `base_value` is checked as `YYYY-MM-DD`. The `validate` command and its exit codes do not change; it prints one `file: line N: message` per problem. Blank lines no longer shift reported line numbers. The exporter needs no code change and no new mode, but its tests and every fixture that is a proposal file must pass the stricter loader.
+
+#### Planned Diagram
+
+```mermaid
+---
+config:
+  layout: elk
+---
+%%{init: {"securityLevel": "loose"}}%%
+flowchart TB
+  cli["src/cli.ts (reconcile, validate)"]
+  inputs["src/inputs.ts (proposal loader)"]
+  checks["strict proposal shape checks"]:::planned
+  exporter["review-csv-exporter (shares the loader)"]
+  cli -->|"calls"| inputs
+  inputs -->|"runs"| checks
+  exporter -->|"loads proposals through"| inputs
+  classDef planned stroke-dasharray: 5 5,stroke:#2563eb
+```
+
+### Steps
+
+1. Add the raw-text checks and the per-tab key-shape check to the proposal loader in `src/inputs.ts`, with one `file: line N: message` per problem and the proposal-id-equals-folder check for `validate <dir>` and `reconcile`.
+2. Add tests in `test/input.test.ts` for each new stop (missing final line feed, CRLF, BOM, a short row, a fused row, a bad key per tab, a wrong folder name) and for the unchanged good case.
+3. Run the tests of the Review CSV Exporter, the Tracker Summary and the root integration tests against the stricter loader; a fixture that fails is a bounded request to its owner, not an edit here.
+4. Update this README's Design and `B09`, `contract.md` and `requirements.md`, then dissolve this Plan into Design.
+
+### Acceptance Mapping
+
+| Acceptance | Behaviors | Step | Check |
+| --- | --- | --- | --- |
+| `validate` and `reconcile` stop on each new malformed-file case naming file and line | B09 | 1, 2 | `[B09]` cases in `test/input.test.ts` |
+| Every existing behavior still holds on well-formed input | B01 to B08, B10 | 3 | the component's `test` check and the root tests |
+
+### Assumptions And Open Questions
+
+Assumptions (override any in chat):
+
+1. **Policy and scope.** Planned under `deciding-what-to-ask`; the change is part of one request (validation of proposal files) that also touches the other components named in the root request, each planned in its own README. Nothing is built.
+2. **Choices.** An empty `base_value` stays blank (no dot); on a `set` a blank `base_value` means the field was blank when seen. The exact 12-field check and the final-line-feed check catch a lost trailing field and a fused row. Validation lives in the existing Tracker Reconciler `validate` command; the exporter shares its loader and gains no new mode. Recorded from the user's answers of 2026-11-17.
+3. **Key shapes.** Per tab: Use Cases `<use-case-id>`; Questions `<use-case-id>/Q<n>`; Identity & Access `<use-case-id>/<endpoint>/<environment>`; Mappings `<use-case-id>->><candidate-slug>` with the slug rule of the reconciler's `slug()`. Override by naming another form.
+4. **Behavior cap.** The component was at 11 behaviors, over the cap of 10 that the record checker enforces once the component has a task, so the same-name-vendors behavior `B11` is folded into `B01`; at build, tests tagged `[B11]` are retagged `[B01]`. Override by merging another pair.
+5. **Fixtures.** If an existing proposal fixture elsewhere fails the stricter loader, it is reported as a bounded request to its owner at build time.
+
+Open questions: none. The behavior changes and the choices on the base value (kept blank, with checks) and on the pack skills (a self-check checklist, the validator optional) were confirmed by the user on 2026-11-17.
+
+### Planned Relationships
+
+- [Review CSV Exporter](../review-csv-exporter/README.md#purpose) — shares the loader, so it also stops on these cases.
+- [Tracker Tables](../tracker-tables/README.md#purpose) — the CSV parser, unchanged.
+- [Tracker Data Contract](../../tracker-data-contract/README.md#purpose) — the format and key forms the checks follow.
+
+### Planned Links
+
+- [requirements.md](requirements.md#requirements) — what the change must do, with the planned change section.
+- [contract.md](contract.md#contract) — the interface, with the planned change section.
 
 ## Relationships
 

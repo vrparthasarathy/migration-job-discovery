@@ -11,7 +11,7 @@ In VS Code agent mode, the custom agent `discovery-batch` chosen in Copilot Chat
 - First, on its own: the use cases to run, by name or slug; the stages to run (`screening`, `identity`, `specification`, any combination, default all three); and whether to run workflow recommendation too (default no).
 - Read from `use-case-index.csv` at the repository root, never asked for: each use case's folder, vendor and specification path. A name with no row needs its folder asked once.
 - Derived, never asked for: the proposal ID `uc-<vendor-slug>-<use-case-slug>` and the fixed recommendations ID `recommendations`, by the section "The use case index and the proposal ID" of `run-discovery`.
-- Asked once and never invented, remembered for the session: the repository root, the tracker export folder, the proposals root, the exporter path, the folder for the review CSVs, the lead's name and today's date.
+- Asked once and never invented, remembered for the session: the repository root, the tracker export folder, the proposals root (a dedicated folder: not `.`, existing, holding nothing besides its `tracker-updates` folder; checked before anything runs), the exporter path, the validator path (the Tracker Reconciler's `main.ts`), the folder for the review CSVs, the lead's name and today's date.
 
 ### Confirmation table
 
@@ -23,7 +23,7 @@ One subagent per use case, started one at a time with a brief that holds the use
 
 ### Worker reply record
 
-The subagent replies with exactly these nine lines, in this order, and nothing else:
+The subagent replies with exactly these ten lines, in this order, and nothing else:
 
 ```text
 USE-CASE: <name>
@@ -35,9 +35,10 @@ STAGE-3: done | skipped: not chosen | skipped: already done | skipped: <source s
 SPEC-PATH: <path of the specification, or none>
 FILES-WRITTEN: <paths>
 OPEN-QUESTIONS: <count and one line each, or none>
+VALIDATION: ok | failed: <file:line message; ...>
 ```
 
-A reply in any other form is a failed use case and is not repaired by the agent.
+After its stages the worker runs `node <validator path> validate <proposals root>/tracker-updates/<proposal-id>` and may rerun its own stage once to fix the reported errors; it never edits another stage's rows. A reply in any other form, a `VALIDATION: failed` line, a missing `VALIDATION` line or a validator that cannot run is a failed use case and is not repaired by the agent; the report lists the errors with their lines.
 
 ### Index writes
 

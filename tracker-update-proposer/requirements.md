@@ -30,3 +30,10 @@ See `task.acceptance` in [`craft.json`](craft.json).
 
 - **Output varies.** Copilot output differs between models and runs; the behaviors can be judged only on samples.
 - **Copies must stay in step.** The contract and schema copies in the skill folder must match the contract component's files; the root checks them.
+
+## Planned change: proposal file self-check
+
+- Before reporting, the skill checks its proposal file: exactly 12 fields per row; quoting of any value with a comma, a double quote or a line break; the exact header; `created_on` and any date value as `YYYY-MM-DD`; the key form of each of its tabs; one final line feed.
+- When appending to the shared file it first makes sure the file ends with a line feed, so the first row it adds starts on a new line.
+- An empty `base_value` stays blank.
+- When the toolkit is available it also runs `validate <file>` of the Tracker Reconciler and fixes every error before reporting; the skill needs nothing installed.

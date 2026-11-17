@@ -5,7 +5,7 @@
   "task": {
     "status": "ready",
     "worker": "builder",
-    "updated": "2026-11-17T01:05:00Z",
+    "updated": "2026-11-17T01:40:00Z",
     "constraints": {
       "cost": {
         "currency": "USD",
@@ -30,8 +30,8 @@
       "external-effects": "require-current-turn-user-approval"
     },
     "acceptance": [
-      "The agent first asks which use cases, which stages (screening, identity and access, specification, any combination, default all three) and whether to run workflow recommendation, and its table shows per stage `run`, `skip: not chosen` or `skip: already done`. (B01, B02)",
-      "A worker runs only the chosen stages in the fixed order, each writing only its own rows, and its record shows `skipped: not chosen`, `skipped: already done` or `blocked` per stage; a blocked or malformed use case never stops the batch. (B03, B04)",
+      "The agent first asks which use cases, which stages (screening, identity and access, specification, any combination, default all three) and whether to run workflow recommendation, and its table shows per stage `run`, `skip: not chosen` or `skip: already done`. (B01, B02) The proposals root must be a dedicated folder, checked before anything runs.",
+      "A worker runs only the chosen stages in the fixed order, each writing only its own rows, and its record shows `skipped: not chosen`, `skipped: already done` or `blocked` per stage; a blocked or malformed use case never stops the batch. (B03, B04) Each worker runs the validator on its proposal folder and reports `VALIDATION`; a failure fails the use case.",
       "A stage is skipped as done when its own result is in the proposal file or, for specification, the index row has a spec, unless the lead asks for a rerun; specification is never blocked for missing screening. (B05)",
       "Recommendation runs only when asked, and the exporter runs after every run into the same review folder, keeping earlier decisions. (B06, B07)",
       "The hand-over, the write limits and the no-subagent stop are unchanged, and the review checklist's scan prints nothing. (B08, B09, B10)"

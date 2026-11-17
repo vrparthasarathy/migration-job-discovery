@@ -57,3 +57,7 @@ The use case ID `uc-<vendor-slug>-<use-case-slug>` is defined in the [Tracker Da
 - A Mappings row is keyed `<use-case-id>->>candidate-slug`, where the candidate slug is the candidate name in lower case with hyphens. A blocking question is linked by its local reference `<use-case-id>/Q<n>@v<version>`. The name form and the slug-alone form are not valid.
 - The ID needs the vendor. For an index row with a blank vendor the skill asks the lead once, never invents one, and writes no Mappings row for that use case until it is known; the use case is still compared and listed in the report.
 - The skill folder's `tracker-data-contract.md` equals the Tracker Data Contract component's file as built; `tracker-schema.csv` is unchanged.
+
+## Planned change: proposal file self-check
+
+The skill's reply states the self-check result (clean, or the problems fixed) with its other report items. The proposal file format is the Tracker Data Contract's.

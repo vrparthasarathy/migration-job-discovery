@@ -1,5 +1,37 @@
 {
   "configuration": {
     "checks": {}
+  },
+  "task": {
+    "status": "ready",
+    "worker": "builder",
+    "updated": "2026-11-17T01:30:00Z",
+    "constraints": {
+      "cost": {
+        "currency": "USD",
+        "allocated": 1,
+        "spent": 0,
+        "reserve": 0.1,
+        "source": "unavailable",
+        "fallback-metric": "wall-clock seconds"
+      },
+      "delegation": {
+        "maximum-depth": 0,
+        "maximum-children": 0
+      },
+      "execution": {
+        "wall-clock": {
+          "allocated-seconds": 1800,
+          "spent-seconds": 0,
+          "reserve-seconds": 300,
+          "source": "unavailable"
+        }
+      },
+      "external-effects": "require-current-turn-user-approval"
+    },
+    "acceptance": [
+      "The skill checks 12 fields per row, quoting, the header, dates, key forms and one final line feed before reporting, makes sure the shared file ends with a line feed before appending, and names the Reconciler's `validate` as an optional extra. (B05)",
+      "The contract and schema copies equal the Tracker Data Contract's files and the scan prints nothing. (B10)"
+    ]
   }
 }
